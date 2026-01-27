@@ -17,6 +17,7 @@ repositories {
 dependencies {
     compileOnly(libs.jetbrains.annotations)
     compileOnly(libs.jspecify)
+    implementation("com.google.code.gson:gson:2.10.1")
 }
 
 hytale {
