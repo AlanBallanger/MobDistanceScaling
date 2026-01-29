@@ -1,14 +1,10 @@
 package com.mobdistancescaling.config;
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import com.google.gson.JsonArray;
-import com.google.gson.JsonObject;
 import com.hypixel.hytale.logger.HytaleLogger;
+import com.moandjiezana.toml.Toml;
 
 import javax.annotation.Nonnull;
 import java.io.File;
-import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.Path;
@@ -18,15 +14,13 @@ import java.util.logging.Level;
 
 public class ConfigManager {
     private static final HytaleLogger LOGGER = HytaleLogger.forEnclosingClass();
-    private static final String CONFIG_FILENAME = "mob-distance-scaling.json";
+    private static final String CONFIG_FILENAME = "mdsconfig.toml";
 
     private final Path configPath;
-    private final Gson gson;
     private ZoneConfig zoneConfig;
 
     public ConfigManager(@Nonnull Path pluginDataFolder) {
         this.configPath = pluginDataFolder.resolve(CONFIG_FILENAME);
-        this.gson = new GsonBuilder().setPrettyPrinting().create();
     }
 
     public void load() {
@@ -39,9 +33,9 @@ public class ConfigManager {
             return;
         }
 
-        try (FileReader reader = new FileReader(configFile)) {
-            JsonObject json = gson.fromJson(reader, JsonObject.class);
-            zoneConfig = parseZoneConfig(json);
+        try {
+            Toml toml = new Toml().read(configFile);
+            zoneConfig = parseZoneConfig(toml);
             LOGGER.at(Level.INFO).log("Loaded configuration with {0} zones", zoneConfig.getZones().size());
         } catch (Exception e) {
             LOGGER.at(Level.SEVERE).log("Failed to load config, using default configuration", e);
@@ -58,9 +52,9 @@ public class ConfigManager {
                 parentDir.mkdirs();
             }
 
+            String tomlContent = generateTomlWithComments(zoneConfig);
             try (FileWriter writer = new FileWriter(configFile)) {
-                JsonObject json = serializeZoneConfig(zoneConfig);
-                gson.toJson(json, writer);
+                writer.write(tomlContent);
                 LOGGER.at(Level.INFO).log("Configuration saved to: {0}", configPath);
             }
         } catch (IOException e) {
@@ -69,97 +63,124 @@ public class ConfigManager {
     }
 
     @Nonnull
-    private ZoneConfig parseZoneConfig(@Nonnull JsonObject json) {
+    private ZoneConfig parseZoneConfig(@Nonnull Toml toml) {
         // Parse enabled worlds
-        List<String> enabledWorlds = new ArrayList<>();
-        JsonArray worldsArray = json.getAsJsonArray("enabledWorlds");
-        if (worldsArray != null) {
-            for (int i = 0; i < worldsArray.size(); i++) {
-                enabledWorlds.add(worldsArray.get(i).getAsString());
-            }
-        } else {
-            // Default to "default" world if not specified
+        List<String> enabledWorlds = toml.getList("enabledWorlds");
+        if (enabledWorlds == null) {
+            enabledWorlds = new ArrayList<>();
             enabledWorlds.add("default");
         }
 
         // Parse minimap settings
+        Toml minimapToml = toml.getTable("minimap");
         boolean minimapEnabled = true;
         int minimapOpacity = 50;
         String minimapPattern = "STRIPES";
         int minimapPatternSize = 4;
 
-        if (json.has("minimapEnabled")) {
-            minimapEnabled = json.get("minimapEnabled").getAsBoolean();
+        if (minimapToml != null) {
+            minimapEnabled = minimapToml.getBoolean("enabled", true);
+            minimapOpacity = minimapToml.getLong("opacity", 50L).intValue();
+            minimapPattern = minimapToml.getString("pattern", "STRIPES");
+            minimapPatternSize = minimapToml.getLong("patternSize", 4L).intValue();
         }
-        if (json.has("minimapOpacity")) {
-            minimapOpacity = json.get("minimapOpacity").getAsInt();
-        }
-        if (json.has("minimapPattern")) {
-            minimapPattern = json.get("minimapPattern").getAsString();
-        }
-        if (json.has("minimapPatternSize")) {
-            minimapPatternSize = json.get("minimapPatternSize").getAsInt();
+
+        // Parse notification settings
+        Toml notificationToml = toml.getTable("notifications");
+        boolean zoneEnterNotification = true;
+        String zoneEnterTopText = "Zone";
+        float notificationDuration = 2.0f;
+
+        if (notificationToml != null) {
+            zoneEnterNotification = notificationToml.getBoolean("zoneEnterEnabled", true);
+            zoneEnterTopText = notificationToml.getString("zoneEnterTopText", "Zone");
+            notificationDuration = notificationToml.getDouble("duration", 2.0).floatValue();
         }
 
         // Parse zones
         List<DifficultyZone> zones = new ArrayList<>();
-        JsonArray zonesArray = json.getAsJsonArray("zones");
+        List<Toml> zonesList = toml.getTables("zones");
 
-        if (zonesArray != null) {
-            for (int i = 0; i < zonesArray.size(); i++) {
-                JsonObject zoneObj = zonesArray.get(i).getAsJsonObject();
-                int id = zoneObj.get("id").getAsInt();
-                String color = zoneObj.get("color").getAsString();
-                double multiplier = zoneObj.get("multiplier").getAsDouble();
-                int radiusStart = zoneObj.get("radiusStart").getAsInt();
+        if (zonesList != null) {
+            for (Toml zoneToml : zonesList) {
+                int id = zoneToml.getLong("id", 1L).intValue();
+                String color = zoneToml.getString("color", "WHITE");
+                double multiplier = zoneToml.getDouble("multiplier", 1.0);
+                int radiusStart = zoneToml.getLong("radiusStart", 0L).intValue();
+                String name = zoneToml.getString("name", "Zone " + id);
 
-                zones.add(new DifficultyZone(id, color, multiplier, radiusStart));
+                zones.add(new DifficultyZone(id, color, multiplier, radiusStart, name));
             }
         }
 
-        return new ZoneConfig(enabledWorlds, zones, minimapEnabled, minimapOpacity, minimapPattern, minimapPatternSize);
+        return new ZoneConfig(enabledWorlds, zones, minimapEnabled, minimapOpacity,
+                minimapPattern, minimapPatternSize, zoneEnterNotification,
+                zoneEnterTopText, notificationDuration);
     }
 
     @Nonnull
-    private JsonObject serializeZoneConfig(@Nonnull ZoneConfig config) {
-        JsonObject json = new JsonObject();
+    private String generateTomlWithComments(@Nonnull ZoneConfig config) {
+        StringBuilder sb = new StringBuilder();
 
-        // Serialize enabled worlds
-        json.addProperty("_comment_enabledWorlds", "List of world names where zone scaling is active");
-        JsonArray worldsArray = new JsonArray();
-        for (String world : config.getEnabledWorlds()) {
-            worldsArray.add(world);
+        sb.append("# MobDistanceScaling Configuration\n");
+        sb.append("# Mobs scale in HP and damage based on distance from world spawn (0,0)\n\n");
+
+        sb.append("# Worlds where the plugin is active\n");
+        sb.append("enabledWorlds = [");
+        List<String> worlds = config.getEnabledWorlds();
+        for (int i = 0; i < worlds.size(); i++) {
+            sb.append("\"").append(worlds.get(i)).append("\"");
+            if (i < worlds.size() - 1) sb.append(", ");
         }
-        json.add("enabledWorlds", worldsArray);
+        sb.append("]\n\n");
 
-        // Serialize minimap settings with comments
-        json.addProperty("_comment_minimap", "=== MINIMAP OVERLAY SETTINGS ===");
-        json.addProperty("minimapEnabled", config.isMinimapEnabled());
+        sb.append("# ==========================================================\n");
+        sb.append("# MINIMAP OVERLAY SETTINGS\n");
+        sb.append("# ==========================================================\n");
+        sb.append("[minimap]\n");
+        sb.append("enabled = ").append(config.isMinimapEnabled()).append("\n\n");
 
-        json.addProperty("_comment_minimapOpacity", "Opacity of zone colors (0-100). Higher = more visible");
-        json.addProperty("minimapOpacity", config.getMinimapOpacity());
+        sb.append("# Opacity of zone colors (0-100). Higher = more visible\n");
+        sb.append("opacity = ").append(config.getMinimapOpacity()).append("\n\n");
 
-        json.addProperty("_comment_minimapPattern", "Pattern options: SOLID, STRIPES, DOTS, CROSSHATCH, GRID, CHECKER");
-        json.addProperty("minimapPattern", config.getMinimapPattern());
+        sb.append("# Pattern options: SOLID, STRIPES, DOTS, CROSSHATCH, GRID, CHECKER\n");
+        sb.append("pattern = \"").append(config.getMinimapPattern()).append("\"\n\n");
 
-        json.addProperty("_comment_minimapPatternSize", "Pattern spacing (2=dense, 8=sparse). Recommended: 3-6");
-        json.addProperty("minimapPatternSize", config.getMinimapPatternSize());
+        sb.append("# Pattern spacing (2=dense, 8=sparse). Recommended: 3-6\n");
+        sb.append("patternSize = ").append(config.getMinimapPatternSize()).append("\n\n");
 
-        // Serialize zones with comment
-        json.addProperty("_comment_zones", "=== DIFFICULTY ZONES === Each zone has: id, color, multiplier (HP/damage), radiusStart (distance from 0,0)");
-        json.addProperty("_comment_colors", "Available colors: WHITE, GREEN, LIME, YELLOW, GOLD, ORANGE, RED, DARK_RED, PURPLE, BLACK");
-        JsonArray zonesArray = new JsonArray();
+        sb.append("# ==========================================================\n");
+        sb.append("# ZONE ENTRY NOTIFICATIONS\n");
+        sb.append("# ==========================================================\n");
+        sb.append("[notifications]\n");
+        sb.append("# Show a title when entering a new zone\n");
+        sb.append("zoneEnterEnabled = ").append(config.isZoneEnterNotification()).append("\n\n");
+
+        sb.append("# Text shown above the zone name (small text on top)\n");
+        sb.append("zoneEnterTopText = \"").append(config.getZoneEnterTopText()).append("\"\n\n");
+
+        sb.append("# How long the notification stays on screen (seconds)\n");
+        sb.append("duration = ").append(config.getNotificationDuration()).append("\n\n");
+
+        sb.append("# ==========================================================\n");
+        sb.append("# DIFFICULTY ZONES\n");
+        sb.append("# Each zone scales mob HP and damage by the multiplier\n");
+        sb.append("# \n");
+        sb.append("# Colors can be:\n");
+        sb.append("#   - Named: WHITE, GREEN, LIME, YELLOW, GOLD, ORANGE, RED, DARK_RED, PURPLE, BLACK\n");
+        sb.append("#   - Hex: \"#FF5500\" or \"#F50\"\n");
+        sb.append("# ==========================================================\n\n");
+
         for (DifficultyZone zone : config.getZones()) {
-            JsonObject zoneObj = new JsonObject();
-            zoneObj.addProperty("id", zone.getZoneId());
-            zoneObj.addProperty("color", zone.getColor());
-            zoneObj.addProperty("multiplier", zone.getMultiplier());
-            zoneObj.addProperty("radiusStart", zone.getRadiusStart());
-            zonesArray.add(zoneObj);
+            sb.append("[[zones]]\n");
+            sb.append("id = ").append(zone.getZoneId()).append("\n");
+            sb.append("name = \"").append(zone.getName()).append("\"\n");
+            sb.append("color = \"").append(zone.getColor()).append("\"\n");
+            sb.append("multiplier = ").append(zone.getMultiplier()).append("\n");
+            sb.append("radiusStart = ").append(zone.getRadiusStart()).append("\n\n");
         }
 
-        json.add("zones", zonesArray);
-        return json;
+        return sb.toString();
     }
 
     @Nonnull

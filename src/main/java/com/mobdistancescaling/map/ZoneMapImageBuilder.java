@@ -18,32 +18,12 @@ import com.mobdistancescaling.util.ZoneCalculator;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 import java.util.concurrent.Executor;
 
 public class ZoneMapImageBuilder {
-    // Color name to RGB mapping
-    private static final Map<String, Integer> COLOR_MAP = new HashMap<>();
-    static {
-        COLOR_MAP.put("WHITE", 0xFFFFFF);
-        COLOR_MAP.put("GREEN", 0x00FF00);
-        COLOR_MAP.put("LIME", 0x32CD32);
-        COLOR_MAP.put("YELLOW", 0xFFFF00);
-        COLOR_MAP.put("GOLD", 0xFFD700);
-        COLOR_MAP.put("ORANGE", 0xFFA500);
-        COLOR_MAP.put("RED", 0xFF0000);
-        COLOR_MAP.put("DARK_RED", 0x8B0000);
-        COLOR_MAP.put("PURPLE", 0x800080);
-        COLOR_MAP.put("BLACK", 0x404040);
-    }
-
-    // Default opacity for zone overlays (0-100)
-    private static final int DEFAULT_ZONE_OPACITY = 30;
-
     private final long index;
     private final World world;
     private final ConfigManager configManager;
@@ -333,7 +313,7 @@ public class ZoneMapImageBuilder {
                 // Apply zone overlay LAST (on top of everything)
                 DifficultyZone zone = ZoneCalculator.getZoneAtPosition(blockX, blockZ, zoneConfig);
                 if (zone != null && zone.getMultiplier() > 1.0) {
-                    int zoneColor = getColorForZone(zone.getColor());
+                    int zoneColor = getColorForZone(zone);
 
                     // Check if this is a zone border (different zone nearby)
                     int borderThickness = 3; // Border width in blocks
@@ -361,9 +341,9 @@ public class ZoneMapImageBuilder {
         return this;
     }
 
-    private int getColorForZone(String colorName) {
-        Integer color = COLOR_MAP.get(colorName.toUpperCase());
-        return color != null ? color : 0xFFFFFF;
+    private int getColorForZone(DifficultyZone zone) {
+        java.awt.Color color = zone.getParsedColor();
+        return (color.getRed() << 16) | (color.getGreen() << 8) | color.getBlue();
     }
 
     /**

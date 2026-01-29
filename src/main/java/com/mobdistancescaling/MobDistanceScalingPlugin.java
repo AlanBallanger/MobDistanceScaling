@@ -15,6 +15,7 @@ import com.mobdistancescaling.config.ConfigManager;
 import com.mobdistancescaling.map.ZoneWorldMapProvider;
 import com.mobdistancescaling.system.MobDamageScalingSystem;
 import com.mobdistancescaling.system.MobScalingRefSystem;
+import com.mobdistancescaling.system.ZoneTitleTickingSystem;
 
 import javax.annotation.Nullable;
 import java.util.logging.Level;
@@ -49,6 +50,10 @@ public class MobDistanceScalingPlugin extends JavaPlugin {
 
             MobDamageScalingSystem mobDamageScalingSystem = new MobDamageScalingSystem();
             this.getEntityStoreRegistry().registerSystem(mobDamageScalingSystem);
+
+            // Register zone notification system
+            ZoneTitleTickingSystem zoneTitleSystem = new ZoneTitleTickingSystem(configManager);
+            this.getEntityStoreRegistry().registerSystem(zoneTitleSystem);
 
             // Setup minimap overlay if enabled
             if (configManager.getZoneConfig().isMinimapEnabled()) {
