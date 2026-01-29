@@ -6,14 +6,19 @@ import java.awt.Color;
 public class DifficultyZone {
     private final int zoneId;
     private final String color;
-    private final double multiplier;
+    private final double healthMultiplier;
+    private final double damageMultiplier;
+    private final double lootMultiplier;
     private final int radiusStart;
     private final String name;
 
-    public DifficultyZone(int zoneId, @Nonnull String color, double multiplier, int radiusStart, @Nonnull String name) {
+    public DifficultyZone(int zoneId, @Nonnull String color, double healthMultiplier, double damageMultiplier,
+                          double lootMultiplier, int radiusStart, @Nonnull String name) {
         this.zoneId = zoneId;
         this.color = color;
-        this.multiplier = multiplier;
+        this.healthMultiplier = healthMultiplier;
+        this.damageMultiplier = damageMultiplier;
+        this.lootMultiplier = lootMultiplier;
         this.radiusStart = radiusStart;
         this.name = name;
     }
@@ -27,8 +32,23 @@ public class DifficultyZone {
         return color;
     }
 
-    public double getMultiplier() {
-        return multiplier;
+    public double getHealthMultiplier() {
+        return healthMultiplier;
+    }
+
+    public double getDamageMultiplier() {
+        return damageMultiplier;
+    }
+
+    public double getLootMultiplier() {
+        return lootMultiplier;
+    }
+
+    /**
+     * Returns the maximum multiplier for map display purposes.
+     */
+    public double getMaxMultiplier() {
+        return Math.max(healthMultiplier, Math.max(damageMultiplier, lootMultiplier));
     }
 
     public int getRadiusStart() {
@@ -125,6 +145,7 @@ public class DifficultyZone {
 
     @Override
     public String toString() {
-        return name + " (x" + multiplier + ", " + radiusStart + "+ blocks, " + color + ")";
+        return name + " (HP x" + healthMultiplier + ", DMG x" + damageMultiplier + ", Loot x" + lootMultiplier +
+                ", " + radiusStart + "+ blocks, " + color + ")";
     }
 }

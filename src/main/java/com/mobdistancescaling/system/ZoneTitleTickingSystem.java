@@ -6,9 +6,12 @@ import com.hypixel.hytale.component.Ref;
 import com.hypixel.hytale.component.Store;
 import com.hypixel.hytale.component.query.Query;
 import com.hypixel.hytale.component.system.tick.EntityTickingSystem;
+import com.hypixel.hytale.protocol.SoundCategory;
 import com.hypixel.hytale.server.core.Message;
+import com.hypixel.hytale.server.core.asset.type.soundevent.config.SoundEvent;
 import com.hypixel.hytale.server.core.entity.entities.Player;
 import com.hypixel.hytale.server.core.universe.PlayerRef;
+import com.hypixel.hytale.server.core.universe.world.SoundUtil;
 import com.hypixel.hytale.server.core.universe.world.storage.EntityStore;
 import com.hypixel.hytale.server.core.util.EventTitleUtil;
 import com.mobdistancescaling.config.ConfigManager;
@@ -98,6 +101,17 @@ public class ZoneTitleTickingSystem extends EntityTickingSystem<EntityStore> {
         float fadeOut = 0.5f;
 
         EventTitleUtil.showEventTitleToPlayer(playerRef, titleMessage, topMessage, false, null, duration, fadeIn, fadeOut);
+
+        // Play zone entry sound if enabled
+        if (config.isZoneSoundEnabled()) {
+            String soundId = config.getZoneSoundId();
+            int soundIndex = SoundEvent.getAssetMap().getIndex(soundId);
+            if (soundIndex != 0) {
+                float volume = config.getZoneSoundVolume();
+                float pitch = config.getZoneSoundPitch();
+                SoundUtil.playSoundEvent2dToPlayer(playerRef, soundIndex, SoundCategory.UI, volume, pitch);
+            }
+        }
     }
 
     public void removePlayer(UUID playerId) {

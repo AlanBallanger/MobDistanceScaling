@@ -312,7 +312,7 @@ public class ZoneMapImageBuilder {
 
                 // Apply zone overlay LAST (on top of everything)
                 DifficultyZone zone = ZoneCalculator.getZoneAtPosition(blockX, blockZ, zoneConfig);
-                if (zone != null && zone.getMultiplier() > 1.0) {
+                if (zone != null && zone.getMaxMultiplier() > 1.0) {
                     int zoneColor = getColorForZone(zone);
 
                     // Check if this is a zone border (different zone nearby)

@@ -75,13 +75,13 @@ public class ConfigManager {
         Toml minimapToml = toml.getTable("minimap");
         boolean minimapEnabled = true;
         int minimapOpacity = 50;
-        String minimapPattern = "STRIPES";
+        String minimapPattern = "SOLID";
         int minimapPatternSize = 4;
 
         if (minimapToml != null) {
             minimapEnabled = minimapToml.getBoolean("enabled", true);
             minimapOpacity = minimapToml.getLong("opacity", 50L).intValue();
-            minimapPattern = minimapToml.getString("pattern", "STRIPES");
+            minimapPattern = minimapToml.getString("pattern", "SOLID");
             minimapPatternSize = minimapToml.getLong("patternSize", 4L).intValue();
         }
 
@@ -90,11 +90,19 @@ public class ConfigManager {
         boolean zoneEnterNotification = true;
         String zoneEnterTopText = "Zone";
         float notificationDuration = 2.0f;
+        boolean zoneSoundEnabled = true;
+        String zoneSoundId = "SFX_Axe_Special_Swing";
+        float zoneSoundVolume = 1.0f;
+        float zoneSoundPitch = 1.0f;
 
         if (notificationToml != null) {
             zoneEnterNotification = notificationToml.getBoolean("zoneEnterEnabled", true);
             zoneEnterTopText = notificationToml.getString("zoneEnterTopText", "Zone");
             notificationDuration = notificationToml.getDouble("duration", 2.0).floatValue();
+            zoneSoundEnabled = notificationToml.getBoolean("soundEnabled", true);
+            zoneSoundId = notificationToml.getString("soundId", "SFX_Axe_Special_Swing");
+            zoneSoundVolume = notificationToml.getDouble("soundVolume", 1.0).floatValue();
+            zoneSoundPitch = notificationToml.getDouble("soundPitch", 1.0).floatValue();
         }
 
         // Parse zones
@@ -105,17 +113,20 @@ public class ConfigManager {
             for (Toml zoneToml : zonesList) {
                 int id = zoneToml.getLong("id", 1L).intValue();
                 String color = zoneToml.getString("color", "WHITE");
-                double multiplier = zoneToml.getDouble("multiplier", 1.0);
+                double healthMultiplier = zoneToml.getDouble("healthMultiplier", 1.0);
+                double damageMultiplier = zoneToml.getDouble("damageMultiplier", 1.0);
+                double lootMultiplier = zoneToml.getDouble("lootMultiplier", 1.0);
                 int radiusStart = zoneToml.getLong("radiusStart", 0L).intValue();
                 String name = zoneToml.getString("name", "Zone " + id);
 
-                zones.add(new DifficultyZone(id, color, multiplier, radiusStart, name));
+                zones.add(new DifficultyZone(id, color, healthMultiplier, damageMultiplier, lootMultiplier, radiusStart, name));
             }
         }
 
         return new ZoneConfig(enabledWorlds, zones, minimapEnabled, minimapOpacity,
                 minimapPattern, minimapPatternSize, zoneEnterNotification,
-                zoneEnterTopText, notificationDuration);
+                zoneEnterTopText, notificationDuration, zoneSoundEnabled,
+                zoneSoundId, zoneSoundVolume, zoneSoundPitch);
     }
 
     @Nonnull
@@ -143,7 +154,7 @@ public class ConfigManager {
         sb.append("# Opacity of zone colors (0-100). Higher = more visible\n");
         sb.append("opacity = ").append(config.getMinimapOpacity()).append("\n\n");
 
-        sb.append("# Pattern options: SOLID, STRIPES, DOTS, CROSSHATCH, GRID, CHECKER\n");
+        sb.append("# Pattern options: SOLID, SOLID, DOTS, CROSSHATCH, GRID, CHECKER\n");
         sb.append("pattern = \"").append(config.getMinimapPattern()).append("\"\n\n");
 
         sb.append("# Pattern spacing (2=dense, 8=sparse). Recommended: 3-6\n");
@@ -162,9 +173,26 @@ public class ConfigManager {
         sb.append("# How long the notification stays on screen (seconds)\n");
         sb.append("duration = ").append(config.getNotificationDuration()).append("\n\n");
 
+        sb.append("# Play a sound when entering a new zone\n");
+        sb.append("soundEnabled = ").append(config.isZoneSoundEnabled()).append("\n\n");
+
+        sb.append("# Sound event ID to play (use WORLD > Play Sound menu in-game to browse sounds)\n");
+        sb.append("# Examples: \"SFX_Axe_Special_Swing\", \"SFX_Attn_VeryQuiet\", \"SFX_Avatar_Powers_Enable\"\n");
+        sb.append("soundId = \"").append(config.getZoneSoundId()).append("\"\n\n");
+
+        sb.append("# Volume modifier (0.0 to 2.0, where 1.0 is normal volume)\n");
+        sb.append("soundVolume = ").append(config.getZoneSoundVolume()).append("\n\n");
+
+        sb.append("# Pitch modifier (0.5 to 2.0, where 1.0 is normal pitch)\n");
+        sb.append("soundPitch = ").append(config.getZoneSoundPitch()).append("\n\n");
+
         sb.append("# ==========================================================\n");
         sb.append("# DIFFICULTY ZONES\n");
-        sb.append("# Each zone scales mob HP and damage by the multiplier\n");
+        sb.append("# Each zone has separate multipliers for HP, damage, and loot\n");
+        sb.append("# \n");
+        sb.append("# healthMultiplier: Mob max HP multiplier (2.0 = double HP)\n");
+        sb.append("# damageMultiplier: Mob damage output multiplier (2.0 = double damage)\n");
+        sb.append("# lootMultiplier: Loot drop multiplier (5.0 = 5x vanilla drops)\n");
         sb.append("# \n");
         sb.append("# Colors can be:\n");
         sb.append("#   - Named: WHITE, GREEN, LIME, YELLOW, GOLD, ORANGE, RED, DARK_RED, PURPLE, BLACK\n");
@@ -176,7 +204,9 @@ public class ConfigManager {
             sb.append("id = ").append(zone.getZoneId()).append("\n");
             sb.append("name = \"").append(zone.getName()).append("\"\n");
             sb.append("color = \"").append(zone.getColor()).append("\"\n");
-            sb.append("multiplier = ").append(zone.getMultiplier()).append("\n");
+            sb.append("healthMultiplier = ").append(zone.getHealthMultiplier()).append("\n");
+            sb.append("damageMultiplier = ").append(zone.getDamageMultiplier()).append("\n");
+            sb.append("lootMultiplier = ").append(zone.getLootMultiplier()).append("\n");
             sb.append("radiusStart = ").append(zone.getRadiusStart()).append("\n\n");
         }
 

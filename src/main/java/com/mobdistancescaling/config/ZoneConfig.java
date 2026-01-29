@@ -16,31 +16,44 @@ public class ZoneConfig {
     private boolean zoneEnterNotification;
     private String zoneEnterTopText;
     private float notificationDuration;
+    private boolean zoneSoundEnabled;
+    private String zoneSoundId;
+    private float zoneSoundVolume;
+    private float zoneSoundPitch;
 
     public ZoneConfig() {
         this.enabledWorlds = new ArrayList<>();
         this.zones = new ArrayList<>();
         this.minimapEnabled = true;
         this.minimapOpacity = 50;
-        this.minimapPattern = "STRIPES";
+        this.minimapPattern = "SOLID";
         this.minimapPatternSize = 4;
         this.zoneEnterNotification = true;
         this.zoneEnterTopText = "Zone";
         this.notificationDuration = 2.0f;
+        this.zoneSoundEnabled = true;
+        this.zoneSoundId = "SFX_Axe_Special_Swing";
+        this.zoneSoundVolume = 1.0f;
+        this.zoneSoundPitch = 1.0f;
     }
 
     public ZoneConfig(@Nonnull List<String> enabledWorlds, @Nonnull List<DifficultyZone> zones,
                       boolean minimapEnabled, int minimapOpacity, String minimapPattern, int minimapPatternSize,
-                      boolean zoneEnterNotification, String zoneEnterTopText, float notificationDuration) {
+                      boolean zoneEnterNotification, String zoneEnterTopText, float notificationDuration,
+                      boolean zoneSoundEnabled, String zoneSoundId, float zoneSoundVolume, float zoneSoundPitch) {
         this.enabledWorlds = new ArrayList<>(enabledWorlds);
         this.zones = new ArrayList<>(zones);
         this.minimapEnabled = minimapEnabled;
         this.minimapOpacity = minimapOpacity;
-        this.minimapPattern = minimapPattern != null ? minimapPattern : "STRIPES";
+        this.minimapPattern = minimapPattern != null ? minimapPattern : "SOLID";
         this.minimapPatternSize = minimapPatternSize > 0 ? minimapPatternSize : 4;
         this.zoneEnterNotification = zoneEnterNotification;
         this.zoneEnterTopText = zoneEnterTopText != null ? zoneEnterTopText : "Zone";
         this.notificationDuration = notificationDuration > 0 ? notificationDuration : 2.0f;
+        this.zoneSoundEnabled = zoneSoundEnabled;
+        this.zoneSoundId = zoneSoundId != null ? zoneSoundId : "SFX_Axe_Special_Swing";
+        this.zoneSoundVolume = zoneSoundVolume > 0 ? zoneSoundVolume : 1.0f;
+        this.zoneSoundPitch = zoneSoundPitch > 0 ? zoneSoundPitch : 1.0f;
     }
 
     @Nonnull
@@ -71,7 +84,7 @@ public class ZoneConfig {
 
     @Nonnull
     public String getMinimapPattern() {
-        return minimapPattern != null ? minimapPattern : "STRIPES";
+        return minimapPattern != null ? minimapPattern : "SOLID";
     }
 
     public int getMinimapPatternSize() {
@@ -91,6 +104,23 @@ public class ZoneConfig {
         return notificationDuration > 0 ? notificationDuration : 2.0f;
     }
 
+    public boolean isZoneSoundEnabled() {
+        return zoneSoundEnabled;
+    }
+
+    @Nonnull
+    public String getZoneSoundId() {
+        return zoneSoundId != null ? zoneSoundId : "SFX_Axe_Special_Swing";
+    }
+
+    public float getZoneSoundVolume() {
+        return zoneSoundVolume > 0 ? zoneSoundVolume : 1.0f;
+    }
+
+    public float getZoneSoundPitch() {
+        return zoneSoundPitch > 0 ? zoneSoundPitch : 1.0f;
+    }
+
     @Nonnull
     public static ZoneConfig createDefault() {
         List<String> worlds = Arrays.asList("default");
@@ -99,22 +129,27 @@ public class ZoneConfig {
         config.enabledWorlds.addAll(worlds);
         config.minimapEnabled = true;
         config.minimapOpacity = 50;
-        config.minimapPattern = "STRIPES";
+        config.minimapPattern = "SOLID";
         config.minimapPatternSize = 4;
         config.zoneEnterNotification = true;
         config.zoneEnterTopText = "Zone";
         config.notificationDuration = 2.0f;
+        config.zoneSoundEnabled = true;
+        config.zoneSoundId = "SFX_Axe_Special_Swing";
+        config.zoneSoundVolume = 1.0f;
+        config.zoneSoundPitch = 1.0f;
 
-        config.addZone(new DifficultyZone(1, "WHITE", 1.0, 0, "Safe Zone"));
-        config.addZone(new DifficultyZone(2, "#55FF55", 1.5, 2000, "Easy"));
-        config.addZone(new DifficultyZone(3, "LIME", 2.0, 4000, "Normal"));
-        config.addZone(new DifficultyZone(4, "YELLOW", 2.5, 6000, "Moderate"));
-        config.addZone(new DifficultyZone(5, "GOLD", 3.0, 8000, "Challenging"));
-        config.addZone(new DifficultyZone(6, "ORANGE", 3.5, 10000, "Hard"));
-        config.addZone(new DifficultyZone(7, "RED", 4.0, 12000, "Very Hard"));
-        config.addZone(new DifficultyZone(8, "#8B0000", 4.5, 14000, "Extreme"));
-        config.addZone(new DifficultyZone(9, "PURPLE", 5.0, 16000, "Nightmare"));
-        config.addZone(new DifficultyZone(10, "#1A1A1A", 5.5, 18000, "Hell"));
+        // Zone constructor: (id, color, healthMultiplier, damageMultiplier, lootMultiplier, radiusStart, name)
+        config.addZone(new DifficultyZone(1, "WHITE", 1.0, 1.0, 1.0, 0, "Safe Zone"));
+        config.addZone(new DifficultyZone(2, "#55FF55", 1.5, 1.25, 1.5, 2000, "Easy"));
+        config.addZone(new DifficultyZone(3, "LIME", 2.0, 1.5, 2.0, 4000, "Normal"));
+        config.addZone(new DifficultyZone(4, "YELLOW", 2.5, 1.75, 2.5, 6000, "Moderate"));
+        config.addZone(new DifficultyZone(5, "GOLD", 3.0, 2.0, 3.0, 8000, "Challenging"));
+        config.addZone(new DifficultyZone(6, "ORANGE", 3.5, 2.25, 3.5, 10000, "Hard"));
+        config.addZone(new DifficultyZone(7, "RED", 4.0, 2.5, 4.0, 12000, "Very Hard"));
+        config.addZone(new DifficultyZone(8, "#8B0000", 4.5, 2.75, 4.5, 14000, "Extreme"));
+        config.addZone(new DifficultyZone(9, "PURPLE", 5.0, 3.0, 5.0, 16000, "Nightmare"));
+        config.addZone(new DifficultyZone(10, "#1A1A1A", 5.5, 3.5, 6.0, 18000, "Hell"));
 
         return config;
     }

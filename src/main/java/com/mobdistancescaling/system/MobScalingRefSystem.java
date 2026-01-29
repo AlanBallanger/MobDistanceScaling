@@ -74,8 +74,15 @@ public class MobScalingRefSystem extends RefSystem<EntityStore> {
         Vector3d pos = transform.getPosition();
         DifficultyZone zone = ZoneCalculator.getZoneAtPosition(pos.getX(), pos.getZ(), configManager.getZoneConfig());
 
-        // No scaling needed for zone 1 (multiplier 1.0) or if zone not found
-        if (zone == null || zone.getMultiplier() == 1.0) {
+        // No scaling needed if zone not found or all multipliers are 1.0
+        if (zone == null) {
+            return;
+        }
+
+        boolean needsScaling = zone.getHealthMultiplier() != 1.0 ||
+                               zone.getDamageMultiplier() != 1.0 ||
+                               zone.getLootMultiplier() != 1.0;
+        if (!needsScaling) {
             return;
         }
 
@@ -90,7 +97,9 @@ public class MobScalingRefSystem extends RefSystem<EntityStore> {
 
     private void applyScaling(@Nonnull Ref<EntityStore> ref, @Nonnull Store<EntityStore> store,
                               @Nonnull CommandBuffer<EntityStore> commandBuffer, @Nonnull DifficultyZone zone) {
-        float multiplier = (float) zone.getMultiplier();
+        float healthMultiplier = (float) zone.getHealthMultiplier();
+        float damageMultiplier = (float) zone.getDamageMultiplier();
+        float lootMultiplier = (float) zone.getLootMultiplier();
 
         // Check if component already exists (safety check)
         MobScalingComponent existing = store.getComponent(ref, MobScalingComponent.getComponentType());
@@ -98,33 +107,32 @@ public class MobScalingRefSystem extends RefSystem<EntityStore> {
             return;
         }
 
-        // Add MobScalingComponent to store multiplier for damage scaling
-        commandBuffer.addComponent(ref, MobScalingComponent.getComponentType(), new MobScalingComponent(multiplier));
+        // Add MobScalingComponent to store all multipliers for damage and loot scaling
+        commandBuffer.addComponent(ref, MobScalingComponent.getComponentType(),
+                new MobScalingComponent(healthMultiplier, damageMultiplier, lootMultiplier));
 
-        // Apply health scaling
-        EntityStatMap statMap = store.getComponent(ref, EntityStatMap.getComponentType());
-        if (statMap == null) {
-            return;
+        // Apply health scaling if needed
+        if (healthMultiplier != 1.0f) {
+            EntityStatMap statMap = store.getComponent(ref, EntityStatMap.getComponentType());
+            if (statMap != null) {
+                int healthIndex = DefaultEntityStatTypes.getHealth();
+                EntityStatValue healthStat = statMap.get(healthIndex);
+                if (healthStat != null) {
+                    float originalMaxHealth = healthStat.getMax();
+
+                    // Apply multiplicative modifier to max health
+                    StaticModifier healthModifier = new StaticModifier(
+                            StaticModifier.ModifierTarget.MAX,
+                            StaticModifier.CalculationType.MULTIPLICATIVE,
+                            healthMultiplier
+                    );
+                    statMap.putModifier(healthIndex, HEALTH_MODIFIER_KEY, healthModifier);
+
+                    // Set current health to new max
+                    float newMaxHealth = originalMaxHealth * healthMultiplier;
+                    statMap.setStatValue(healthIndex, newMaxHealth);
+                }
+            }
         }
-
-        int healthIndex = DefaultEntityStatTypes.getHealth();
-        EntityStatValue healthStat = statMap.get(healthIndex);
-        if (healthStat == null) {
-            return;
-        }
-
-        float originalMaxHealth = healthStat.getMax();
-
-        // Apply multiplicative modifier to max health
-        StaticModifier healthModifier = new StaticModifier(
-                StaticModifier.ModifierTarget.MAX,
-                StaticModifier.CalculationType.MULTIPLICATIVE,
-                multiplier
-        );
-        statMap.putModifier(healthIndex, HEALTH_MODIFIER_KEY, healthModifier);
-
-        // Set current health to new max
-        float newMaxHealth = originalMaxHealth * multiplier;
-        statMap.setStatValue(healthIndex, newMaxHealth);
     }
 }

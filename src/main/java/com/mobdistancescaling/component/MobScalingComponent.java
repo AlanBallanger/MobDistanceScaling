@@ -8,26 +8,38 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 /**
- * Component that stores the damage/health multiplier for a scaled NPC.
- * This is calculated once at spawn based on distance from world origin.
+ * Component that stores the scaling multipliers for a scaled NPC.
+ * These are calculated once at spawn based on distance from world origin.
  */
 public class MobScalingComponent implements Component<EntityStore> {
     private static ComponentType<EntityStore, MobScalingComponent> COMPONENT_TYPE;
 
-    private final float multiplier;
+    private final float healthMultiplier;
+    private final float damageMultiplier;
+    private final float lootMultiplier;
 
-    public MobScalingComponent(float multiplier) {
-        this.multiplier = multiplier;
+    public MobScalingComponent(float healthMultiplier, float damageMultiplier, float lootMultiplier) {
+        this.healthMultiplier = healthMultiplier;
+        this.damageMultiplier = damageMultiplier;
+        this.lootMultiplier = lootMultiplier;
     }
 
-    public float getMultiplier() {
-        return multiplier;
+    public float getHealthMultiplier() {
+        return healthMultiplier;
+    }
+
+    public float getDamageMultiplier() {
+        return damageMultiplier;
+    }
+
+    public float getLootMultiplier() {
+        return lootMultiplier;
     }
 
     @Override
     @Nullable
     public Component<EntityStore> clone() {
-        return new MobScalingComponent(multiplier);
+        return new MobScalingComponent(healthMultiplier, damageMultiplier, lootMultiplier);
     }
 
     @Nonnull

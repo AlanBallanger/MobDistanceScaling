@@ -38,8 +38,8 @@ public class ZoneCalculator {
         return zone != null ? zone.getZoneId() : 0;
     }
 
-    public static double getMultiplierAtPosition(double x, double z, @Nonnull ZoneConfig config) {
+    public static double getMaxMultiplierAtPosition(double x, double z, @Nonnull ZoneConfig config) {
         DifficultyZone zone = getZoneAtPosition(x, z, config);
-        return zone != null ? zone.getMultiplier() : 1.0;
+        return zone != null ? zone.getMaxMultiplier() : 1.0;
     }
 }

@@ -14,6 +14,7 @@ import com.mobdistancescaling.component.MobScalingComponent;
 import com.mobdistancescaling.config.ConfigManager;
 import com.mobdistancescaling.map.ZoneWorldMapProvider;
 import com.mobdistancescaling.system.MobDamageScalingSystem;
+import com.mobdistancescaling.system.MobLootScalingSystem;
 import com.mobdistancescaling.system.MobScalingRefSystem;
 import com.mobdistancescaling.system.ZoneTitleTickingSystem;
 
@@ -36,7 +37,7 @@ public class MobDistanceScalingPlugin extends JavaPlugin {
             // Register custom component type
             ComponentType<EntityStore, MobScalingComponent> mobScalingComponentType =
                     this.getEntityStoreRegistry().registerComponent(MobScalingComponent.class,
-                            () -> new MobScalingComponent(1.0f));
+                            () -> new MobScalingComponent(1.0f, 1.0f, 1.0f));
             MobScalingComponent.setComponentType(mobScalingComponentType);
 
             // Load configuration
@@ -50,6 +51,10 @@ public class MobDistanceScalingPlugin extends JavaPlugin {
 
             MobDamageScalingSystem mobDamageScalingSystem = new MobDamageScalingSystem();
             this.getEntityStoreRegistry().registerSystem(mobDamageScalingSystem);
+
+            // Register loot scaling system (runs after vanilla death drops)
+            MobLootScalingSystem mobLootScalingSystem = new MobLootScalingSystem();
+            this.getEntityStoreRegistry().registerSystem(mobLootScalingSystem);
 
             // Register zone notification system
             ZoneTitleTickingSystem zoneTitleSystem = new ZoneTitleTickingSystem(configManager);

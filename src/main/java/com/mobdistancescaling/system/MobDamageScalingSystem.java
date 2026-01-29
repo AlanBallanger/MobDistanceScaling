@@ -49,9 +49,11 @@ public class MobDamageScalingSystem extends DamageEventSystem {
         }
 
         // Apply damage multiplier
-        float currentDamage = damage.getAmount();
-        float multiplier = scalingComponent.getMultiplier();
-        float newDamage = currentDamage * multiplier;
-        damage.setAmount(newDamage);
+        float damageMultiplier = scalingComponent.getDamageMultiplier();
+        if (damageMultiplier != 1.0f) {
+            float currentDamage = damage.getAmount();
+            float newDamage = currentDamage * damageMultiplier;
+            damage.setAmount(newDamage);
+        }
     }
 }
