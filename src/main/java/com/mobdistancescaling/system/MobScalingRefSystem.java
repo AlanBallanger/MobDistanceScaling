@@ -16,6 +16,7 @@ import com.hypixel.hytale.server.core.modules.entitystats.asset.DefaultEntitySta
 import com.hypixel.hytale.server.core.modules.entitystats.modifier.StaticModifier;
 import com.hypixel.hytale.server.core.universe.world.storage.EntityStore;
 import com.hypixel.hytale.server.npc.entities.NPCEntity;
+import com.mobdistancescaling.component.MobScalingComponent;
 import com.mobdistancescaling.config.ConfigManager;
 import com.mobdistancescaling.config.DifficultyZone;
 import com.mobdistancescaling.util.ZoneCalculator;
@@ -27,6 +28,7 @@ public class MobScalingRefSystem extends RefSystem<EntityStore> {
     private static final String HEALTH_MODIFIER_KEY = "MobDistanceScaling_Health";
 
     private final ConfigManager configManager;
+    private Query<EntityStore> query;
 
     public MobScalingRefSystem(@Nonnull ConfigManager configManager) {
         this.configManager = configManager;
@@ -35,44 +37,49 @@ public class MobScalingRefSystem extends RefSystem<EntityStore> {
     @Override
     @Nullable
     public Query<EntityStore> getQuery() {
-        return Archetype.empty();
+        // Use empty archetype because NPCEntity.getComponentType() is not available at plugin setup time
+        // We filter for NPCs manually in onEntityAdded()
+        if (query == null) {
+            query = Archetype.empty();
+        }
+        return query;
     }
 
     @Override
     public void onEntityAdded(@Nonnull Ref<EntityStore> ref, @Nonnull AddReason reason,
                               @Nonnull Store<EntityStore> store, @Nonnull CommandBuffer<EntityStore> commandBuffer) {
-
-        System.out.println("========================================");
-        System.out.println("ENTITY ADDED! Reason: " + reason);
-        System.out.println("========================================");
-
+        // Filter for NPCs only
         NPCEntity npcEntity = store.getComponent(ref, NPCEntity.getComponentType());
         if (npcEntity == null) {
-            System.out.println("Not an NPC, skipping");
+            return; // Not an NPC
+        }
+
+        // Only process NPCs that are freshly spawned, not loaded from disk
+        // (loaded NPCs already have their MobScalingComponent from when they were spawned)
+        if (reason != AddReason.SPAWN) {
             return;
         }
 
-        System.out.println("NPC DETECTED!");
+        // Check if scaling is enabled for this world
+        String worldName = store.getExternalData().getWorld().getName();
+        if (!configManager.getZoneConfig().isWorldEnabled(worldName)) {
+            return; // Scaling not enabled for this world
+        }
 
         TransformComponent transform = store.getComponent(ref, TransformComponent.getComponentType());
         if (transform == null) {
-            System.out.println("No TransformComponent, skipping");
             return;
         }
 
         Vector3d pos = transform.getPosition();
         DifficultyZone zone = ZoneCalculator.getZoneAtPosition(pos.getX(), pos.getZ(), configManager.getZoneConfig());
 
-        System.out.println("NPC at (" + pos.getX() + ", " + pos.getY() + ", " + pos.getZ() + ") - Zone: " + (zone != null ? zone.toString() : "null"));
-
+        // No scaling needed for zone 1 (multiplier 1.0) or if zone not found
         if (zone == null || zone.getMultiplier() == 1.0) {
-            System.out.println("Zone multiplier is 1.0 or null, no scaling needed");
             return;
         }
 
-        applyHealthScaling(ref, store, zone);
-
-        System.out.println("Applied scaling for " + zone + " - HP multiplier: " + zone.getMultiplier() + "x");
+        applyScaling(ref, store, commandBuffer, zone);
     }
 
     @Override
@@ -81,38 +88,43 @@ public class MobScalingRefSystem extends RefSystem<EntityStore> {
         // Nothing to do on remove
     }
 
-    private void applyHealthScaling(@Nonnull Ref<EntityStore> ref, @Nonnull Store<EntityStore> store, @Nonnull DifficultyZone zone) {
-        EntityStatMap statMap = store.getComponent(ref, EntityStatMap.getComponentType());
+    private void applyScaling(@Nonnull Ref<EntityStore> ref, @Nonnull Store<EntityStore> store,
+                              @Nonnull CommandBuffer<EntityStore> commandBuffer, @Nonnull DifficultyZone zone) {
+        float multiplier = (float) zone.getMultiplier();
 
+        // Check if component already exists (safety check)
+        MobScalingComponent existing = store.getComponent(ref, MobScalingComponent.getComponentType());
+        if (existing != null) {
+            return;
+        }
+
+        // Add MobScalingComponent to store multiplier for damage scaling
+        commandBuffer.addComponent(ref, MobScalingComponent.getComponentType(), new MobScalingComponent(multiplier));
+
+        // Apply health scaling
+        EntityStatMap statMap = store.getComponent(ref, EntityStatMap.getComponentType());
         if (statMap == null) {
-            System.out.println("WARNING: EntityStatMap not found!");
             return;
         }
 
         int healthIndex = DefaultEntityStatTypes.getHealth();
         EntityStatValue healthStat = statMap.get(healthIndex);
-
         if (healthStat == null) {
-            System.out.println("WARNING: Health stat not found!");
             return;
         }
 
         float originalMaxHealth = healthStat.getMax();
-        float multiplier = (float) zone.getMultiplier();
 
-        System.out.println("Applying health scaling: " + originalMaxHealth + " HP -> " + (originalMaxHealth * multiplier) + " HP (x" + multiplier + ")");
-
+        // Apply multiplicative modifier to max health
         StaticModifier healthModifier = new StaticModifier(
                 StaticModifier.ModifierTarget.MAX,
                 StaticModifier.CalculationType.MULTIPLICATIVE,
                 multiplier
         );
-
         statMap.putModifier(healthIndex, HEALTH_MODIFIER_KEY, healthModifier);
 
+        // Set current health to new max
         float newMaxHealth = originalMaxHealth * multiplier;
         statMap.setStatValue(healthIndex, newMaxHealth);
-
-        System.out.println("Health scaling applied: " + originalMaxHealth + " -> " + newMaxHealth);
     }
 }

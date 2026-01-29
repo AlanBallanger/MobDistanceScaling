@@ -70,6 +70,38 @@ public class ConfigManager {
 
     @Nonnull
     private ZoneConfig parseZoneConfig(@Nonnull JsonObject json) {
+        // Parse enabled worlds
+        List<String> enabledWorlds = new ArrayList<>();
+        JsonArray worldsArray = json.getAsJsonArray("enabledWorlds");
+        if (worldsArray != null) {
+            for (int i = 0; i < worldsArray.size(); i++) {
+                enabledWorlds.add(worldsArray.get(i).getAsString());
+            }
+        } else {
+            // Default to "default" world if not specified
+            enabledWorlds.add("default");
+        }
+
+        // Parse minimap settings
+        boolean minimapEnabled = true;
+        int minimapOpacity = 50;
+        String minimapPattern = "STRIPES";
+        int minimapPatternSize = 4;
+
+        if (json.has("minimapEnabled")) {
+            minimapEnabled = json.get("minimapEnabled").getAsBoolean();
+        }
+        if (json.has("minimapOpacity")) {
+            minimapOpacity = json.get("minimapOpacity").getAsInt();
+        }
+        if (json.has("minimapPattern")) {
+            minimapPattern = json.get("minimapPattern").getAsString();
+        }
+        if (json.has("minimapPatternSize")) {
+            minimapPatternSize = json.get("minimapPatternSize").getAsInt();
+        }
+
+        // Parse zones
         List<DifficultyZone> zones = new ArrayList<>();
         JsonArray zonesArray = json.getAsJsonArray("zones");
 
@@ -85,14 +117,38 @@ public class ConfigManager {
             }
         }
 
-        return new ZoneConfig(zones);
+        return new ZoneConfig(enabledWorlds, zones, minimapEnabled, minimapOpacity, minimapPattern, minimapPatternSize);
     }
 
     @Nonnull
     private JsonObject serializeZoneConfig(@Nonnull ZoneConfig config) {
         JsonObject json = new JsonObject();
-        JsonArray zonesArray = new JsonArray();
 
+        // Serialize enabled worlds
+        json.addProperty("_comment_enabledWorlds", "List of world names where zone scaling is active");
+        JsonArray worldsArray = new JsonArray();
+        for (String world : config.getEnabledWorlds()) {
+            worldsArray.add(world);
+        }
+        json.add("enabledWorlds", worldsArray);
+
+        // Serialize minimap settings with comments
+        json.addProperty("_comment_minimap", "=== MINIMAP OVERLAY SETTINGS ===");
+        json.addProperty("minimapEnabled", config.isMinimapEnabled());
+
+        json.addProperty("_comment_minimapOpacity", "Opacity of zone colors (0-100). Higher = more visible");
+        json.addProperty("minimapOpacity", config.getMinimapOpacity());
+
+        json.addProperty("_comment_minimapPattern", "Pattern options: SOLID, STRIPES, DOTS, CROSSHATCH, GRID, CHECKER");
+        json.addProperty("minimapPattern", config.getMinimapPattern());
+
+        json.addProperty("_comment_minimapPatternSize", "Pattern spacing (2=dense, 8=sparse). Recommended: 3-6");
+        json.addProperty("minimapPatternSize", config.getMinimapPatternSize());
+
+        // Serialize zones with comment
+        json.addProperty("_comment_zones", "=== DIFFICULTY ZONES === Each zone has: id, color, multiplier (HP/damage), radiusStart (distance from 0,0)");
+        json.addProperty("_comment_colors", "Available colors: WHITE, GREEN, LIME, YELLOW, GOLD, ORANGE, RED, DARK_RED, PURPLE, BLACK");
+        JsonArray zonesArray = new JsonArray();
         for (DifficultyZone zone : config.getZones()) {
             JsonObject zoneObj = new JsonObject();
             zoneObj.addProperty("id", zone.getZoneId());

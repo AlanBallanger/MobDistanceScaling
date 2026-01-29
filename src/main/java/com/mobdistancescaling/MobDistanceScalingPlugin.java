@@ -1,60 +1,111 @@
 package com.mobdistancescaling;
 
-import com.mobdistancescaling.config.ConfigManager;
-import com.mobdistancescaling.system.MobScalingRefSystem;
+import com.hypixel.hytale.component.ComponentType;
 import com.hypixel.hytale.logger.HytaleLogger;
 import com.hypixel.hytale.server.core.plugin.JavaPlugin;
 import com.hypixel.hytale.server.core.plugin.JavaPluginInit;
+import com.hypixel.hytale.server.core.universe.Universe;
+import com.hypixel.hytale.server.core.universe.world.World;
+import com.hypixel.hytale.server.core.universe.world.events.AddWorldEvent;
+import com.hypixel.hytale.server.core.universe.world.storage.EntityStore;
+import com.hypixel.hytale.server.core.universe.world.worldmap.provider.IWorldMapProvider;
+import com.mobdistancescaling.command.MdsCommand;
+import com.mobdistancescaling.component.MobScalingComponent;
+import com.mobdistancescaling.config.ConfigManager;
+import com.mobdistancescaling.map.ZoneWorldMapProvider;
+import com.mobdistancescaling.system.MobDamageScalingSystem;
+import com.mobdistancescaling.system.MobScalingRefSystem;
 
+import javax.annotation.Nullable;
 import java.util.logging.Level;
 
 public class MobDistanceScalingPlugin extends JavaPlugin {
     private static final HytaleLogger LOGGER = HytaleLogger.forEnclosingClass();
+    private static ConfigManager staticConfigManager;
     private ConfigManager configManager;
 
     public MobDistanceScalingPlugin(JavaPluginInit init) {
         super(init);
-        System.out.println("========================================");
-        System.out.println("MobDistanceScaling CONSTRUCTOR CALLED!");
-        System.out.println("========================================");
         LOGGER.at(Level.INFO).log("MobDistanceScaling v{0} loaded", this.getManifest().getVersion().toString());
     }
 
     @Override
     protected void setup() {
-        System.out.println("========================================");
-        System.out.println("MobDistanceScaling SETUP CALLED!");
-        System.out.println("========================================");
-
         try {
+            // Register custom component type
+            ComponentType<EntityStore, MobScalingComponent> mobScalingComponentType =
+                    this.getEntityStoreRegistry().registerComponent(MobScalingComponent.class,
+                            () -> new MobScalingComponent(1.0f));
+            MobScalingComponent.setComponentType(mobScalingComponentType);
+
+            // Load configuration
             configManager = new ConfigManager(this.getDataDirectory());
-            System.out.println("ConfigManager created");
-
             configManager.load();
-            System.out.println("Config loaded with " + configManager.getZoneConfig().getZones().size() + " zones");
+            staticConfigManager = configManager;
 
+            // Register systems
             MobScalingRefSystem mobScalingRefSystem = new MobScalingRefSystem(configManager);
-            System.out.println("MobScalingRefSystem created");
-
             this.getEntityStoreRegistry().registerSystem(mobScalingRefSystem);
-            System.out.println("MobScalingRefSystem registered in EntityStore");
+
+            MobDamageScalingSystem mobDamageScalingSystem = new MobDamageScalingSystem();
+            this.getEntityStoreRegistry().registerSystem(mobDamageScalingSystem);
+
+            // Setup minimap overlay if enabled
+            if (configManager.getZoneConfig().isMinimapEnabled()) {
+                setupMinimapProvider();
+            }
+
+            // Register commands
+            this.getCommandRegistry().registerCommand(new MdsCommand(this));
 
             LOGGER.at(Level.INFO).log("MobDistanceScaling initialized with {0} zones",
                     configManager.getZoneConfig().getZones().size());
-
-            System.out.println("========================================");
-            System.out.println("MobDistanceScaling SETUP COMPLETE!");
-            System.out.println("========================================");
         } catch (Exception e) {
-            System.err.println("========================================");
-            System.err.println("ERROR IN SETUP:");
-            e.printStackTrace();
-            System.err.println("========================================");
+            LOGGER.at(Level.SEVERE).log("Failed to initialize MobDistanceScaling", e);
             throw e;
         }
     }
 
+    private void setupMinimapProvider() {
+        // Register the world map provider codec
+        IWorldMapProvider.CODEC.register(ZoneWorldMapProvider.ID, ZoneWorldMapProvider.class, ZoneWorldMapProvider.CODEC);
+
+        // Listen for world creation events to apply the provider
+        this.getEventRegistry().registerGlobal(AddWorldEvent.class, event -> {
+            applyMinimapToWorld(event.getWorld());
+        });
+
+        // Also apply to any worlds that are already loaded
+        for (World world : Universe.get().getWorlds().values()) {
+            applyMinimapToWorld(world);
+        }
+
+        LOGGER.at(Level.INFO).log("Minimap zone overlay enabled");
+    }
+
+    private void applyMinimapToWorld(World world) {
+        // Skip temporary/instance worlds
+        if (world.getWorldConfig().isDeleteOnRemove()) {
+            return;
+        }
+
+        // Check if this world is in our enabled worlds list
+        if (!configManager.getZoneConfig().isWorldEnabled(world.getName())) {
+            LOGGER.at(Level.INFO).log("Minimap not enabled for world: {0}", world.getName());
+            return;
+        }
+
+        // Set our world map provider
+        world.getWorldConfig().setWorldMapProvider(new ZoneWorldMapProvider());
+        LOGGER.at(Level.INFO).log("Set MobDistanceScaling minimap for world: {0}", world.getName());
+    }
+
     public ConfigManager getConfigManager() {
         return configManager;
+    }
+
+    @Nullable
+    public static ConfigManager getStaticConfigManager() {
+        return staticConfigManager;
     }
 }

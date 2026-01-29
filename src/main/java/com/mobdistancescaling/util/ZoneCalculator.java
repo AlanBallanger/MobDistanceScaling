@@ -5,6 +5,7 @@ import com.mobdistancescaling.config.ZoneConfig;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.util.List;
 
 public class ZoneCalculator {
 
@@ -12,12 +13,16 @@ public class ZoneCalculator {
     public static DifficultyZone getZoneAtPosition(double x, double z, @Nonnull ZoneConfig config) {
         double distance = calculate2DDistance(x, z);
 
+        // Find the zone with the highest radiusStart that is <= distance
         DifficultyZone currentZone = null;
-        for (DifficultyZone zone : config.getZones()) {
+        List<DifficultyZone> zones = config.getZones();
+
+        for (DifficultyZone zone : zones) {
             if (distance >= zone.getRadiusStart()) {
-                currentZone = zone;
-            } else {
-                break;
+                // Keep updating to get the zone with highest radiusStart <= distance
+                if (currentZone == null || zone.getRadiusStart() > currentZone.getRadiusStart()) {
+                    currentZone = zone;
+                }
             }
         }
 
