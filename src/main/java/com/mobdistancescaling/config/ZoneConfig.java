@@ -20,6 +20,11 @@ public class ZoneConfig {
     private String zoneSoundId;
     private float zoneSoundVolume;
     private float zoneSoundPitch;
+    private boolean zoneHudEnabled;
+    private String hudLabelHealth;
+    private String hudLabelDamage;
+    private String hudLabelLoot;
+    private String hudLabelMultipliers;
 
     public ZoneConfig() {
         this.enabledWorlds = new ArrayList<>();
@@ -35,12 +40,19 @@ public class ZoneConfig {
         this.zoneSoundId = "SFX_Axe_Special_Swing";
         this.zoneSoundVolume = 1.0f;
         this.zoneSoundPitch = 1.0f;
+        this.zoneHudEnabled = true;
+        this.hudLabelHealth = "HP";
+        this.hudLabelDamage = "DMG";
+        this.hudLabelLoot = "Loot";
+        this.hudLabelMultipliers = "Multiplicateurs";
     }
 
     public ZoneConfig(@Nonnull List<String> enabledWorlds, @Nonnull List<DifficultyZone> zones,
                       boolean minimapEnabled, int minimapOpacity, String minimapPattern, int minimapPatternSize,
                       boolean zoneEnterNotification, String zoneEnterTopText, float notificationDuration,
-                      boolean zoneSoundEnabled, String zoneSoundId, float zoneSoundVolume, float zoneSoundPitch) {
+                      boolean zoneSoundEnabled, String zoneSoundId, float zoneSoundVolume, float zoneSoundPitch,
+                      boolean zoneHudEnabled, String hudLabelHealth, String hudLabelDamage, 
+                      String hudLabelLoot, String hudLabelMultipliers) {
         this.enabledWorlds = new ArrayList<>(enabledWorlds);
         this.zones = new ArrayList<>(zones);
         this.minimapEnabled = minimapEnabled;
@@ -54,6 +66,11 @@ public class ZoneConfig {
         this.zoneSoundId = zoneSoundId != null ? zoneSoundId : "SFX_Axe_Special_Swing";
         this.zoneSoundVolume = zoneSoundVolume > 0 ? zoneSoundVolume : 1.0f;
         this.zoneSoundPitch = zoneSoundPitch > 0 ? zoneSoundPitch : 1.0f;
+        this.zoneHudEnabled = zoneHudEnabled;
+        this.hudLabelHealth = hudLabelHealth != null ? hudLabelHealth : "HP";
+        this.hudLabelDamage = hudLabelDamage != null ? hudLabelDamage : "DMG";
+        this.hudLabelLoot = hudLabelLoot != null ? hudLabelLoot : "Loot";
+        this.hudLabelMultipliers = hudLabelMultipliers != null ? hudLabelMultipliers : "Multiplicateurs";
     }
 
     @Nonnull
@@ -121,6 +138,46 @@ public class ZoneConfig {
         return zoneSoundPitch > 0 ? zoneSoundPitch : 1.0f;
     }
 
+    public boolean isZoneHudEnabled() {
+        return zoneHudEnabled;
+    }
+
+    @Nonnull
+    public String getHudLabelHealth() {
+        return hudLabelHealth;
+    }
+
+    public void setHudLabelHealth(@Nonnull String hudLabelHealth) {
+        this.hudLabelHealth = hudLabelHealth;
+    }
+
+    @Nonnull
+    public String getHudLabelDamage() {
+        return hudLabelDamage;
+    }
+
+    public void setHudLabelDamage(@Nonnull String hudLabelDamage) {
+        this.hudLabelDamage = hudLabelDamage;
+    }
+
+    @Nonnull
+    public String getHudLabelLoot() {
+        return hudLabelLoot;
+    }
+
+    public void setHudLabelLoot(@Nonnull String hudLabelLoot) {
+        this.hudLabelLoot = hudLabelLoot;
+    }
+
+    @Nonnull
+    public String getHudLabelMultipliers() {
+        return hudLabelMultipliers;
+    }
+
+    public void setHudLabelMultipliers(@Nonnull String hudLabelMultipliers) {
+        this.hudLabelMultipliers = hudLabelMultipliers;
+    }
+
     @Nonnull
     public static ZoneConfig createDefault() {
         List<String> worlds = Arrays.asList("default");
@@ -138,6 +195,11 @@ public class ZoneConfig {
         config.zoneSoundId = "SFX_Axe_Special_Swing";
         config.zoneSoundVolume = 1.0f;
         config.zoneSoundPitch = 1.0f;
+        config.zoneHudEnabled = true;
+        config.hudLabelHealth = "HP";
+        config.hudLabelDamage = "DMG";
+        config.hudLabelLoot = "Loot";
+        config.hudLabelMultipliers = "Multiplicateurs";
 
         // Zone constructor: (id, color, healthMultiplier, damageMultiplier, lootMultiplier, radiusStart, name)
         config.addZone(new DifficultyZone(1, "WHITE", 1.0, 1.0, 1.0, 0, "Safe Zone"));

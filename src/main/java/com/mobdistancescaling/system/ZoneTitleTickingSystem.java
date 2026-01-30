@@ -17,6 +17,7 @@ import com.hypixel.hytale.server.core.util.EventTitleUtil;
 import com.mobdistancescaling.config.ConfigManager;
 import com.mobdistancescaling.config.DifficultyZone;
 import com.mobdistancescaling.config.ZoneConfig;
+import com.mobdistancescaling.hud.ZoneHUDManager;
 import com.mobdistancescaling.util.ZoneCalculator;
 
 import org.checkerframework.checker.nullness.compatqual.NonNullDecl;
@@ -30,9 +31,11 @@ import java.util.concurrent.ConcurrentHashMap;
 public class ZoneTitleTickingSystem extends EntityTickingSystem<EntityStore> {
     private final ConfigManager configManager;
     private final Map<UUID, Integer> playerLastZoneId = new ConcurrentHashMap<>();
+    private final ZoneHUDManager hudManager;
 
     public ZoneTitleTickingSystem(ConfigManager configManager) {
         this.configManager = configManager;
+        this.hudManager = new ZoneHUDManager(configManager.getZoneConfig());
     }
 
     @Override
@@ -76,6 +79,8 @@ public class ZoneTitleTickingSystem extends EntityTickingSystem<EntityStore> {
         if (previousZoneId == null || previousZoneId != currentZoneId) {
             playerLastZoneId.put(playerId, currentZoneId);
 
+            // HUD is now updated automatically by ZoneHUDManager scheduler
+
             // Only show notification if we have a zone (and it's not the first tick)
             if (currentZone != null && previousZoneId != null) {
                 showZoneNotification(playerRef, currentZone, config);
@@ -116,6 +121,7 @@ public class ZoneTitleTickingSystem extends EntityTickingSystem<EntityStore> {
 
     public void removePlayer(UUID playerId) {
         playerLastZoneId.remove(playerId);
+        hudManager.removePlayer(playerId);
     }
 
     @NullableDecl

@@ -94,6 +94,7 @@ public class ConfigManager {
         String zoneSoundId = "SFX_Axe_Special_Swing";
         float zoneSoundVolume = 1.0f;
         float zoneSoundPitch = 1.0f;
+        boolean zoneHudEnabled = true;
 
         if (notificationToml != null) {
             zoneEnterNotification = notificationToml.getBoolean("zoneEnterEnabled", true);
@@ -103,6 +104,7 @@ public class ConfigManager {
             zoneSoundId = notificationToml.getString("soundId", "SFX_Axe_Special_Swing");
             zoneSoundVolume = notificationToml.getDouble("soundVolume", 1.0).floatValue();
             zoneSoundPitch = notificationToml.getDouble("soundPitch", 1.0).floatValue();
+            zoneHudEnabled = notificationToml.getBoolean("hudEnabled", true);
         }
 
         // Parse zones
@@ -123,10 +125,16 @@ public class ConfigManager {
             }
         }
 
+        String hudLabelHealth = toml.getString("hud.labelHealth", "HP");
+        String hudLabelDamage = toml.getString("hud.labelDamage", "DMG");
+        String hudLabelLoot = toml.getString("hud.labelLoot", "Loot");
+        String hudLabelMultipliers = toml.getString("hud.labelMultipliers", "Multiplicateurs");
+
         return new ZoneConfig(enabledWorlds, zones, minimapEnabled, minimapOpacity,
                 minimapPattern, minimapPatternSize, zoneEnterNotification,
                 zoneEnterTopText, notificationDuration, zoneSoundEnabled,
-                zoneSoundId, zoneSoundVolume, zoneSoundPitch);
+                zoneSoundId, zoneSoundVolume, zoneSoundPitch, zoneHudEnabled,
+                hudLabelHealth, hudLabelDamage, hudLabelLoot, hudLabelMultipliers);
     }
 
     @Nonnull
@@ -185,6 +193,15 @@ public class ConfigManager {
 
         sb.append("# Pitch modifier (0.5 to 2.0, where 1.0 is normal pitch)\n");
         sb.append("soundPitch = ").append(config.getZoneSoundPitch()).append("\n\n");
+
+        sb.append("# Show a persistent HUD with current zone info\n");
+        sb.append("hudEnabled = ").append(config.isZoneHudEnabled()).append("\n\n");
+
+        sb.append("# HUD text labels (customizable for translations)\n");
+        sb.append("labelHealth = \"").append(config.getHudLabelHealth()).append("\"\n");
+        sb.append("labelDamage = \"").append(config.getHudLabelDamage()).append("\"\n");
+        sb.append("labelLoot = \"").append(config.getHudLabelLoot()).append("\"\n");
+        sb.append("labelMultipliers = \"").append(config.getHudLabelMultipliers()).append("\"\n\n");
 
         sb.append("# ==========================================================\n");
         sb.append("# DIFFICULTY ZONES\n");

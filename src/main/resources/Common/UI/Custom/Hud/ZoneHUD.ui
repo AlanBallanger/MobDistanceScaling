@@ -1,0 +1,43 @@
+Group {
+  Anchor: (Width: 200, Height: 90, Right: 10, Top: 10);
+  Background: (Color: #00000055);
+  LayoutMode: Top;
+  Padding: (Vertical: 8, Horizontal: 10);
+
+  Label #ZoneName {
+    Text: "Zone Info - 0m";
+    Style: (
+      FontSize: 14,
+      RenderBold: true,
+      TextColor: #FFFFFF
+    );
+    Anchor: (Height: 18);
+  }
+
+  Label #HPMult {
+    Text: "HP: x1.0";
+    Style: (
+      FontSize: 12,
+      TextColor: #FF5555
+    );
+    Anchor: (Height: 16);
+  }
+
+  Label #DMGMult {
+    Text: "DMG: x1.0";
+    Style: (
+      FontSize: 12,
+      TextColor: #FFAA55
+    );
+    Anchor: (Height: 16);
+  }
+
+  Label #LootMult {
+    Text: "Loot: x1.0";
+    Style: (
+      FontSize: 12,
+      TextColor: #55FF55
+    );
+    Anchor: (Height: 16);
+  }
+}
