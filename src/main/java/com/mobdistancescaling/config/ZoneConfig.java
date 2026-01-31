@@ -280,17 +280,17 @@ public class ZoneConfig {
         config.rtpvMessageAvailableZones = "Available zones";
         config.rtpvMessageRandomZone = "random";
 
-        // Zone constructor: (id, color, healthMultiplier, damageMultiplier, lootMultiplier, radiusStart, name)
-        config.addZone(new DifficultyZone(1, "WHITE", 1.0, 1.0, 1.0, 0, "Safe Zone"));
-        config.addZone(new DifficultyZone(2, "#55FF55", 1.5, 1.25, 1.5, 2000, "Easy"));
-        config.addZone(new DifficultyZone(3, "LIME", 2.0, 1.5, 2.0, 4000, "Normal"));
-        config.addZone(new DifficultyZone(4, "YELLOW", 2.5, 1.75, 2.5, 6000, "Moderate"));
-        config.addZone(new DifficultyZone(5, "GOLD", 3.0, 2.0, 3.0, 8000, "Challenging"));
-        config.addZone(new DifficultyZone(6, "ORANGE", 3.5, 2.25, 3.5, 10000, "Hard"));
-        config.addZone(new DifficultyZone(7, "RED", 4.0, 2.5, 4.0, 12000, "Very Hard"));
-        config.addZone(new DifficultyZone(8, "#8B0000", 4.5, 2.75, 4.5, 14000, "Extreme"));
-        config.addZone(new DifficultyZone(9, "PURPLE", 5.0, 3.0, 5.0, 16000, "Nightmare"));
-        config.addZone(new DifficultyZone(10, "#1A1A1A", 5.5, 3.5, 6.0, 18000, "Hell"));
+        // Zone constructor: (id, color, healthMultiplier, damageMultiplier, lootMultiplier, essenceMultiplier, radiusStart, name)
+        config.addZone(new DifficultyZone(1, "WHITE", 1.0, 1.0, 1.0, 1.0, 0, "Safe Zone"));
+        config.addZone(new DifficultyZone(2, "#55FF55", 1.5, 1.25, 1.5, 1.5, 2000, "Easy"));
+        config.addZone(new DifficultyZone(3, "LIME", 2.0, 1.5, 2.0, 2.0, 4000, "Normal"));
+        config.addZone(new DifficultyZone(4, "YELLOW", 2.5, 1.75, 2.5, 2.5, 6000, "Moderate"));
+        config.addZone(new DifficultyZone(5, "GOLD", 3.0, 2.0, 3.0, 3.0, 8000, "Challenging"));
+        config.addZone(new DifficultyZone(6, "ORANGE", 3.5, 2.25, 3.5, 3.5, 10000, "Hard"));
+        config.addZone(new DifficultyZone(7, "RED", 4.0, 2.5, 4.0, 4.0, 12000, "Very Hard"));
+        config.addZone(new DifficultyZone(8, "#8B0000", 4.5, 2.75, 4.5, 4.5, 14000, "Extreme"));
+        config.addZone(new DifficultyZone(9, "PURPLE", 5.0, 3.0, 5.0, 5.0, 16000, "Nightmare"));
+        config.addZone(new DifficultyZone(10, "#1A1A1A", 5.5, 3.5, 6.0, 6.0, 18000, "Hell"));
 
         return config;
     }

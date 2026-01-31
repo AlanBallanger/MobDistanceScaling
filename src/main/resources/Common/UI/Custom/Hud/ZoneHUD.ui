@@ -1,5 +1,5 @@
 Group {
-  Anchor: (Width: 200, Height: 90, Right: 10, Top: 10);
+  Anchor: (Width: 200, Height: 106, Right: 10, Top: 10);
   Background: (Color: #00000055);
   LayoutMode: Top;
   Padding: (Vertical: 8, Horizontal: 10);
@@ -12,6 +12,16 @@ Group {
       TextColor: #FFFFFF
     );
     Anchor: (Height: 18);
+  }
+
+  Label #Essence {
+    Text: "Essence: 0/1000";
+    Style: (
+      FontSize: 12,
+      RenderBold: true,
+      TextColor: #FFFF55
+    );
+    Anchor: (Height: 16);
   }
 
   Label #HPMult {

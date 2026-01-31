@@ -4,8 +4,10 @@ import com.hypixel.hytale.logger.HytaleLogger;
 import com.hypixel.hytale.server.core.entity.entities.player.hud.CustomUIHud;
 import com.hypixel.hytale.server.core.ui.builder.UICommandBuilder;
 import com.hypixel.hytale.server.core.universe.PlayerRef;
+import com.mobdistancescaling.MobDistanceScalingPlugin;
 import com.mobdistancescaling.config.DifficultyZone;
 import com.mobdistancescaling.config.ZoneConfig;
+import com.mobdistancescaling.essence.EssenceManager;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -20,11 +22,13 @@ public class ZoneHUD extends CustomUIHud {
     @Nullable
     private DifficultyZone currentZone;
     private double distanceFromSpawn;
+    private int essence;
 
     public ZoneHUD(@Nonnull PlayerRef playerRef, @Nonnull ZoneConfig zoneConfig) {
         super(playerRef);
         this.zoneConfig = zoneConfig;
         this.distanceFromSpawn = 0.0;
+        this.essence = 0;
     }
 
     @Override
@@ -36,6 +40,7 @@ public class ZoneHUD extends CustomUIHud {
             int distance = (int) Math.round(distanceFromSpawn);
             
             builder.set("#ZoneName.Text", zoneName + " - " + distance + "m");
+            builder.set("#Essence.Text", "Essence: " + essence + "/1000");
             
             if (currentZone != null) {
                 builder.set("#HPMult.Text", zoneConfig.getHudLabelHealth() + ": x" + String.format("%.1f", currentZone.getHealthMultiplier()));
@@ -64,6 +69,16 @@ public class ZoneHUD extends CustomUIHud {
             changed = true;
         }
         
+        // Récupérer l'essence du joueur
+        EssenceManager essenceManager = MobDistanceScalingPlugin.getStaticEssenceManager();
+        if (essenceManager != null) {
+            int currentEssence = essenceManager.getEssence(getPlayerRef().getUuid());
+            if (this.essence != currentEssence) {
+                this.essence = currentEssence;
+                changed = true;
+            }
+        }
+        
         if (changed) {
             UICommandBuilder builder = new UICommandBuilder();
             
@@ -71,6 +86,7 @@ public class ZoneHUD extends CustomUIHud {
             int dist = (int) Math.round(distanceFromSpawn);
             
             builder.set("#ZoneName.Text", zoneName + " - " + dist + "m");
+            builder.set("#Essence.Text", "Essence: " + essence + "/1000");
             
             if (currentZone != null) {
                 builder.set("#HPMult.Text", zoneConfig.getHudLabelHealth() + ": x" + String.format("%.1f", currentZone.getHealthMultiplier()));

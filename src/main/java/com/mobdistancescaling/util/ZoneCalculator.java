@@ -1,5 +1,9 @@
 package com.mobdistancescaling.util;
 
+import com.hypixel.hytale.component.Ref;
+import com.hypixel.hytale.component.Store;
+import com.hypixel.hytale.server.core.modules.entity.component.TransformComponent;
+import com.hypixel.hytale.server.core.universe.world.storage.EntityStore;
 import com.mobdistancescaling.config.DifficultyZone;
 import com.mobdistancescaling.config.ZoneConfig;
 
@@ -27,6 +31,19 @@ public class ZoneCalculator {
         }
 
         return currentZone;
+    }
+
+    @Nullable
+    public static DifficultyZone getCurrentZone(@Nonnull Store<EntityStore> store, @Nonnull Ref<EntityStore> ref, @Nonnull ZoneConfig config) {
+        TransformComponent transform = store.getComponent(ref, TransformComponent.getComponentType());
+        if (transform == null) {
+            return null;
+        }
+        
+        double x = transform.getPosition().getX();
+        double z = transform.getPosition().getZ();
+        
+        return getZoneAtPosition(x, z, config);
     }
 
     public static double calculate2DDistance(double x, double z) {

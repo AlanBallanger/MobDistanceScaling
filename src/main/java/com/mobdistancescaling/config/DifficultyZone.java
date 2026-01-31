@@ -9,16 +9,18 @@ public class DifficultyZone {
     private final double healthMultiplier;
     private final double damageMultiplier;
     private final double lootMultiplier;
+    private final double essenceMultiplier;
     private final int radiusStart;
     private final String name;
 
     public DifficultyZone(int zoneId, @Nonnull String color, double healthMultiplier, double damageMultiplier,
-                          double lootMultiplier, int radiusStart, @Nonnull String name) {
+                          double lootMultiplier, double essenceMultiplier, int radiusStart, @Nonnull String name) {
         this.zoneId = zoneId;
         this.color = color;
         this.healthMultiplier = healthMultiplier;
         this.damageMultiplier = damageMultiplier;
         this.lootMultiplier = lootMultiplier;
+        this.essenceMultiplier = essenceMultiplier;
         this.radiusStart = radiusStart;
         this.name = name;
     }
@@ -42,6 +44,10 @@ public class DifficultyZone {
 
     public double getLootMultiplier() {
         return lootMultiplier;
+    }
+
+    public double getEssenceMultiplier() {
+        return essenceMultiplier;
     }
 
     /**
@@ -146,6 +152,6 @@ public class DifficultyZone {
     @Override
     public String toString() {
         return name + " (HP x" + healthMultiplier + ", DMG x" + damageMultiplier + ", Loot x" + lootMultiplier +
-                ", " + radiusStart + "+ blocks, " + color + ")";
+                ", Essence x" + essenceMultiplier + ", " + radiusStart + "+ blocks, " + color + ")";
     }
 }

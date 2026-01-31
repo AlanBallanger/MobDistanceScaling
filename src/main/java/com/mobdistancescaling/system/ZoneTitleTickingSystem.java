@@ -17,6 +17,7 @@ import com.hypixel.hytale.server.core.util.EventTitleUtil;
 import com.mobdistancescaling.config.ConfigManager;
 import com.mobdistancescaling.config.DifficultyZone;
 import com.mobdistancescaling.config.ZoneConfig;
+import com.mobdistancescaling.essence.EssenceManager;
 import com.mobdistancescaling.hud.ZoneHUDManager;
 import com.mobdistancescaling.util.ZoneCalculator;
 
@@ -30,17 +31,24 @@ import java.util.concurrent.ConcurrentHashMap;
 
 public class ZoneTitleTickingSystem extends EntityTickingSystem<EntityStore> {
     private final ConfigManager configManager;
+    private final EssenceManager essenceManager;
     private final Map<UUID, Integer> playerLastZoneId = new ConcurrentHashMap<>();
     private final ZoneHUDManager hudManager;
 
-    public ZoneTitleTickingSystem(ConfigManager configManager) {
+    public ZoneTitleTickingSystem(ConfigManager configManager, EssenceManager essenceManager) {
         this.configManager = configManager;
+        this.essenceManager = essenceManager;
         this.hudManager = new ZoneHUDManager(configManager.getZoneConfig());
     }
 
     @Override
     public void tick(float deltaTime, int index, @NonNullDecl ArchetypeChunk<EntityStore> archetypeChunk,
                      @NonNullDecl Store<EntityStore> store, @NonNullDecl CommandBuffer<EntityStore> commandBuffer) {
+
+        // Appeler le tick de l'EssenceManager pour les sauvegardes automatiques
+        if (index == 0) { // Une seule fois par tick, pas pour chaque entité
+            essenceManager.tick();
+        }
 
         ZoneConfig config = configManager.getZoneConfig();
 

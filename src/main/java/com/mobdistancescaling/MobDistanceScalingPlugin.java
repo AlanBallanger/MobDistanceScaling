@@ -3,8 +3,10 @@ package com.mobdistancescaling;
 import com.hypixel.hytale.component.ComponentType;
 import com.hypixel.hytale.logger.HytaleLogger;
 import com.hypixel.hytale.server.core.entity.entities.Player;
+import com.hypixel.hytale.server.core.event.events.ecs.BreakBlockEvent;
 import com.hypixel.hytale.server.core.event.events.player.PlayerConnectEvent;
 import com.hypixel.hytale.server.core.event.events.player.PlayerDisconnectEvent;
+import com.hypixel.hytale.server.core.modules.entity.damage.event.KillFeedEvent;
 import com.hypixel.hytale.server.core.plugin.JavaPlugin;
 import com.hypixel.hytale.server.core.plugin.JavaPluginInit;
 import com.hypixel.hytale.server.core.universe.PlayerRef;
@@ -16,6 +18,7 @@ import com.hypixel.hytale.server.core.universe.world.worldmap.provider.IWorldMap
 import com.mobdistancescaling.command.MdsCommand;
 import com.mobdistancescaling.component.MobScalingComponent;
 import com.mobdistancescaling.config.ConfigManager;
+import com.mobdistancescaling.essence.EssenceManager;
 import com.mobdistancescaling.hud.ZoneHUDManager;
 import com.mobdistancescaling.map.ZoneWorldMapProvider;
 import com.mobdistancescaling.system.MobDamageScalingSystem;
@@ -29,7 +32,9 @@ import java.util.logging.Level;
 public class MobDistanceScalingPlugin extends JavaPlugin {
     private static final HytaleLogger LOGGER = HytaleLogger.forEnclosingClass();
     private static ConfigManager staticConfigManager;
+    private static EssenceManager staticEssenceManager;
     private ConfigManager configManager;
+    private EssenceManager essenceManager;
     private ZoneHUDManager hudManager;
 
     public MobDistanceScalingPlugin(JavaPluginInit init) {
@@ -49,6 +54,11 @@ public class MobDistanceScalingPlugin extends JavaPlugin {
             configManager.load();
             staticConfigManager = configManager;
 
+            // Initialiser le système d'essence
+            essenceManager = new EssenceManager(this.getDataDirectory().toFile());
+            staticEssenceManager = essenceManager;
+            LOGGER.at(Level.INFO).log("Essence system initialized");
+
             MobScalingRefSystem mobScalingRefSystem = new MobScalingRefSystem(configManager);
             this.getEntityStoreRegistry().registerSystem(mobScalingRefSystem);
 
@@ -58,7 +68,7 @@ public class MobDistanceScalingPlugin extends JavaPlugin {
             MobLootScalingSystem mobLootScalingSystem = new MobLootScalingSystem();
             this.getEntityStoreRegistry().registerSystem(mobLootScalingSystem);
 
-            ZoneTitleTickingSystem zoneTitleSystem = new ZoneTitleTickingSystem(configManager);
+            ZoneTitleTickingSystem zoneTitleSystem = new ZoneTitleTickingSystem(configManager, essenceManager);
             this.getEntityStoreRegistry().registerSystem(zoneTitleSystem);
 
             if (configManager.getZoneConfig().isMinimapEnabled()) {
@@ -80,7 +90,10 @@ public class MobDistanceScalingPlugin extends JavaPlugin {
                 });
 
                 this.getEventRegistry().registerGlobal(PlayerDisconnectEvent.class, event -> {
-                    hudManager.removePlayer(event.getPlayerRef().getUuid());
+                    PlayerRef playerRef = event.getPlayerRef();
+                    hudManager.removePlayer(playerRef.getUuid());
+                    // Sauvegarder l'essence du joueur à la déconnexion
+                    essenceManager.savePlayer(playerRef.getUuid());
                 });
             } else {
                 LOGGER.at(Level.WARNING).log("Zone HUD could not be initialized");
@@ -88,6 +101,7 @@ public class MobDistanceScalingPlugin extends JavaPlugin {
 
             this.getCommandRegistry().registerCommand(new MdsCommand(this));
             this.getCommandRegistry().registerCommand(new com.mobdistancescaling.command.RtpvCommand());
+            this.getCommandRegistry().registerCommand(new com.mobdistancescaling.command.EssenceCommand());
 
             LOGGER.at(Level.INFO).log("MobDistanceScaling initialized with {0} zones",
                     configManager.getZoneConfig().getZones().size());
@@ -98,6 +112,9 @@ public class MobDistanceScalingPlugin extends JavaPlugin {
     }
 
     protected void onDisable() {
+        if (essenceManager != null) {
+            essenceManager.shutdown();
+        }
         if (hudManager != null) {
             hudManager.shutdown();
         }
@@ -144,5 +161,10 @@ public class MobDistanceScalingPlugin extends JavaPlugin {
     @Nullable
     public static ConfigManager getStaticConfigManager() {
         return staticConfigManager;
+    }
+
+    @Nullable
+    public static EssenceManager getStaticEssenceManager() {
+        return staticEssenceManager;
     }
 }

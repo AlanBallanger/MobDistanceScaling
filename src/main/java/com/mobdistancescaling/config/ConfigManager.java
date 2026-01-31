@@ -118,10 +118,11 @@ public class ConfigManager {
                 double healthMultiplier = zoneToml.getDouble("healthMultiplier", 1.0);
                 double damageMultiplier = zoneToml.getDouble("damageMultiplier", 1.0);
                 double lootMultiplier = zoneToml.getDouble("lootMultiplier", 1.0);
+                double essenceMultiplier = zoneToml.getDouble("essenceMultiplier", 1.0);
                 int radiusStart = zoneToml.getLong("radiusStart", 0L).intValue();
                 String name = zoneToml.getString("name", "Zone " + id);
 
-                zones.add(new DifficultyZone(id, color, healthMultiplier, damageMultiplier, lootMultiplier, radiusStart, name));
+                zones.add(new DifficultyZone(id, color, healthMultiplier, damageMultiplier, lootMultiplier, essenceMultiplier, radiusStart, name));
             }
         }
 
