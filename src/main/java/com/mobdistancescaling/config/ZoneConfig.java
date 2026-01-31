@@ -25,6 +25,15 @@ public class ZoneConfig {
     private String hudLabelDamage;
     private String hudLabelLoot;
     private String hudLabelMultipliers;
+    
+    private String rtpvMessageTeleporting;
+    private String rtpvMessageSuccess;
+    private String rtpvMessageNoSafeLocation;
+    private String rtpvMessageError;
+    private String rtpvMessageWorldNotSupported;
+    private String rtpvMessageZoneNotFound;
+    private String rtpvMessageAvailableZones;
+    private String rtpvMessageRandomZone;
 
     public ZoneConfig() {
         this.enabledWorlds = new ArrayList<>();
@@ -45,6 +54,15 @@ public class ZoneConfig {
         this.hudLabelDamage = "DMG";
         this.hudLabelLoot = "Loot";
         this.hudLabelMultipliers = "Multiplicateurs";
+        
+        this.rtpvMessageTeleporting = "Teleporting...";
+        this.rtpvMessageSuccess = "Teleported to zone: {zone} ({x}, {y}, {z})";
+        this.rtpvMessageNoSafeLocation = "Could not find a safe location after {attempts} attempts";
+        this.rtpvMessageError = "Teleportation error";
+        this.rtpvMessageWorldNotSupported = "This world does not support zone teleportation";
+        this.rtpvMessageZoneNotFound = "Zone '{zone}' not found.";
+        this.rtpvMessageAvailableZones = "Available zones";
+        this.rtpvMessageRandomZone = "random";
     }
 
     public ZoneConfig(@Nonnull List<String> enabledWorlds, @Nonnull List<DifficultyZone> zones,
@@ -52,7 +70,10 @@ public class ZoneConfig {
                       boolean zoneEnterNotification, String zoneEnterTopText, float notificationDuration,
                       boolean zoneSoundEnabled, String zoneSoundId, float zoneSoundVolume, float zoneSoundPitch,
                       boolean zoneHudEnabled, String hudLabelHealth, String hudLabelDamage, 
-                      String hudLabelLoot, String hudLabelMultipliers) {
+                      String hudLabelLoot, String hudLabelMultipliers,
+                      String rtpvMessageTeleporting, String rtpvMessageSuccess, String rtpvMessageNoSafeLocation,
+                      String rtpvMessageError, String rtpvMessageWorldNotSupported, String rtpvMessageZoneNotFound,
+                      String rtpvMessageAvailableZones, String rtpvMessageRandomZone) {
         this.enabledWorlds = new ArrayList<>(enabledWorlds);
         this.zones = new ArrayList<>(zones);
         this.minimapEnabled = minimapEnabled;
@@ -71,6 +92,15 @@ public class ZoneConfig {
         this.hudLabelDamage = hudLabelDamage != null ? hudLabelDamage : "DMG";
         this.hudLabelLoot = hudLabelLoot != null ? hudLabelLoot : "Loot";
         this.hudLabelMultipliers = hudLabelMultipliers != null ? hudLabelMultipliers : "Multiplicateurs";
+        
+        this.rtpvMessageTeleporting = rtpvMessageTeleporting != null ? rtpvMessageTeleporting : "Teleporting...";
+        this.rtpvMessageSuccess = rtpvMessageSuccess != null ? rtpvMessageSuccess : "Teleported to zone: {zone} ({x}, {y}, {z})";
+        this.rtpvMessageNoSafeLocation = rtpvMessageNoSafeLocation != null ? rtpvMessageNoSafeLocation : "Could not find a safe location after {attempts} attempts";
+        this.rtpvMessageError = rtpvMessageError != null ? rtpvMessageError : "Teleportation error";
+        this.rtpvMessageWorldNotSupported = rtpvMessageWorldNotSupported != null ? rtpvMessageWorldNotSupported : "This world does not support zone teleportation";
+        this.rtpvMessageZoneNotFound = rtpvMessageZoneNotFound != null ? rtpvMessageZoneNotFound : "Zone '{zone}' not found.";
+        this.rtpvMessageAvailableZones = rtpvMessageAvailableZones != null ? rtpvMessageAvailableZones : "Available zones";
+        this.rtpvMessageRandomZone = rtpvMessageRandomZone != null ? rtpvMessageRandomZone : "random";
     }
 
     @Nonnull
@@ -177,6 +207,46 @@ public class ZoneConfig {
     public void setHudLabelMultipliers(@Nonnull String hudLabelMultipliers) {
         this.hudLabelMultipliers = hudLabelMultipliers;
     }
+    
+    @Nonnull
+    public String getRtpvMessageTeleporting() {
+        return rtpvMessageTeleporting;
+    }
+    
+    @Nonnull
+    public String getRtpvMessageSuccess() {
+        return rtpvMessageSuccess;
+    }
+    
+    @Nonnull
+    public String getRtpvMessageNoSafeLocation() {
+        return rtpvMessageNoSafeLocation;
+    }
+    
+    @Nonnull
+    public String getRtpvMessageError() {
+        return rtpvMessageError;
+    }
+    
+    @Nonnull
+    public String getRtpvMessageWorldNotSupported() {
+        return rtpvMessageWorldNotSupported;
+    }
+    
+    @Nonnull
+    public String getRtpvMessageZoneNotFound() {
+        return rtpvMessageZoneNotFound;
+    }
+    
+    @Nonnull
+    public String getRtpvMessageAvailableZones() {
+        return rtpvMessageAvailableZones;
+    }
+    
+    @Nonnull
+    public String getRtpvMessageRandomZone() {
+        return rtpvMessageRandomZone;
+    }
 
     @Nonnull
     public static ZoneConfig createDefault() {
@@ -200,6 +270,15 @@ public class ZoneConfig {
         config.hudLabelDamage = "DMG";
         config.hudLabelLoot = "Loot";
         config.hudLabelMultipliers = "Multiplicateurs";
+        
+        config.rtpvMessageTeleporting = "Teleporting...";
+        config.rtpvMessageSuccess = "Teleported to zone: {zone} ({x}, {y}, {z})";
+        config.rtpvMessageNoSafeLocation = "Could not find a safe location after {attempts} attempts";
+        config.rtpvMessageError = "Teleportation error";
+        config.rtpvMessageWorldNotSupported = "This world does not support zone teleportation";
+        config.rtpvMessageZoneNotFound = "Zone '{zone}' not found.";
+        config.rtpvMessageAvailableZones = "Available zones";
+        config.rtpvMessageRandomZone = "random";
 
         // Zone constructor: (id, color, healthMultiplier, damageMultiplier, lootMultiplier, radiusStart, name)
         config.addZone(new DifficultyZone(1, "WHITE", 1.0, 1.0, 1.0, 0, "Safe Zone"));

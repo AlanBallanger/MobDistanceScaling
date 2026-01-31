@@ -129,12 +129,24 @@ public class ConfigManager {
         String hudLabelDamage = toml.getString("hud.labelDamage", "DMG");
         String hudLabelLoot = toml.getString("hud.labelLoot", "Loot");
         String hudLabelMultipliers = toml.getString("hud.labelMultipliers", "Multiplicateurs");
+        
+        String rtpvMessageTeleporting = toml.getString("rtpv.messageTeleporting", "Teleporting...");
+        String rtpvMessageSuccess = toml.getString("rtpv.messageSuccess", "Teleported to zone: {zone} ({x}, {y}, {z})");
+        String rtpvMessageNoSafeLocation = toml.getString("rtpv.messageNoSafeLocation", "Could not find a safe location after {attempts} attempts");
+        String rtpvMessageError = toml.getString("rtpv.messageError", "Teleportation error");
+        String rtpvMessageWorldNotSupported = toml.getString("rtpv.messageWorldNotSupported", "This world does not support zone teleportation");
+        String rtpvMessageZoneNotFound = toml.getString("rtpv.messageZoneNotFound", "Zone '{zone}' not found.");
+        String rtpvMessageAvailableZones = toml.getString("rtpv.messageAvailableZones", "Available zones");
+        String rtpvMessageRandomZone = toml.getString("rtpv.messageRandomZone", "random");
 
         return new ZoneConfig(enabledWorlds, zones, minimapEnabled, minimapOpacity,
                 minimapPattern, minimapPatternSize, zoneEnterNotification,
                 zoneEnterTopText, notificationDuration, zoneSoundEnabled,
                 zoneSoundId, zoneSoundVolume, zoneSoundPitch, zoneHudEnabled,
-                hudLabelHealth, hudLabelDamage, hudLabelLoot, hudLabelMultipliers);
+                hudLabelHealth, hudLabelDamage, hudLabelLoot, hudLabelMultipliers,
+                rtpvMessageTeleporting, rtpvMessageSuccess, rtpvMessageNoSafeLocation,
+                rtpvMessageError, rtpvMessageWorldNotSupported, rtpvMessageZoneNotFound,
+                rtpvMessageAvailableZones, rtpvMessageRandomZone);
     }
 
     @Nonnull
@@ -198,10 +210,26 @@ public class ConfigManager {
         sb.append("hudEnabled = ").append(config.isZoneHudEnabled()).append("\n\n");
 
         sb.append("# HUD text labels (customizable for translations)\n");
+        sb.append("[hud]\n");
         sb.append("labelHealth = \"").append(config.getHudLabelHealth()).append("\"\n");
         sb.append("labelDamage = \"").append(config.getHudLabelDamage()).append("\"\n");
         sb.append("labelLoot = \"").append(config.getHudLabelLoot()).append("\"\n");
         sb.append("labelMultipliers = \"").append(config.getHudLabelMultipliers()).append("\"\n\n");
+
+        sb.append("# ==========================================================\n");
+        sb.append("# RTPV COMMAND MESSAGES\n");
+        sb.append("# Random teleport to vanilla zones - customizable messages\n");
+        sb.append("# Placeholders: {zone}, {x}, {y}, {z}, {attempts}\n");
+        sb.append("# ==========================================================\n");
+        sb.append("[rtpv]\n");
+        sb.append("messageTeleporting = \"").append(config.getRtpvMessageTeleporting()).append("\"\n");
+        sb.append("messageSuccess = \"").append(config.getRtpvMessageSuccess()).append("\"\n");
+        sb.append("messageNoSafeLocation = \"").append(config.getRtpvMessageNoSafeLocation()).append("\"\n");
+        sb.append("messageError = \"").append(config.getRtpvMessageError()).append("\"\n");
+        sb.append("messageWorldNotSupported = \"").append(config.getRtpvMessageWorldNotSupported()).append("\"\n");
+        sb.append("messageZoneNotFound = \"").append(config.getRtpvMessageZoneNotFound()).append("\"\n");
+        sb.append("messageAvailableZones = \"").append(config.getRtpvMessageAvailableZones()).append("\"\n");
+        sb.append("messageRandomZone = \"").append(config.getRtpvMessageRandomZone()).append("\"\n\n");
 
         sb.append("# ==========================================================\n");
         sb.append("# DIFFICULTY ZONES\n");
