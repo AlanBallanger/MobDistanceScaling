@@ -4,114 +4,66 @@ import com.hypixel.hytale.logger.HytaleLogger;
 
 import javax.annotation.Nonnull;
 import java.io.File;
-import java.util.*;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 
 public class EssenceManager {
     private static final HytaleLogger LOGGER = HytaleLogger.forEnclosingClass();
-    private static final long AUTO_SAVE_INTERVAL_MS = 60000; // 60 secondes
-    
     private final EssenceDatabase database;
-    private final ConcurrentHashMap<UUID, PlayerEssenceData> cache;
-    private long lastAutoSave;
+    private final Map<UUID, Integer> essenceCache = new ConcurrentHashMap<>();
 
-    public EssenceManager(@Nonnull File dataFolder) {
-        this.database = new EssenceDatabase(dataFolder);
-        this.cache = new ConcurrentHashMap<>();
-        this.lastAutoSave = System.currentTimeMillis();
+    public EssenceManager(@Nonnull File pluginFolder) {
+        this.database = new EssenceDatabase(pluginFolder);
+        this.database.initialize();
+    }
+
+    public int getEssence(UUID playerUuid) {
+        return essenceCache.computeIfAbsent(playerUuid, database::getEssence);
+    }
+
+    public void addEssence(UUID playerUuid, String playerName, int amount) {
+        if (amount <= 0) return;
         
-        // Charger toutes les données en mémoire au démarrage
-        loadAll();
-    }
-
-    private void loadAll() {
-        List<PlayerEssenceData> all = database.loadAll();
-        for (PlayerEssenceData data : all) {
-            cache.put(data.getPlayerUuid(), data);
-        }
-        LOGGER.at(Level.INFO).log("Chargé " + all.size() + " joueurs en cache");
-    }
-
-    @Nonnull
-    public PlayerEssenceData getOrCreate(@Nonnull UUID playerUuid) {
-        return cache.computeIfAbsent(playerUuid, uuid -> {
-            PlayerEssenceData data = database.load(uuid);
-            if (data == null) {
-                data = new PlayerEssenceData(uuid, 0);
-            }
-            return data;
-        });
-    }
-
-    public int getEssence(@Nonnull UUID playerUuid) {
-        return getOrCreate(playerUuid).getEssence();
-    }
-
-    public void addEssence(@Nonnull UUID playerUuid, int amount) {
-        PlayerEssenceData data = getOrCreate(playerUuid);
-        data.addEssence(amount);
-    }
-
-    public void setEssence(@Nonnull UUID playerUuid, int amount) {
-        PlayerEssenceData data = getOrCreate(playerUuid);
-        data.setEssence(amount);
-    }
-
-    /**
-     * Sauvegarde automatique périodique - à appeler dans un système de tick
-     */
-    public void tick() {
-        long now = System.currentTimeMillis();
-        if (now - lastAutoSave >= AUTO_SAVE_INTERVAL_MS) {
-            saveAllDirty();
-            lastAutoSave = now;
-        }
-    }
-
-    /**
-     * Sauvegarde toutes les données modifiées
-     */
-    public void saveAllDirty() {
-        List<PlayerEssenceData> dirtyData = new ArrayList<>();
+        int current = getEssence(playerUuid);
+        int newAmount = current + amount;
         
-        for (PlayerEssenceData data : cache.values()) {
-            if (data.isDirty()) {
-                dirtyData.add(data);
-            }
-        }
+        essenceCache.put(playerUuid, newAmount);
+        database.setEssence(playerUuid, playerName, newAmount);
         
-        if (!dirtyData.isEmpty()) {
-            database.saveBatch(dirtyData);
-            LOGGER.at(Level.INFO).log("Sauvegardé " + dirtyData.size() + " joueurs (auto-save)");
-        }
+        LOGGER.at(Level.INFO).log("Player " + playerName + " gained " + amount + " essence (total: " + newAmount + ")");
     }
 
-    /**
-     * Sauvegarde immédiate d'un joueur (au disconnect par exemple)
-     */
-    public void savePlayer(@Nonnull UUID playerUuid) {
-        PlayerEssenceData data = cache.get(playerUuid);
-        if (data != null && data.isDirty()) {
-            database.save(data);
-            LOGGER.at(Level.FINE).log("Sauvegardé joueur: " + playerUuid);
-        }
+    public void setEssence(UUID playerUuid, String playerName, int amount) {
+        essenceCache.put(playerUuid, amount);
+        database.setEssence(playerUuid, playerName, amount);
     }
 
-    /**
-     * Sauvegarde finale avant shutdown
-     */
+    public List<PlayerEssenceData> getTopPlayers(int limit) {
+        return database.getTopPlayers(limit);
+    }
+
+    public int getPlayerRank(UUID playerUuid) {
+        return database.getPlayerRank(playerUuid);
+    }
+
+    public void loadPlayer(UUID playerUuid) {
+        int essence = database.getEssence(playerUuid);
+        essenceCache.put(playerUuid, essence);
+    }
+
+    public void savePlayer(UUID playerUuid) {
+        essenceCache.remove(playerUuid);
+    }
+
+    public void saveAll() {
+        essenceCache.clear();
+    }
+
     public void shutdown() {
-        LOGGER.at(Level.INFO).log("Sauvegarde finale de toutes les données...");
-        saveAllDirty();
+        saveAll();
         database.close();
-    }
-
-    /**
-     * Retire un joueur du cache (optionnel, pour libérer mémoire)
-     */
-    public void unloadPlayer(@Nonnull UUID playerUuid) {
-        savePlayer(playerUuid);
-        cache.remove(playerUuid);
     }
 }

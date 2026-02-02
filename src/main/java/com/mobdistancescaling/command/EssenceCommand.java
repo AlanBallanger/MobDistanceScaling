@@ -2,48 +2,75 @@ package com.mobdistancescaling.command;
 
 import com.hypixel.hytale.server.core.Message;
 import com.hypixel.hytale.server.core.command.system.CommandContext;
-import com.hypixel.hytale.server.core.command.system.arguments.system.OptionalArg;
-import com.hypixel.hytale.server.core.command.system.arguments.types.ArgTypes;
-import com.hypixel.hytale.server.core.command.system.basecommands.AbstractPlayerCommand;
-import com.hypixel.hytale.component.Ref;
-import com.hypixel.hytale.component.Store;
+import com.hypixel.hytale.server.core.command.system.CommandSender;
+import com.hypixel.hytale.server.core.command.system.basecommands.AbstractAsyncCommand;
+import com.hypixel.hytale.server.core.entity.entities.Player;
 import com.hypixel.hytale.server.core.universe.PlayerRef;
-import com.hypixel.hytale.server.core.universe.world.World;
-import com.hypixel.hytale.server.core.universe.world.storage.EntityStore;
-import com.mobdistancescaling.MobDistanceScalingPlugin;
 import com.mobdistancescaling.essence.EssenceManager;
+import com.mobdistancescaling.essence.PlayerEssenceData;
+import org.checkerframework.checker.nullness.compatqual.NonNullDecl;
 
 import javax.annotation.Nonnull;
 import java.awt.Color;
+import java.util.List;
+import java.util.concurrent.CompletableFuture;
 
-public class EssenceCommand extends AbstractPlayerCommand {
-    
-    private final OptionalArg<Integer> amountArg;
+public class EssenceCommand extends AbstractAsyncCommand {
+    private final EssenceManager essenceManager;
 
-    public EssenceCommand() {
-        super("essence", "Give yourself essence. Usage: /essence [amount]");
-        this.amountArg = this.withOptionalArg("amount", "Amount of essence to give (default: 10)", ArgTypes.INTEGER);
+    public EssenceCommand(@Nonnull EssenceManager essenceManager) {
+        super("essence", "Check your essence or view leaderboard");
+        this.essenceManager = essenceManager;
+        this.addSubCommand(new TopSubCommand(essenceManager));
     }
 
+    @NonNullDecl
     @Override
-    protected void execute(@Nonnull CommandContext context, @Nonnull Store<EntityStore> store,
-                          @Nonnull Ref<EntityStore> ref, @Nonnull PlayerRef playerRef, @Nonnull World world) {
+    protected CompletableFuture<Void> executeAsync(CommandContext context) {
+        CommandSender sender = context.sender();
         
-        EssenceManager essenceManager = MobDistanceScalingPlugin.getStaticEssenceManager();
-        if (essenceManager == null) {
-            context.sendMessage(Message.raw("Essence system not initialized").color(Color.RED));
-            return;
+        if (!(sender instanceof Player player)) {
+            context.sendMessage(Message.raw("This command can only be used by players").color(Color.RED));
+            return CompletableFuture.completedFuture(null);
         }
 
-        Integer amount = context.get(amountArg);
-        if (amount == null) {
-            amount = 10;
+        PlayerRef playerRef = player.getPlayerRef();
+        if (playerRef == null) {
+            context.sendMessage(Message.raw("Error: Could not get player reference").color(Color.RED));
+            return CompletableFuture.completedFuture(null);
         }
 
-        int currentEssence = essenceManager.getEssence(playerRef.getUuid());
-        essenceManager.addEssence(playerRef.getUuid(), amount);
-        int newEssence = essenceManager.getEssence(playerRef.getUuid());
+        int essence = essenceManager.getEssence(playerRef.getUuid());
+        int rank = essenceManager.getPlayerRank(playerRef.getUuid());
+        
+        context.sendMessage(Message.raw("Your Essence: " + essence).color(Color.YELLOW));
+        context.sendMessage(Message.raw("Your Rank: #" + rank).color(Color.YELLOW));
+        
+        return CompletableFuture.completedFuture(null);
+    }
 
-        context.sendMessage(Message.raw("Added " + amount + " essence. Total: " + newEssence + "/1000").color(Color.GREEN));
+    public static class TopSubCommand extends AbstractAsyncCommand {
+        private final EssenceManager essenceManager;
+
+        public TopSubCommand(@Nonnull EssenceManager essenceManager) {
+            super("top", "View essence leaderboard");
+            this.essenceManager = essenceManager;
+        }
+
+        @NonNullDecl
+        @Override
+        protected CompletableFuture<Void> executeAsync(CommandContext context) {
+            List<PlayerEssenceData> topPlayers = essenceManager.getTopPlayers(10);
+            
+            context.sendMessage(Message.raw("=== Essence Leaderboard ===").color(Color.ORANGE));
+            
+            for (int i = 0; i < topPlayers.size(); i++) {
+                PlayerEssenceData data = topPlayers.get(i);
+                String position = "#" + (i + 1);
+                context.sendMessage(Message.raw(position + " " + data.name() + " - " + data.essence() + " essence").color(Color.WHITE));
+            }
+            
+            return CompletableFuture.completedFuture(null);
+        }
     }
 }

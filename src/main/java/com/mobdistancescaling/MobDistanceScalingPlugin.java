@@ -15,10 +15,15 @@ import com.hypixel.hytale.server.core.universe.world.World;
 import com.hypixel.hytale.server.core.universe.world.events.AddWorldEvent;
 import com.hypixel.hytale.server.core.universe.world.storage.EntityStore;
 import com.hypixel.hytale.server.core.universe.world.worldmap.provider.IWorldMapProvider;
+import com.mobdistancescaling.command.EssenceCommand;
+import com.mobdistancescaling.command.GiveEssenceCommand;
 import com.mobdistancescaling.command.MdsCommand;
+import com.mobdistancescaling.command.RtpvCommand;
 import com.mobdistancescaling.component.MobScalingComponent;
 import com.mobdistancescaling.config.ConfigManager;
+import com.mobdistancescaling.essence.EssenceKillSystem;
 import com.mobdistancescaling.essence.EssenceManager;
+import com.mobdistancescaling.essence.EssenceMiningSystem;
 import com.mobdistancescaling.hud.ZoneHUDManager;
 import com.mobdistancescaling.map.ZoneWorldMapProvider;
 import com.mobdistancescaling.system.MobDamageScalingSystem;
@@ -68,6 +73,14 @@ public class MobDistanceScalingPlugin extends JavaPlugin {
             MobLootScalingSystem mobLootScalingSystem = new MobLootScalingSystem();
             this.getEntityStoreRegistry().registerSystem(mobLootScalingSystem);
 
+            EssenceKillSystem essenceKillSystem = new EssenceKillSystem(essenceManager, configManager);
+            this.getEntityStoreRegistry().registerSystem(essenceKillSystem);
+            LOGGER.at(Level.INFO).log("Registered EssenceKillSystem");
+            
+            EssenceMiningSystem essenceMiningSystem = new EssenceMiningSystem(essenceManager, configManager);
+            this.getEntityStoreRegistry().registerSystem(essenceMiningSystem);
+            LOGGER.at(Level.INFO).log("Registered EssenceMiningSystem");
+
             ZoneTitleTickingSystem zoneTitleSystem = new ZoneTitleTickingSystem(configManager, essenceManager);
             this.getEntityStoreRegistry().registerSystem(zoneTitleSystem);
 
@@ -82,6 +95,8 @@ public class MobDistanceScalingPlugin extends JavaPlugin {
                 this.getEventRegistry().registerGlobal(PlayerConnectEvent.class, event -> {
                     try {
                         PlayerRef playerRef = event.getPlayerRef();
+                        // Charger l'essence du joueur depuis la base de données
+                        essenceManager.loadPlayer(playerRef.getUuid());
                         hudManager.registerPlayer(playerRef);
                         LOGGER.at(Level.INFO).log("Registered HUD for player: " + playerRef.getUuid());
                     } catch (Exception e) {
@@ -100,8 +115,9 @@ public class MobDistanceScalingPlugin extends JavaPlugin {
             }
 
             this.getCommandRegistry().registerCommand(new MdsCommand(this));
-            this.getCommandRegistry().registerCommand(new com.mobdistancescaling.command.RtpvCommand());
-            this.getCommandRegistry().registerCommand(new com.mobdistancescaling.command.EssenceCommand());
+            this.getCommandRegistry().registerCommand(new RtpvCommand());
+            this.getCommandRegistry().registerCommand(new EssenceCommand(essenceManager));
+            this.getCommandRegistry().registerCommand(new GiveEssenceCommand(essenceManager));
 
             LOGGER.at(Level.INFO).log("MobDistanceScaling initialized with {0} zones",
                     configManager.getZoneConfig().getZones().size());

@@ -45,11 +45,6 @@ public class ZoneTitleTickingSystem extends EntityTickingSystem<EntityStore> {
     public void tick(float deltaTime, int index, @NonNullDecl ArchetypeChunk<EntityStore> archetypeChunk,
                      @NonNullDecl Store<EntityStore> store, @NonNullDecl CommandBuffer<EntityStore> commandBuffer) {
 
-        // Appeler le tick de l'EssenceManager pour les sauvegardes automatiques
-        if (index == 0) { // Une seule fois par tick, pas pour chaque entité
-            essenceManager.tick();
-        }
-
         ZoneConfig config = configManager.getZoneConfig();
 
         // Skip if notifications are disabled
