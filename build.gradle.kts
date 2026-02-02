@@ -17,7 +17,10 @@ repositories {
 dependencies {
     compileOnly(libs.jetbrains.annotations)
     compileOnly(libs.jspecify)
-    implementation("com.google.code.gson:gson:2.10.1")
+    compileOnly(files("libs/MultipleHUD-1.0.4.jar"))
+    runtimeOnly(files("libs/MultipleHUD-1.0.4.jar"))
+    implementation("com.moandjiezana.toml:toml4j:0.7.2")
+    implementation("org.xerial:sqlite-jdbc:3.45.1.0")
 }
 
 hytale {

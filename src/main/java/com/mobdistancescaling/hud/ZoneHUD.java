@@ -34,7 +34,7 @@ public class ZoneHUD extends CustomUIHud {
     @Override
     protected void build(@Nonnull UICommandBuilder builder) {
         try {
-            builder.append("Hud/ZoneHUD.ui");
+            builder.append("HUD/ZoneHUD.ui");
             
             String zoneName = currentZone != null ? "Zone " + currentZone.getName() : "Spawn";
             int distance = (int) Math.round(distanceFromSpawn);
