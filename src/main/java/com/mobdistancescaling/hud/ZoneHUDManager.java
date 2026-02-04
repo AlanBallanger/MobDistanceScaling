@@ -26,13 +26,13 @@ public class ZoneHUDManager {
     private static final HytaleLogger LOGGER = HytaleLogger.forEnclosingClass();
     private static final long UPDATE_INTERVAL_MS = 1000;
     private static final String MULTIPLE_HUD_CLASS = "com.buuz135.mhud.MultipleHUD";
+    private static final String MULTIPLE_CUSTOM_UI_HUD_CLASS = "com.buuz135.mhud.MultipleCustomUIHud";
 
     private final Map<UUID, ZoneHUD> playerHuds = new ConcurrentHashMap<>();
     private final ZoneConfig zoneConfig;
     private ScheduledFuture<?> updateTask;
     private Boolean multipleHudAvailable = null;
-    private Object multipleHudInstance = null;
-    private Method setCustomHudMethod = null;
+    private Method addHudMethod = null;
 
     public ZoneHUDManager(@Nonnull ZoneConfig zoneConfig) {
         this.zoneConfig = zoneConfig;
@@ -91,17 +91,17 @@ public class ZoneHUDManager {
         try {
             Class<?> multipleHudClass = Class.forName(MULTIPLE_HUD_CLASS);
             Method getInstanceMethod = multipleHudClass.getMethod("getInstance");
-            multipleHudInstance = getInstanceMethod.invoke(null);
+            Object multipleHudInstance = getInstanceMethod.invoke(null);
 
             if (multipleHudInstance != null) {
-                setCustomHudMethod = multipleHudClass.getMethod("setCustomHud",
-                        Player.class, PlayerRef.class, String.class, CustomUIHud.class);
+                addHudMethod = multipleHudClass.getMethod("setCustomHud", 
+                    Player.class, PlayerRef.class, String.class, CustomUIHud.class);
                 LOGGER.at(Level.INFO).log("MultipleHUD detected - Zone HUD will use MultipleHUD");
                 multipleHudAvailable = true;
                 return true;
             }
         } catch (Exception e) {
-            LOGGER.at(Level.INFO).log("MultipleHUD not found - using direct HUD API");
+            LOGGER.at(Level.INFO).log("MultipleHUD not found - using direct HUD API: " + e.getMessage());
         }
 
         multipleHudAvailable = false;
@@ -125,15 +125,20 @@ public class ZoneHUDManager {
             if (player != null) {
                 if (checkMultipleHudAvailable()) {
                     try {
-                        setCustomHudMethod.invoke(multipleHudInstance, player, playerRef, "MobDistanceScaling_Zone", hud);
-                        LOGGER.at(Level.INFO).log("HUD registered with MultipleHUD");
+                        Class<?> multipleHudClass = Class.forName(MULTIPLE_HUD_CLASS);
+                        Method getInstanceMethod = multipleHudClass.getMethod("getInstance");
+                        Object multipleHudInstance = getInstanceMethod.invoke(null);
+                        
+                        addHudMethod.invoke(multipleHudInstance, player, playerRef, "MobDistanceScaling_Zone", hud);
+                        LOGGER.at(Level.INFO).log("HUD registered with MultipleHUD for player {0}", playerId);
                     } catch (Exception e) {
                         LOGGER.at(Level.SEVERE).log("Failed to register HUD with MultipleHUD: " + e.getMessage());
+                        e.printStackTrace();
                     }
                 } else {
                     try {
                         player.getHudManager().setCustomHud(playerRef, hud);
-                        LOGGER.at(Level.INFO).log("HUD registered with direct API");
+                        LOGGER.at(Level.INFO).log("HUD registered with direct API for player {0}", playerId);
                     } catch (Exception e) {
                         LOGGER.at(Level.SEVERE).log("Failed to register HUD: " + e.getMessage());
                     }

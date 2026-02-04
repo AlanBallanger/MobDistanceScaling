@@ -21,6 +21,37 @@ dependencies {
     runtimeOnly(files("libs/MultipleHUD-1.0.4.jar"))
     implementation("com.moandjiezana.toml:toml4j:0.7.2")
     implementation("org.xerial:sqlite-jdbc:3.45.1.0")
+    implementation("org.slf4j:slf4j-api:2.0.9")
+    implementation("org.slf4j:slf4j-simple:2.0.9")
+}
+
+val fatJar = tasks.register<Jar>("fatJar") {
+    archiveClassifier.set("")
+    archiveBaseName.set("MobDistanceScaling")
+    archiveVersion.set("0.1.0")
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+    
+    from(sourceSets.main.get().output)
+    
+    // Inclure seulement les dépendances implementation (toml4j, sqlite-jdbc, slf4j)
+    // Exclure compileOnly et runtimeOnly (MultipleHUD, annotations, etc.)
+    val implementationJars = configurations.runtimeClasspath.get()
+        .filter { it.name.contains("toml4j") || it.name.contains("sqlite-jdbc") || it.name.contains("slf4j") }
+    
+    from({
+        implementationJars.map { zipTree(it) }
+    })
+    
+    manifest {
+        attributes["Specification-Title"] = rootProject.name
+        attributes["Specification-Version"] = version
+        attributes["Implementation-Title"] = project.name
+        attributes["Implementation-Version"] = version.toString()
+    }
+}
+
+tasks.named("build") {
+    dependsOn(fatJar)
 }
 
 hytale {

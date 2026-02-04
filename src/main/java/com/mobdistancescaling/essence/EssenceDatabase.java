@@ -20,9 +20,14 @@ public class EssenceDatabase {
 
     public void initialize() {
         try {
+            Class.forName("org.sqlite.JDBC");
+            LOGGER.at(Level.INFO).log("SQLite JDBC driver loaded successfully");
+            
             connection = DriverManager.getConnection("jdbc:sqlite:" + dbFile.getAbsolutePath());
             createTables();
             LOGGER.at(Level.INFO).log("Essence database initialized at: " + dbFile.getAbsolutePath());
+        } catch (ClassNotFoundException e) {
+            LOGGER.at(Level.SEVERE).log("SQLite JDBC driver not found: " + e.getMessage());
         } catch (SQLException e) {
             LOGGER.at(Level.SEVERE).log("Failed to initialize essence database: " + e.getMessage());
         }
