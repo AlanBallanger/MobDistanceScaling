@@ -28,7 +28,7 @@ public class ZoneHUDManager {
     private static final long UPDATE_INTERVAL_MS = 1000;
     private static final String MULTIPLE_HUD_PLUGIN_ID = "Buuz135:MultipleHUD";
     private static final String MULTIPLE_CUSTOM_UI_HUD_CLASS = "com.buuz135.mhud.MultipleCustomUIHud";
-    private static final int MULTIHUD_MAX_ATTEMPTS = 30;
+    private static final int MULTIHUD_MAX_ATTEMPTS = 300;
     private static final long MULTIHUD_RETRY_DELAY_MS = 100;
 
     private final Map<UUID, ZoneHUD> playerHuds = new ConcurrentHashMap<>();
@@ -126,19 +126,29 @@ public class ZoneHUDManager {
                 return;
             }
 
+            if (currentHud == null && attempt >= 20) {
+                LOGGER.at(Level.INFO).log("No custom HUD yet; creating MultipleCustomUIHud for player " + playerRef.getUuid());
+                MultipleHUD.getInstance().setCustomHud(player, playerRef, "MobDistanceScaling_Zone", hud);
+                LOGGER.at(Level.INFO).log("HUD registered with MultipleHUD for player " + playerRef.getUuid());
+                return;
+            }
+
             if (attempt >= MULTIHUD_MAX_ATTEMPTS) {
-                LOGGER.at(Level.WARNING).log("MultipleCustomUIHud not ready after retries for player " + playerRef.getUuid());
-                try {
-                    // Force create MultipleCustomUIHud as last resort
-                    MultipleHUD.getInstance().setCustomHud(player, playerRef, "MobDistanceScaling_Zone", hud);
-                    LOGGER.at(Level.INFO).log("Forced MultipleHUD setCustomHud for player " + playerRef.getUuid());
-                } catch (Exception e) {
-                    LOGGER.at(Level.SEVERE).log("Failed to force MultipleHUD setCustomHud: " + e.getMessage());
-                }
+                String currentHudName = currentHud != null ? currentHud.getClass().getName() : "null";
+                LOGGER.at(Level.WARNING).log(
+                    "MultipleCustomUIHud not ready after retries for player " + playerRef.getUuid()
+                        + " (currentHud=" + currentHudName + ")"
+                );
                 return;
             }
 
             int nextAttempt = attempt + 1;
+            if (nextAttempt % 20 == 0) {
+                String currentHudName = currentHud != null ? currentHud.getClass().getName() : "null";
+                LOGGER.at(Level.INFO).log(
+                    "Waiting for MultipleCustomUIHud... attempt " + nextAttempt + " (currentHud=" + currentHudName + ")"
+                );
+            }
             HytaleServer.SCHEDULED_EXECUTOR.schedule(
                 () -> tryRegisterWithMultipleHud(player, playerRef, hud, nextAttempt),
                 MULTIHUD_RETRY_DELAY_MS,

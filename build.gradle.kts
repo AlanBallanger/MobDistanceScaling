@@ -4,7 +4,7 @@ plugins {
 }
 
 group = "com.example"
-version = "0.1.0"
+version = "0.1.1"
 val javaVersion = 25
 
 repositories {
@@ -28,7 +28,7 @@ dependencies {
 val fatJar = tasks.register<Jar>("fatJar") {
     archiveClassifier.set("")
     archiveBaseName.set("MobDistanceScaling")
-    archiveVersion.set("0.1.0")
+    archiveVersion.set("0.1.1")
     duplicatesStrategy = DuplicatesStrategy.EXCLUDE
     
     from(sourceSets.main.get().output)

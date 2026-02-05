@@ -2,8 +2,6 @@ package com.mobdistancescaling.hud;
 
 import com.hypixel.hytale.logger.HytaleLogger;
 import com.hypixel.hytale.server.core.entity.entities.player.hud.CustomUIHud;
-import com.hypixel.hytale.server.core.ui.Anchor;
-import com.hypixel.hytale.server.core.ui.Value;
 import com.hypixel.hytale.server.core.ui.builder.UICommandBuilder;
 import com.hypixel.hytale.server.core.universe.PlayerRef;
 import com.mobdistancescaling.MobDistanceScalingPlugin;
@@ -46,11 +44,9 @@ public class ZoneHUD extends CustomUIHud {
             builder.set("#ZoneName.Text", zoneName + " - " + distance + "m");
             builder.set("#Essence.Text", "Essence: " + essence + "/1000");
             
-            int barWidth = (int) (200 * Math.min(essence / 1000.0f, 1.0f));
-            Anchor barAnchor = new Anchor();
-            barAnchor.setWidth(Value.of(barWidth));
-            barAnchor.setHeight(Value.of(10));
-            builder.setObject("#EssenceBar.Anchor", barAnchor);
+            float essenceProgress = Math.min(essence / 1000.0f, 1.0f);
+            builder.set("#EssenceBar.Value", essenceProgress);
+            builder.set("#EssenceBarEffect.Value", essenceProgress);
             
             if (currentZone != null) {
                 builder.set("#HPMult.Text", zoneConfig.getHudLabelHealth() + ": x" + String.format("%.1f", currentZone.getHealthMultiplier()));
@@ -103,11 +99,9 @@ public class ZoneHUD extends CustomUIHud {
             builder.set("#ZoneName.Text", zoneName + " - " + dist + "m");
             builder.set("#Essence.Text", "Essence: " + essence + "/1000");
             
-            int barWidth = (int) (200 * Math.min(essence / 1000.0f, 1.0f));
-            Anchor barAnchor = new Anchor();
-            barAnchor.setWidth(Value.of(barWidth));
-            barAnchor.setHeight(Value.of(10));
-            builder.setObject("#EssenceBar.Anchor", barAnchor);
+            float essenceProgress = Math.min(essence / 1000.0f, 1.0f);
+            builder.set("#EssenceBar.Value", essenceProgress);
+            builder.set("#EssenceBarEffect.Value", essenceProgress);
             
             if (currentZone != null) {
                 builder.set("#HPMult.Text", zoneConfig.getHudLabelHealth() + ": x" + String.format("%.1f", currentZone.getHealthMultiplier()));

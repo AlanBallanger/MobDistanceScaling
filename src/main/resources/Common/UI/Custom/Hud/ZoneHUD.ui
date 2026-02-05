@@ -1,15 +1,20 @@
+@EssenceBarFill = "EssenceBarFill.png";
+
 Group {
   LayoutMode: Center;
-  
-  Group #ZoneBar {
-    Anchor: (Width: 600, Height: 52, Top: 40);
-    Background: (Color: #00000088);
-    LayoutMode: Top;
-    Padding: (Vertical: 6, Horizontal: 12);
 
-    Group #InfoRow {
-      Anchor: (Height: 20);
-      LayoutMode: Left;
+  Group #ZoneHudRoot {
+    Anchor: (Width: 600, Top: 40);
+
+    Group #ZoneBar {
+      Anchor: (Width: 600, Height: 36, Left: 0, Top: 0);
+      Background: (Color: #00000088);
+      LayoutMode: Top;
+      Padding: (Vertical: 6, Horizontal: 12);
+
+      Group #InfoRow {
+        Anchor: (Height: 20);
+        LayoutMode: Left;
 
       Label #ZoneName {
         Text: "Zone Info - 0m";
@@ -102,20 +107,26 @@ Group {
         );
         Anchor: (Width: 80);
       }
+      }
+
     }
 
     Group #EssenceBarContainer {
-      Anchor: (Height: 16, Top: 4);
+      Anchor: (Width: 318, Height: 12, Left: 141, Top: 42);
       LayoutMode: Center;
 
-      Group #EssenceBarBackground {
-        Anchor: (Width: 200, Height: 10);
-        Background: (Color: #333333);
-        LayoutMode: Left;
+      Group {
+        Anchor: (Width: 318, Height: 12);
+        Background: "EssenceBarBackground.png";
 
-        Group #EssenceBar {
-          Anchor: (Width: 0, Height: 10);
-          Background: (Color: #FFFF55);
+        ProgressBar #EssenceBar {
+          Anchor: (Width: 318, Height: 12);
+          BarTexturePath: @EssenceBarFill;
+          Visible: true;
+        }
+        ProgressBar #EssenceBarEffect {
+          Anchor: (Width: 318, Height: 12);
+          BarTexturePath: "EssenceBarEffect.png";
         }
       }
     }
