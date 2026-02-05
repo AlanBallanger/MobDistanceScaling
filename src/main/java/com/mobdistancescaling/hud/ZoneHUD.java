@@ -2,6 +2,8 @@ package com.mobdistancescaling.hud;
 
 import com.hypixel.hytale.logger.HytaleLogger;
 import com.hypixel.hytale.server.core.entity.entities.player.hud.CustomUIHud;
+import com.hypixel.hytale.server.core.ui.Anchor;
+import com.hypixel.hytale.server.core.ui.Value;
 import com.hypixel.hytale.server.core.ui.builder.UICommandBuilder;
 import com.hypixel.hytale.server.core.universe.PlayerRef;
 import com.mobdistancescaling.MobDistanceScalingPlugin;
@@ -44,14 +46,7 @@ public class ZoneHUD extends CustomUIHud {
             builder.set("#ZoneName.Text", zoneName + " - " + distance + "m");
             builder.set("#Essence.Text", "Essence: " + essence + "/1000");
             
-            float essenceProgress = (essence + 1000.0f) / 2000.0f;
-            if (essenceProgress < 0.0f) {
-                essenceProgress = 0.0f;
-            } else if (essenceProgress > 1.0f) {
-                essenceProgress = 1.0f;
-            }
-            builder.set("#EssenceBar.Value", essenceProgress);
-            builder.set("#EssenceBarEffect.Value", essenceProgress);
+            updateEssenceBar(builder);
             
             if (currentZone != null) {
                 builder.set("#HPMult.Text", zoneConfig.getHudLabelHealth() + ": x" + String.format("%.1f", currentZone.getHealthMultiplier()));
@@ -104,14 +99,7 @@ public class ZoneHUD extends CustomUIHud {
             builder.set("#ZoneName.Text", zoneName + " - " + dist + "m");
             builder.set("#Essence.Text", "Essence: " + essence + "/1000");
             
-            float essenceProgress = (essence + 1000.0f) / 2000.0f;
-            if (essenceProgress < 0.0f) {
-                essenceProgress = 0.0f;
-            } else if (essenceProgress > 1.0f) {
-                essenceProgress = 1.0f;
-            }
-            builder.set("#EssenceBar.Value", essenceProgress);
-            builder.set("#EssenceBarEffect.Value", essenceProgress);
+            updateEssenceBar(builder);
             
             if (currentZone != null) {
                 builder.set("#HPMult.Text", zoneConfig.getHudLabelHealth() + ": x" + String.format("%.1f", currentZone.getHealthMultiplier()));
@@ -130,5 +118,24 @@ public class ZoneHUD extends CustomUIHud {
     @Nullable
     public DifficultyZone getCurrentZone() {
         return currentZone;
+    }
+
+    private void updateEssenceBar(@Nonnull UICommandBuilder builder) {
+        int halfWidth = 159;
+        int clamped = Math.max(-1000, Math.min(1000, essence));
+        int width = (int) Math.round(Math.abs(clamped) / 1000.0 * halfWidth);
+        int left = clamped >= 0 ? halfWidth : halfWidth - width;
+
+        Anchor fillAnchor = new Anchor();
+        fillAnchor.setLeft(Value.of(left));
+        fillAnchor.setWidth(Value.of(width));
+        fillAnchor.setHeight(Value.of(14));
+        builder.setObject("#EssenceBar.Anchor", fillAnchor);
+
+        Anchor effectAnchor = new Anchor();
+        effectAnchor.setLeft(Value.of(left));
+        effectAnchor.setWidth(Value.of(width));
+        effectAnchor.setHeight(Value.of(12));
+        builder.setObject("#EssenceBarEffect.Anchor", effectAnchor);
     }
 }

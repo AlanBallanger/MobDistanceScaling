@@ -1,0 +1,18 @@
+{
+  "Group": "MobDistanceScaling",
+  "Name": "MobDistanceScaling",
+  "Version": "0.1.2",
+  "Description": "Scale mob difficulty based on distance from spawn",
+  "Authors": [
+    {
+      "Name": "It's you!"
+    }
+  ],
+  "Website": "",
+  "ServerVersion": "*",
+  "Dependencies": {},
+  "OptionalDependencies": {},
+  "DisabledByDefault": false,
+  "IncludesAssetPack": true,
+  "Main": "com.mobdistancescaling.MobDistanceScalingPlugin"
+}
