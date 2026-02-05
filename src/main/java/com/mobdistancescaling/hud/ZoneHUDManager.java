@@ -1,10 +1,14 @@
 package com.mobdistancescaling.hud;
 
 import com.hypixel.hytale.logger.HytaleLogger;
-import com.hypixel.hytale.math.vector.Transform;
+import com.buuz135.mhud.MultipleHUD;
+import com.hypixel.hytale.common.plugin.PluginIdentifier;
 import com.hypixel.hytale.server.core.HytaleServer;
 import com.hypixel.hytale.server.core.entity.entities.Player;
 import com.hypixel.hytale.server.core.entity.entities.player.hud.CustomUIHud;
+import com.hypixel.hytale.math.vector.Transform;
+import com.hypixel.hytale.server.core.plugin.PluginBase;
+import com.hypixel.hytale.server.core.plugin.PluginManager;
 import com.hypixel.hytale.server.core.universe.PlayerRef;
 import com.hypixel.hytale.server.core.universe.Universe;
 import com.mobdistancescaling.config.DifficultyZone;
@@ -12,10 +16,7 @@ import com.mobdistancescaling.config.ZoneConfig;
 import com.mobdistancescaling.util.ZoneCalculator;
 
 import javax.annotation.Nonnull;
-import java.lang.reflect.Method;
-import java.util.HashSet;
 import java.util.Map;
-import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ScheduledFuture;
@@ -25,14 +26,14 @@ import java.util.logging.Level;
 public class ZoneHUDManager {
     private static final HytaleLogger LOGGER = HytaleLogger.forEnclosingClass();
     private static final long UPDATE_INTERVAL_MS = 1000;
-    private static final String MULTIPLE_HUD_CLASS = "com.buuz135.mhud.MultipleHUD";
+    private static final String MULTIPLE_HUD_PLUGIN_ID = "Buuz135:MultipleHUD";
     private static final String MULTIPLE_CUSTOM_UI_HUD_CLASS = "com.buuz135.mhud.MultipleCustomUIHud";
+    private static final int MULTIHUD_MAX_ATTEMPTS = 30;
+    private static final long MULTIHUD_RETRY_DELAY_MS = 100;
 
     private final Map<UUID, ZoneHUD> playerHuds = new ConcurrentHashMap<>();
     private final ZoneConfig zoneConfig;
     private ScheduledFuture<?> updateTask;
-    private Boolean multipleHudAvailable = null;
-    private Method addHudMethod = null;
 
     public ZoneHUDManager(@Nonnull ZoneConfig zoneConfig) {
         this.zoneConfig = zoneConfig;
@@ -83,67 +84,68 @@ public class ZoneHUDManager {
         }
     }
 
-    private boolean checkMultipleHudAvailable() {
-        if (multipleHudAvailable != null) {
-            return multipleHudAvailable;
-        }
-
-        try {
-            Class<?> multipleHudClass = Class.forName(MULTIPLE_HUD_CLASS);
-            Method getInstanceMethod = multipleHudClass.getMethod("getInstance");
-            Object multipleHudInstance = getInstanceMethod.invoke(null);
-
-            if (multipleHudInstance != null) {
-                addHudMethod = multipleHudClass.getMethod("setCustomHud", 
-                    Player.class, PlayerRef.class, String.class, CustomUIHud.class);
-                LOGGER.at(Level.INFO).log("MultipleHUD detected - Zone HUD will use MultipleHUD");
-                multipleHudAvailable = true;
-                return true;
-            }
-        } catch (Exception e) {
-            LOGGER.at(Level.INFO).log("MultipleHUD not found - using direct HUD API: " + e.getMessage());
-        }
-
-        multipleHudAvailable = false;
-        return false;
-    }
 
     public boolean isAvailable() {
         return true;
     }
 
-    public void registerPlayer(@Nonnull PlayerRef playerRef) {
+    public void registerPlayer(@Nonnull Player player, @Nonnull PlayerRef playerRef) {
         UUID playerId = playerRef.getUuid();
         ZoneHUD hud = playerHuds.get(playerId);
 
         if (hud == null) {
-            LOGGER.at(Level.INFO).log("Creating new ZoneHUD for player {0}", playerId);
+            LOGGER.at(Level.INFO).log("Creating new ZoneHUD for player " + playerId);
             hud = new ZoneHUD(playerRef, zoneConfig);
             playerHuds.put(playerId, hud);
 
-            Player player = Universe.get().getPlayer(playerId).getComponent(Player.getComponentType());
-            if (player != null) {
-                if (checkMultipleHudAvailable()) {
-                    try {
-                        Class<?> multipleHudClass = Class.forName(MULTIPLE_HUD_CLASS);
-                        Method getInstanceMethod = multipleHudClass.getMethod("getInstance");
-                        Object multipleHudInstance = getInstanceMethod.invoke(null);
-                        
-                        addHudMethod.invoke(multipleHudInstance, player, playerRef, "MobDistanceScaling_Zone", hud);
-                        LOGGER.at(Level.INFO).log("HUD registered with MultipleHUD for player {0}", playerId);
-                    } catch (Exception e) {
-                        LOGGER.at(Level.SEVERE).log("Failed to register HUD with MultipleHUD: " + e.getMessage());
-                        e.printStackTrace();
-                    }
-                } else {
-                    try {
-                        player.getHudManager().setCustomHud(playerRef, hud);
-                        LOGGER.at(Level.INFO).log("HUD registered with direct API for player {0}", playerId);
-                    } catch (Exception e) {
-                        LOGGER.at(Level.SEVERE).log("Failed to register HUD: " + e.getMessage());
-                    }
-                }
+            tryRegisterWithMultipleHud(player, playerRef, hud, 0);
+        }
+    }
+
+    private void tryRegisterWithMultipleHud(@Nonnull Player player, @Nonnull PlayerRef playerRef, @Nonnull ZoneHUD hud, int attempt) {
+        PluginBase pluginBase = PluginManager.get().getPlugin(PluginIdentifier.fromString(MULTIPLE_HUD_PLUGIN_ID));
+        boolean multipleHudEnabled = pluginBase != null && pluginBase.isEnabled();
+
+        if (!multipleHudEnabled) {
+            try {
+                player.getHudManager().setCustomHud(playerRef, hud);
+                LOGGER.at(Level.INFO).log("HUD registered with direct API for player " + playerRef.getUuid());
+            } catch (Exception e) {
+                LOGGER.at(Level.SEVERE).log("Failed to register HUD with direct API: " + e.getMessage());
             }
+            return;
+        }
+
+        try {
+            CustomUIHud currentHud = player.getHudManager().getCustomHud();
+            if (currentHud != null && MULTIPLE_CUSTOM_UI_HUD_CLASS.equals(currentHud.getClass().getName())) {
+                currentHud.getClass()
+                    .getMethod("add", String.class, CustomUIHud.class)
+                    .invoke(currentHud, "MobDistanceScaling_Zone", hud);
+                LOGGER.at(Level.INFO).log("Added HUD to existing MultipleCustomUIHud for player " + playerRef.getUuid());
+                return;
+            }
+
+            if (attempt >= MULTIHUD_MAX_ATTEMPTS) {
+                LOGGER.at(Level.WARNING).log("MultipleCustomUIHud not ready after retries for player " + playerRef.getUuid());
+                try {
+                    // Force create MultipleCustomUIHud as last resort
+                    MultipleHUD.getInstance().setCustomHud(player, playerRef, "MobDistanceScaling_Zone", hud);
+                    LOGGER.at(Level.INFO).log("Forced MultipleHUD setCustomHud for player " + playerRef.getUuid());
+                } catch (Exception e) {
+                    LOGGER.at(Level.SEVERE).log("Failed to force MultipleHUD setCustomHud: " + e.getMessage());
+                }
+                return;
+            }
+
+            int nextAttempt = attempt + 1;
+            HytaleServer.SCHEDULED_EXECUTOR.schedule(
+                () -> tryRegisterWithMultipleHud(player, playerRef, hud, nextAttempt),
+                MULTIHUD_RETRY_DELAY_MS,
+                TimeUnit.MILLISECONDS
+            );
+        } catch (Exception e) {
+            LOGGER.at(Level.SEVERE).log("Failed to register HUD with MultipleHUD: " + e.getMessage());
         }
     }
 

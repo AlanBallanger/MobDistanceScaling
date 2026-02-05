@@ -4,8 +4,11 @@ import com.hypixel.hytale.component.ComponentType;
 import com.hypixel.hytale.logger.HytaleLogger;
 import com.hypixel.hytale.server.core.entity.entities.Player;
 import com.hypixel.hytale.server.core.event.events.ecs.BreakBlockEvent;
+import com.hypixel.hytale.component.Ref;
+import com.hypixel.hytale.component.Store;
 import com.hypixel.hytale.server.core.event.events.player.PlayerConnectEvent;
 import com.hypixel.hytale.server.core.event.events.player.PlayerDisconnectEvent;
+import com.hypixel.hytale.server.core.event.events.player.PlayerReadyEvent;
 import com.hypixel.hytale.server.core.modules.entity.damage.event.KillFeedEvent;
 import com.hypixel.hytale.server.core.plugin.JavaPlugin;
 import com.hypixel.hytale.server.core.plugin.JavaPluginInit;
@@ -97,11 +100,29 @@ public class MobDistanceScalingPlugin extends JavaPlugin {
                         PlayerRef playerRef = event.getPlayerRef();
                         // Charger l'essence du joueur depuis la base de données
                         essenceManager.loadPlayer(playerRef.getUuid());
-                        hudManager.registerPlayer(playerRef);
-                        LOGGER.at(Level.INFO).log("Registered HUD for player: " + playerRef.getUuid());
                     } catch (Exception e) {
-                        LOGGER.at(Level.WARNING).log("Failed to register HUD for player: " + e.getMessage());
+                        LOGGER.at(Level.WARNING).log("Failed to load player essence: " + e.getMessage());
                     }
+                });
+                
+                this.getEventRegistry().registerGlobal(PlayerReadyEvent.class, event -> {
+                    Player player = event.getPlayer();
+                    Ref ref = event.getPlayerRef();
+                    Store store = ref.getStore();
+                    World world = ((EntityStore)store.getExternalData()).getWorld();
+
+                    world.execute(() -> {
+                        try {
+                            PlayerRef playerRef = (PlayerRef)store.getComponent(ref, PlayerRef.getComponentType());
+                            if (playerRef == null) {
+                                return;
+                            }
+                            hudManager.registerPlayer(player, playerRef);
+                            LOGGER.at(Level.INFO).log("Registered HUD for player: " + playerRef.getUuid());
+                        } catch (Exception e) {
+                            LOGGER.at(Level.WARNING).log("Failed to register HUD for player: " + e.getMessage());
+                        }
+                    });
                 });
 
                 this.getEventRegistry().registerGlobal(PlayerDisconnectEvent.class, event -> {

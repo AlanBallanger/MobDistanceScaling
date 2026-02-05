@@ -1,53 +1,123 @@
 Group {
-  Anchor: (Width: 200, Height: 106, Right: 10, Top: 10);
-  Background: (Color: #00000055);
-  LayoutMode: Top;
-  Padding: (Vertical: 8, Horizontal: 10);
+  LayoutMode: Center;
+  
+  Group #ZoneBar {
+    Anchor: (Width: 600, Height: 52, Top: 40);
+    Background: (Color: #00000088);
+    LayoutMode: Top;
+    Padding: (Vertical: 6, Horizontal: 12);
 
-  Label #ZoneName {
-    Text: "Zone Info - 0m";
-    Style: (
-      FontSize: 14,
-      RenderBold: true,
-      TextColor: #FFFFFF
-    );
-    Anchor: (Height: 18);
-  }
+    Group #InfoRow {
+      Anchor: (Height: 20);
+      LayoutMode: Left;
 
-  Label #Essence {
-    Text: "Essence: 0/1000";
-    Style: (
-      FontSize: 12,
-      RenderBold: true,
-      TextColor: #FFFF55
-    );
-    Anchor: (Height: 16);
-  }
+      Label #ZoneName {
+        Text: "Zone Info - 0m";
+        Style: (
+          FontSize: 13,
+          RenderBold: true,
+          TextColor: #FFFFFF,
+          Alignment: Center
+        );
+        Anchor: (Width: 140);
+      }
 
-  Label #HPMult {
-    Text: "HP: x1.0";
-    Style: (
-      FontSize: 12,
-      TextColor: #FF5555
-    );
-    Anchor: (Height: 16);
-  }
+      Label #Separator1 {
+        Text: "|";
+        Style: (
+          FontSize: 13,
+          TextColor: #666666,
+          Alignment: Center
+        );
+        Anchor: (Width: 20);
+      }
 
-  Label #DMGMult {
-    Text: "DMG: x1.0";
-    Style: (
-      FontSize: 12,
-      TextColor: #FFAA55
-    );
-    Anchor: (Height: 16);
-  }
+      Label #Essence {
+        Text: "Essence: 0/1000";
+        Style: (
+          FontSize: 12,
+          RenderBold: true,
+          TextColor: #FFFF55,
+          Alignment: Center
+        );
+        Anchor: (Width: 130);
+      }
 
-  Label #LootMult {
-    Text: "Loot: x1.0";
-    Style: (
-      FontSize: 12,
-      TextColor: #55FF55
-    );
-    Anchor: (Height: 16);
+      Label #Separator2 {
+        Text: "|";
+        Style: (
+          FontSize: 13,
+          TextColor: #666666,
+          Alignment: Center
+        );
+        Anchor: (Width: 20);
+      }
+
+      Label #HPMult {
+        Text: "HP: x1.0";
+        Style: (
+          FontSize: 12,
+          TextColor: #FF5555,
+          Alignment: Center
+        );
+        Anchor: (Width: 70);
+      }
+
+      Label #Separator3 {
+        Text: "|";
+        Style: (
+          FontSize: 13,
+          TextColor: #666666,
+          Alignment: Center
+        );
+        Anchor: (Width: 20);
+      }
+
+      Label #DMGMult {
+        Text: "DMG: x1.0";
+        Style: (
+          FontSize: 12,
+          TextColor: #FFAA55,
+          Alignment: Center
+        );
+        Anchor: (Width: 80);
+      }
+
+      Label #Separator4 {
+        Text: "|";
+        Style: (
+          FontSize: 13,
+          TextColor: #666666,
+          Alignment: Center
+        );
+        Anchor: (Width: 20);
+      }
+
+      Label #LootMult {
+        Text: "Loot: x1.0";
+        Style: (
+          FontSize: 12,
+          TextColor: #55FF55,
+          Alignment: Center
+        );
+        Anchor: (Width: 80);
+      }
+    }
+
+    Group #EssenceBarContainer {
+      Anchor: (Height: 16, Top: 4);
+      LayoutMode: Center;
+
+      Group #EssenceBarBackground {
+        Anchor: (Width: 200, Height: 10);
+        Background: (Color: #333333);
+        LayoutMode: Left;
+
+        Group #EssenceBar {
+          Anchor: (Width: 0, Height: 10);
+          Background: (Color: #FFFF55);
+        }
+      }
+    }
   }
 }

@@ -2,6 +2,8 @@ package com.mobdistancescaling.hud;
 
 import com.hypixel.hytale.logger.HytaleLogger;
 import com.hypixel.hytale.server.core.entity.entities.player.hud.CustomUIHud;
+import com.hypixel.hytale.server.core.ui.Anchor;
+import com.hypixel.hytale.server.core.ui.Value;
 import com.hypixel.hytale.server.core.ui.builder.UICommandBuilder;
 import com.hypixel.hytale.server.core.universe.PlayerRef;
 import com.mobdistancescaling.MobDistanceScalingPlugin;
@@ -23,12 +25,14 @@ public class ZoneHUD extends CustomUIHud {
     private DifficultyZone currentZone;
     private double distanceFromSpawn;
     private int essence;
+    private boolean built;
 
     public ZoneHUD(@Nonnull PlayerRef playerRef, @Nonnull ZoneConfig zoneConfig) {
         super(playerRef);
         this.zoneConfig = zoneConfig;
         this.distanceFromSpawn = 0.0;
         this.essence = 0;
+        this.built = false;
     }
 
     @Override
@@ -42,6 +46,12 @@ public class ZoneHUD extends CustomUIHud {
             builder.set("#ZoneName.Text", zoneName + " - " + distance + "m");
             builder.set("#Essence.Text", "Essence: " + essence + "/1000");
             
+            int barWidth = (int) (200 * Math.min(essence / 1000.0f, 1.0f));
+            Anchor barAnchor = new Anchor();
+            barAnchor.setWidth(Value.of(barWidth));
+            barAnchor.setHeight(Value.of(10));
+            builder.setObject("#EssenceBar.Anchor", barAnchor);
+            
             if (currentZone != null) {
                 builder.set("#HPMult.Text", zoneConfig.getHudLabelHealth() + ": x" + String.format("%.1f", currentZone.getHealthMultiplier()));
                 builder.set("#DMGMult.Text", zoneConfig.getHudLabelDamage() + ": x" + String.format("%.1f", currentZone.getDamageMultiplier()));
@@ -53,10 +63,15 @@ public class ZoneHUD extends CustomUIHud {
             }
         } catch (Exception e) {
             LOGGER.at(Level.WARNING).log("Failed to build zone HUD: " + e.getMessage());
+            return;
         }
+        built = true;
     }
 
     public void updateZoneInfo(@Nullable DifficultyZone zone, double distance) {
+        if (!built) {
+            return;
+        }
         boolean changed = false;
         
         if (this.currentZone != zone) {
@@ -87,6 +102,12 @@ public class ZoneHUD extends CustomUIHud {
             
             builder.set("#ZoneName.Text", zoneName + " - " + dist + "m");
             builder.set("#Essence.Text", "Essence: " + essence + "/1000");
+            
+            int barWidth = (int) (200 * Math.min(essence / 1000.0f, 1.0f));
+            Anchor barAnchor = new Anchor();
+            barAnchor.setWidth(Value.of(barWidth));
+            barAnchor.setHeight(Value.of(10));
+            builder.setObject("#EssenceBar.Anchor", barAnchor);
             
             if (currentZone != null) {
                 builder.set("#HPMult.Text", zoneConfig.getHudLabelHealth() + ": x" + String.format("%.1f", currentZone.getHealthMultiplier()));
