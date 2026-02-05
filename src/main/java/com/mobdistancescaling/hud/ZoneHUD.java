@@ -44,7 +44,12 @@ public class ZoneHUD extends CustomUIHud {
             builder.set("#ZoneName.Text", zoneName + " - " + distance + "m");
             builder.set("#Essence.Text", "Essence: " + essence + "/1000");
             
-            float essenceProgress = Math.min(essence / 1000.0f, 1.0f);
+            float essenceProgress = (essence + 1000.0f) / 2000.0f;
+            if (essenceProgress < 0.0f) {
+                essenceProgress = 0.0f;
+            } else if (essenceProgress > 1.0f) {
+                essenceProgress = 1.0f;
+            }
             builder.set("#EssenceBar.Value", essenceProgress);
             builder.set("#EssenceBarEffect.Value", essenceProgress);
             
@@ -99,7 +104,12 @@ public class ZoneHUD extends CustomUIHud {
             builder.set("#ZoneName.Text", zoneName + " - " + dist + "m");
             builder.set("#Essence.Text", "Essence: " + essence + "/1000");
             
-            float essenceProgress = Math.min(essence / 1000.0f, 1.0f);
+            float essenceProgress = (essence + 1000.0f) / 2000.0f;
+            if (essenceProgress < 0.0f) {
+                essenceProgress = 0.0f;
+            } else if (essenceProgress > 1.0f) {
+                essenceProgress = 1.0f;
+            }
             builder.set("#EssenceBar.Value", essenceProgress);
             builder.set("#EssenceBarEffect.Value", essenceProgress);
             

@@ -1,4 +1,4 @@
-@EssenceBarFill = "EssenceBarFill.png";
+@EssenceBarFill = "NewEssenceBarFill.png";
 
 Group {
   LayoutMode: Center;
@@ -111,13 +111,13 @@ Group {
 
     }
 
-    Group #EssenceBarContainer {
-      Anchor: (Width: 318, Height: 12, Left: 141, Top: 42);
+    Group #EssenceBarRow {
+      Anchor: (Width: 600, Height: 12, Left: 0, Top: 42);
       LayoutMode: Center;
 
-      Group {
+      Group #EssenceBarContainer {
         Anchor: (Width: 318, Height: 12);
-        Background: "EssenceBarBackground.png";
+        Background: "NewEssenceBarBackground.png";
 
         ProgressBar #EssenceBar {
           Anchor: (Width: 318, Height: 12);
