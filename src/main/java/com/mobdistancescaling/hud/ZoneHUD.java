@@ -121,7 +121,8 @@ public class ZoneHUD extends CustomUIHud {
     }
 
     private void updateEssenceBar(@Nonnull UICommandBuilder builder) {
-        int halfWidth = 159;
+        int totalWidth = 320;
+        int halfWidth = totalWidth / 2;
         int clamped = Math.max(-1000, Math.min(1000, essence));
         int width = (int) Math.round(Math.abs(clamped) / 1000.0 * halfWidth);
         int left = clamped >= 0 ? halfWidth : halfWidth - width;
@@ -137,5 +138,19 @@ public class ZoneHUD extends CustomUIHud {
         effectAnchor.setWidth(Value.of(width));
         effectAnchor.setHeight(Value.of(12));
         builder.setObject("#EssenceBarEffect.Anchor", effectAnchor);
+
+        int labelWidth = 60;
+        int labelLeft = left + width - (labelWidth / 2);
+        if (labelLeft < 0) {
+            labelLeft = 0;
+        } else if (labelLeft > totalWidth - labelWidth) {
+            labelLeft = totalWidth - labelWidth;
+        }
+        Anchor labelAnchor = new Anchor();
+        labelAnchor.setLeft(Value.of(labelLeft));
+        labelAnchor.setWidth(Value.of(labelWidth));
+        labelAnchor.setHeight(Value.of(14));
+        builder.setObject("#EssenceValue.Anchor", labelAnchor);
+        builder.set("#EssenceValue.Text", String.valueOf(clamped));
     }
 }

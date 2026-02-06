@@ -3,6 +3,8 @@ package com.mobdistancescaling.command;
 import com.hypixel.hytale.server.core.Message;
 import com.hypixel.hytale.server.core.command.system.CommandContext;
 import com.hypixel.hytale.server.core.command.system.CommandSender;
+import com.hypixel.hytale.server.core.command.system.arguments.system.OptionalArg;
+import com.hypixel.hytale.server.core.command.system.arguments.types.ArgTypes;
 import com.hypixel.hytale.server.core.command.system.basecommands.AbstractAsyncCommand;
 import com.hypixel.hytale.server.core.entity.entities.Player;
 import com.hypixel.hytale.server.core.universe.PlayerRef;
@@ -15,11 +17,13 @@ import java.util.concurrent.CompletableFuture;
 
 public class GiveEssenceCommand extends AbstractAsyncCommand {
     private final EssenceManager essenceManager;
+    private final OptionalArg<Integer> amountArg;
 
     public GiveEssenceCommand(@Nonnull EssenceManager essenceManager) {
-        super("giveessence", "Give essence to yourself (admin)");
+        super("giveessence", "Give or remove essence (admin)");
         this.essenceManager = essenceManager;
         this.requirePermission("mobdistancescaling.admin");
+        this.amountArg = this.withOptionalArg("amount", "Amount to add (negative to remove)", ArgTypes.INTEGER);
     }
 
     @NonNullDecl
@@ -39,10 +43,20 @@ public class GiveEssenceCommand extends AbstractAsyncCommand {
         }
 
         int amount = 100;
+        if (context.provided(amountArg)) {
+            Integer parsed = context.get(amountArg);
+            if (parsed != null) {
+                amount = parsed;
+            }
+        }
         String playerName = playerRef.getUuid().toString();
         essenceManager.addEssence(playerRef.getUuid(), playerName, amount);
         
-        context.sendMessage(Message.raw("Added " + amount + " essence!").color(Color.GREEN));
+        if (amount >= 0) {
+            context.sendMessage(Message.raw("Added " + amount + " essence!").color(Color.GREEN));
+        } else {
+            context.sendMessage(Message.raw("Removed " + Math.abs(amount) + " essence!").color(Color.RED));
+        }
         context.sendMessage(Message.raw("Total: " + essenceManager.getEssence(playerRef.getUuid())).color(Color.YELLOW));
         
         return CompletableFuture.completedFuture(null);

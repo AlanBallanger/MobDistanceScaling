@@ -4,12 +4,12 @@ Group {
   LayoutMode: Center;
 
   Group #ZoneHudRoot {
-    Anchor: (Width: 610, Top: 36);
+    Anchor: (Width: 600, Top: 36);
     LayoutMode: Top;
 
     Group #ZoneBar {
-      Anchor: (Width: 610, Height: 26, Left: 0, Top: 0);
-      Background: (Color: #00000088);
+      Anchor: (Width: 590, Height: 26, Left: 0, Top: 0);
+      Background: (Color: #202C3C);
       LayoutMode: Center;
       Padding: (Vertical: 0, Horizontal: 12);
 
@@ -60,7 +60,7 @@ Group {
         }
 
         Label #HPMult {
-          Text: "HP: x1.0";
+          Text: "";
           Style: (
             FontSize: 12,
             TextColor: #FF5555,
@@ -80,13 +80,13 @@ Group {
         }
 
         Label #DMGMult {
-          Text: "DMG: x1.0";
+          Text: "";
           Style: (
             FontSize: 12,
             TextColor: #FFAA55,
             Alignment: Center
           );
-          Anchor: (Width: 80, Height: 22);
+          Anchor: (Width: 70, Height: 22);
         }
 
         Label #Separator4 {
@@ -100,32 +100,61 @@ Group {
         }
 
         Label #LootMult {
-          Text: "Loot: x1.0";
+          Text: "";
           Style: (
             FontSize: 12,
             TextColor: #55FF55,
             Alignment: Center
           );
-          Anchor: (Width: 110, Height: 22);
+          Anchor: (Width: 70, Height: 22);
         }
       }
     }
 
-    Group #EssenceBarContainer {
-      Anchor: (Width: 720, Height: 12, Left: 0, Top: 16);
+    Group #EssenceBarHost {
+      Anchor: (Width: 600, Height: 48, Left: 0, Top: 16);
       LayoutMode: Center;
 
-      Group #EssenceBarGroup {
-        Anchor: (Width: 318, Height: 14);
-        Background: "NewEssenceBarBackground.png";
+      Group #EssenceBarWrapper {
+        Anchor: (Width: 374, Height: 48);
 
-        Group #EssenceBar {
-          Anchor: (Width: 0, Height: 14, Left: 159, Top: 0);
-          Background: "NewEssenceBarFill.png";
+        Group #EssenceIconLeft {
+          Anchor: (Width: 18, Height: 18, Left: 5, Top: -5);
+          Background: "NoyauIcone.png";
         }
-        Group #EssenceBarEffect {
-          Anchor: (Width: 0, Height: 12, Left: 159, Top: 1);
-          Background: "NewEssenceBarEffect.png";
+
+        Group #EssenceBarGroup {
+          Anchor: (Width: 320, Height: 48, Left: 27, Top: 0);
+
+          Group #EssenceBarBackground {
+            Anchor: (Width: 320, Height: 14, Left: 0, Top: 0);
+            Background: "NewEssenceBarBackground.png";
+
+            Group #EssenceBar {
+              Anchor: (Width: 0, Height: 14, Left: 160, Top: 0);
+              Background: "NewEssenceBarFill.png";
+            }
+            Group #EssenceBarEffect {
+              Anchor: (Width: 0, Height: 12, Left: 160, Top: 1);
+              Background: "NewEssenceBarEffect.png";
+            }
+          }
+
+          Label #EssenceValue {
+            Text: "0";
+            Style: (
+              FontSize: 11,
+              RenderBold: true,
+              TextColor: #FFFFFF,
+              Alignment: Center
+            );
+            Anchor: (Width: 60, Height: 14, Top: 30);
+          }
+        }
+
+        Group #EssenceIconRight {
+          Anchor: (Width: 18, Height: 18, Left: 355, Top: -5);
+          Background: "FractureIcon.png";
         }
       }
     }

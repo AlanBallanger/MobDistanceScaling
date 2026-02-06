@@ -3,6 +3,8 @@ package com.mobdistancescaling.command;
 import com.hypixel.hytale.server.core.Message;
 import com.hypixel.hytale.server.core.command.system.CommandContext;
 import com.hypixel.hytale.server.core.command.system.CommandSender;
+import com.hypixel.hytale.server.core.command.system.arguments.system.RequiredArg;
+import com.hypixel.hytale.server.core.command.system.arguments.types.ArgTypes;
 import com.hypixel.hytale.server.core.command.system.basecommands.AbstractAsyncCommand;
 import com.hypixel.hytale.server.core.entity.entities.Player;
 import com.hypixel.hytale.server.core.universe.PlayerRef;
@@ -22,6 +24,8 @@ public class EssenceCommand extends AbstractAsyncCommand {
         super("essence", "Check your essence or view leaderboard");
         this.essenceManager = essenceManager;
         this.addSubCommand(new TopSubCommand(essenceManager));
+        this.addSubCommand(new GiveSubCommand(essenceManager));
+        this.addSubCommand(new TakeSubCommand(essenceManager));
     }
 
     @NonNullDecl
@@ -70,6 +74,64 @@ public class EssenceCommand extends AbstractAsyncCommand {
                 context.sendMessage(Message.raw(position + " " + data.name() + " - " + data.essence() + " essence").color(Color.WHITE));
             }
             
+            return CompletableFuture.completedFuture(null);
+        }
+    }
+
+    public static class GiveSubCommand extends AbstractAsyncCommand {
+        private final EssenceManager essenceManager;
+        private final RequiredArg<PlayerRef> playerArg;
+        private final RequiredArg<Integer> amountArg;
+
+        public GiveSubCommand(@Nonnull EssenceManager essenceManager) {
+            super("give", "Give essence to a player");
+            this.essenceManager = essenceManager;
+            this.requirePermission("mobdistancescaling.admin");
+            this.playerArg = this.withRequiredArg("player", "Player name", ArgTypes.PLAYER_REF);
+            this.amountArg = this.withRequiredArg("amount", "Amount to give", ArgTypes.INTEGER);
+        }
+
+        @NonNullDecl
+        @Override
+        protected CompletableFuture<Void> executeAsync(CommandContext context) {
+            PlayerRef target = context.get(playerArg);
+            int amount = context.get(amountArg);
+            if (amount <= 0) {
+                context.sendMessage(Message.raw("Amount must be > 0").color(Color.RED));
+                return CompletableFuture.completedFuture(null);
+            }
+
+            essenceManager.addEssence(target.getUuid(), target.getUsername(), amount);
+            context.sendMessage(Message.raw("Added " + amount + " essence to " + target.getUsername()).color(Color.GREEN));
+            return CompletableFuture.completedFuture(null);
+        }
+    }
+
+    public static class TakeSubCommand extends AbstractAsyncCommand {
+        private final EssenceManager essenceManager;
+        private final RequiredArg<PlayerRef> playerArg;
+        private final RequiredArg<Integer> amountArg;
+
+        public TakeSubCommand(@Nonnull EssenceManager essenceManager) {
+            super("take", "Remove essence from a player");
+            this.essenceManager = essenceManager;
+            this.requirePermission("mobdistancescaling.admin");
+            this.playerArg = this.withRequiredArg("player", "Player name", ArgTypes.PLAYER_REF);
+            this.amountArg = this.withRequiredArg("amount", "Amount to remove", ArgTypes.INTEGER);
+        }
+
+        @NonNullDecl
+        @Override
+        protected CompletableFuture<Void> executeAsync(CommandContext context) {
+            PlayerRef target = context.get(playerArg);
+            int amount = context.get(amountArg);
+            if (amount <= 0) {
+                context.sendMessage(Message.raw("Amount must be > 0").color(Color.RED));
+                return CompletableFuture.completedFuture(null);
+            }
+
+            essenceManager.addEssence(target.getUuid(), target.getUsername(), -amount);
+            context.sendMessage(Message.raw("Removed " + amount + " essence from " + target.getUsername()).color(Color.GREEN));
             return CompletableFuture.completedFuture(null);
         }
     }

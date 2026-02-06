@@ -138,7 +138,6 @@ public class MobDistanceScalingPlugin extends JavaPlugin {
             this.getCommandRegistry().registerCommand(new MdsCommand(this));
             this.getCommandRegistry().registerCommand(new RtpvCommand());
             this.getCommandRegistry().registerCommand(new EssenceCommand(essenceManager));
-            this.getCommandRegistry().registerCommand(new GiveEssenceCommand(essenceManager));
 
             LOGGER.at(Level.INFO).log("MobDistanceScaling initialized with {0} zones",
                     configManager.getZoneConfig().getZones().size());

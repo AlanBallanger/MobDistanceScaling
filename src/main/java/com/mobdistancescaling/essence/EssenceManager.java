@@ -25,15 +25,24 @@ public class EssenceManager {
     }
 
     public void addEssence(UUID playerUuid, String playerName, int amount) {
-        if (amount <= 0) return;
-        
+        if (amount == 0) {
+            return;
+        }
+
         int current = getEssence(playerUuid);
         int newAmount = current + amount;
-        
+        if (newAmount < 0) {
+            newAmount = 0;
+        }
+
         essenceCache.put(playerUuid, newAmount);
         database.setEssence(playerUuid, playerName, newAmount);
-        
-        LOGGER.at(Level.INFO).log("Player " + playerName + " gained " + amount + " essence (total: " + newAmount + ")");
+
+        if (amount > 0) {
+            LOGGER.at(Level.INFO).log("Player " + playerName + " gained " + amount + " essence (total: " + newAmount + ")");
+        } else {
+            LOGGER.at(Level.INFO).log("Player " + playerName + " lost " + Math.abs(amount) + " essence (total: " + newAmount + ")");
+        }
     }
 
     public void setEssence(UUID playerUuid, String playerName, int amount) {
