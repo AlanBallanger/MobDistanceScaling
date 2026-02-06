@@ -24,14 +24,16 @@ public class ZoneHUD extends CustomUIHud {
     @Nullable
     private DifficultyZone currentZone;
     private double distanceFromSpawn;
-    private int essence;
+    private int globalBalance;
+    private int playerEssence;
     private boolean built;
 
     public ZoneHUD(@Nonnull PlayerRef playerRef, @Nonnull ZoneConfig zoneConfig) {
         super(playerRef);
         this.zoneConfig = zoneConfig;
         this.distanceFromSpawn = 0.0;
-        this.essence = 0;
+        this.globalBalance = 0;
+        this.playerEssence = 0;
         this.built = false;
     }
 
@@ -40,11 +42,23 @@ public class ZoneHUD extends CustomUIHud {
         try {
             builder.append("HUD/ZoneHUD.ui");
             
-            String zoneName = currentZone != null ? "Zone " + currentZone.getName() : "Spawn";
+            String zoneName;
+            if (currentZone != null) {
+                String name = currentZone.getName();
+                zoneName = name.toLowerCase().startsWith("zone") ? name : "Zone " + name;
+            } else {
+                zoneName = "Spawn";
+            }
             int distance = (int) Math.round(distanceFromSpawn);
             
             builder.set("#ZoneName.Text", zoneName + " - " + distance + "m");
-            builder.set("#Essence.Text", "Essence: " + essence + "/1000");
+            
+            EssenceManager essenceManager = MobDistanceScalingPlugin.getStaticEssenceManager();
+            if (essenceManager != null) {
+                playerEssence = essenceManager.getEssence(getPlayerRef().getUuid());
+                globalBalance = essenceManager.getGlobalBalance();
+            }
+            builder.set("#Essence.Text", "Essence: " + playerEssence + "/1000");
             
             updateEssenceBar(builder);
             
@@ -80,12 +94,14 @@ public class ZoneHUD extends CustomUIHud {
             changed = true;
         }
         
-        // Récupérer l'essence du joueur
+        // Récupérer l'essence du joueur et la balance globale
         EssenceManager essenceManager = MobDistanceScalingPlugin.getStaticEssenceManager();
         if (essenceManager != null) {
-            int currentEssence = essenceManager.getEssence(getPlayerRef().getUuid());
-            if (this.essence != currentEssence) {
-                this.essence = currentEssence;
+            int currentPlayerEssence = essenceManager.getEssence(getPlayerRef().getUuid());
+            int currentGlobalBalance = essenceManager.getGlobalBalance();
+            if (this.playerEssence != currentPlayerEssence || this.globalBalance != currentGlobalBalance) {
+                this.playerEssence = currentPlayerEssence;
+                this.globalBalance = currentGlobalBalance;
                 changed = true;
             }
         }
@@ -93,11 +109,18 @@ public class ZoneHUD extends CustomUIHud {
         if (changed) {
             UICommandBuilder builder = new UICommandBuilder();
             
-            String zoneName = currentZone != null ? "Zone " + currentZone.getName() : "Spawn";
+            String zoneName;
+            if (currentZone != null) {
+                String name = currentZone.getName();
+                zoneName = name.toLowerCase().startsWith("zone") ? name : "Zone " + name;
+            } else {
+                zoneName = "Spawn";
+            }
             int dist = (int) Math.round(distanceFromSpawn);
             
             builder.set("#ZoneName.Text", zoneName + " - " + dist + "m");
-            builder.set("#Essence.Text", "Essence: " + essence + "/1000");
+            
+            builder.set("#Essence.Text", "Essence: " + playerEssence + "/1000");
             
             updateEssenceBar(builder);
             
@@ -123,8 +146,8 @@ public class ZoneHUD extends CustomUIHud {
     private void updateEssenceBar(@Nonnull UICommandBuilder builder) {
         int totalWidth = 320;
         int halfWidth = totalWidth / 2;
-        int clamped = Math.max(-1000, Math.min(1000, essence));
-        int width = (int) Math.round(Math.abs(clamped) / 1000.0 * halfWidth);
+        int clamped = Math.max(-10000, Math.min(10000, globalBalance));
+        int width = (int) Math.round(Math.abs(clamped) / 10000.0 * halfWidth);
         int left = clamped >= 0 ? halfWidth : halfWidth - width;
 
         Anchor fillAnchor = new Anchor();
@@ -139,18 +162,36 @@ public class ZoneHUD extends CustomUIHud {
         effectAnchor.setHeight(Value.of(12));
         builder.setObject("#EssenceBarEffect.Anchor", effectAnchor);
 
-        int labelWidth = 60;
-        int labelLeft = left + width - (labelWidth / 2);
+        int labelWidth = 80;
+        int barEnd = left + width;
+        int labelLeft = barEnd - (labelWidth / 2);
+        
         if (labelLeft < 0) {
             labelLeft = 0;
         } else if (labelLeft > totalWidth - labelWidth) {
             labelLeft = totalWidth - labelWidth;
         }
+        
         Anchor labelAnchor = new Anchor();
         labelAnchor.setLeft(Value.of(labelLeft));
         labelAnchor.setWidth(Value.of(labelWidth));
         labelAnchor.setHeight(Value.of(14));
         builder.setObject("#EssenceValue.Anchor", labelAnchor);
         builder.set("#EssenceValue.Text", String.valueOf(clamped));
+    }
+
+    public void updateGlobalBalance() {
+        if (!built) {
+            return;
+        }
+        
+        EssenceManager essenceManager = MobDistanceScalingPlugin.getStaticEssenceManager();
+        if (essenceManager != null) {
+            this.globalBalance = essenceManager.getGlobalBalance();
+            
+            UICommandBuilder builder = new UICommandBuilder();
+            updateEssenceBar(builder);
+            update(false, builder);
+        }
     }
 }

@@ -43,9 +43,18 @@ public class EssenceDatabase {
             )
         """;
         
+        String createGlobalBalance = """
+            CREATE TABLE IF NOT EXISTS global_balance (
+                id INTEGER PRIMARY KEY CHECK (id = 1),
+                balance INTEGER NOT NULL DEFAULT 0
+            )
+        """;
+        
         try (Statement stmt = connection.createStatement()) {
             stmt.execute(createTable);
             stmt.execute("CREATE INDEX IF NOT EXISTS idx_essence ON player_essence(essence DESC)");
+            stmt.execute(createGlobalBalance);
+            stmt.execute("INSERT OR IGNORE INTO global_balance (id, balance) VALUES (1, 0)");
         }
     }
 
@@ -138,5 +147,33 @@ public class EssenceDatabase {
                 LOGGER.at(Level.WARNING).log("Failed to close database: " + e.getMessage());
             }
         }
+    }
+
+    public int getGlobalBalance() {
+        String query = "SELECT balance FROM global_balance WHERE id = 1";
+        try (PreparedStatement stmt = connection.prepareStatement(query)) {
+            ResultSet rs = stmt.executeQuery();
+            if (rs.next()) {
+                return rs.getInt("balance");
+            }
+        } catch (SQLException e) {
+            LOGGER.at(Level.WARNING).log("Failed to get global balance: " + e.getMessage());
+        }
+        return 0;
+    }
+
+    public void setGlobalBalance(int balance) {
+        String update = "UPDATE global_balance SET balance = ? WHERE id = 1";
+        try (PreparedStatement stmt = connection.prepareStatement(update)) {
+            stmt.setInt(1, Math.max(-10000, Math.min(10000, balance)));
+            stmt.executeUpdate();
+        } catch (SQLException e) {
+            LOGGER.at(Level.WARNING).log("Failed to set global balance: " + e.getMessage());
+        }
+    }
+
+    public void addToGlobalBalance(int amount) {
+        int current = getGlobalBalance();
+        setGlobalBalance(current + amount);
     }
 }

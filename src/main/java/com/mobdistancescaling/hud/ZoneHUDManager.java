@@ -162,4 +162,14 @@ public class ZoneHUDManager {
     public void removePlayer(@Nonnull UUID playerId) {
         playerHuds.remove(playerId);
     }
+
+    public void broadcastBalanceUpdate() {
+        for (ZoneHUD hud : playerHuds.values()) {
+            try {
+                hud.updateGlobalBalance();
+            } catch (Exception e) {
+                LOGGER.at(Level.WARNING).log("Failed to update global balance for HUD: " + e.getMessage());
+            }
+        }
+    }
 }

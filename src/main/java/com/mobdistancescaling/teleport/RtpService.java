@@ -26,24 +26,35 @@ public class RtpService {
     @Nullable
     public Vector3d findSafePosition(@Nonnull World world, @Nonnull ChunkGenerator generator, 
                                      @Nullable Zone targetZone, int maxAttempts) {
+        return findSafePosition(world, generator, targetZone, maxAttempts, null, null);
+    }
+
+    @Nullable
+    public Vector3d findSafePosition(@Nonnull World world, @Nonnull ChunkGenerator generator, 
+                                     @Nullable Zone targetZone, int maxAttempts, Double targetX, Double targetZ) {
         int seed = (int) world.getWorldConfig().getSeed();
         
-        // Stratégie simple: chercher aléatoirement jusqu'à trouver la bonne zone ET un Y safe
-        // Comme il y a seulement ~30 zones et que les zones sont réparties uniformément,
-        // on devrait trouver en quelques tentatives
         for (int attempt = 0; attempt < maxAttempts; attempt++) {
-            int x = random.nextInt(MAX_SEARCH_RADIUS * 2) - MAX_SEARCH_RADIUS;
-            int z = random.nextInt(MAX_SEARCH_RADIUS * 2) - MAX_SEARCH_RADIUS;
+            int x, z;
+            
+            if (targetX != null && targetZ != null) {
+                double radiusVariation = 50.0;
+                double angleVariation = random.nextDouble() * 2 * Math.PI;
+                double distVariation = random.nextDouble() * radiusVariation;
+                x = (int) (targetX + Math.cos(angleVariation) * distVariation);
+                z = (int) (targetZ + Math.sin(angleVariation) * distVariation);
+            } else {
+                x = random.nextInt(MAX_SEARCH_RADIUS * 2) - MAX_SEARCH_RADIUS;
+                z = random.nextInt(MAX_SEARCH_RADIUS * 2) - MAX_SEARCH_RADIUS;
+            }
             
             ZoneBiomeResult result = generator.getZoneBiomeResultAt(seed, x, z);
             Zone foundZone = result.getZoneResult().getZone();
             
-            // Si on cherche une zone spécifique, vérifier qu'on est dedans
             if (targetZone != null && foundZone.id() != targetZone.id()) {
                 continue;
             }
             
-            // Maintenant vérifier si la position est safe
             Double safeY = findSafeRtpY(world, x, z);
             if (safeY != null) {
                 LOGGER.at(Level.INFO).log("Position trouvée après " + (attempt + 1) + " tentatives dans: " + foundZone.name());

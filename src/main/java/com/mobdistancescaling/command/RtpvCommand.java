@@ -7,7 +7,7 @@ import com.hypixel.hytale.math.vector.Vector3d;
 import com.hypixel.hytale.math.vector.Vector3f;
 import com.hypixel.hytale.server.core.Message;
 import com.hypixel.hytale.server.core.command.system.CommandContext;
-import com.hypixel.hytale.server.core.command.system.arguments.system.OptionalArg;
+import com.hypixel.hytale.server.core.command.system.arguments.system.RequiredArg;
 import com.hypixel.hytale.server.core.command.system.arguments.types.ArgTypes;
 import com.hypixel.hytale.server.core.command.system.basecommands.AbstractPlayerCommand;
 import com.hypixel.hytale.server.core.modules.entity.teleport.Teleport;
@@ -16,14 +16,13 @@ import com.hypixel.hytale.server.core.universe.world.World;
 import com.hypixel.hytale.server.core.universe.world.storage.EntityStore;
 import com.hypixel.hytale.server.core.universe.world.worldgen.IWorldGen;
 import com.hypixel.hytale.server.worldgen.chunk.ChunkGenerator;
-import com.hypixel.hytale.server.worldgen.zone.Zone;
 import com.mobdistancescaling.MobDistanceScalingPlugin;
+import com.mobdistancescaling.config.DifficultyZone;
 import com.mobdistancescaling.config.ZoneConfig;
 import com.mobdistancescaling.teleport.RtpService;
 
 import javax.annotation.Nonnull;
 import java.awt.Color;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 import java.util.logging.Level;
@@ -32,99 +31,69 @@ public class RtpvCommand extends AbstractPlayerCommand {
     private static final HytaleLogger LOGGER = HytaleLogger.forEnclosingClass();
     private final RtpService rtpService;
     private final Random random = new Random();
-    private final OptionalArg<String> zoneArg;
+    private final RequiredArg<Integer> zoneArg;
 
     public RtpvCommand() {
-        super("rtpv", "Random teleport to a vanilla zone. Usage: /rtpv [zone]");
+        super("rtpv", "Random teleport to a mod zone");
         this.rtpService = new RtpService();
-        this.zoneArg = this.withOptionalArg("zone", "Zone to teleport to (zone1, zone2, zone3, zone4)", ArgTypes.STRING);
+        this.zoneArg = this.withRequiredArg("zone", "Zone number (1-6)", ArgTypes.INTEGER);
     }
 
     @Override
-    protected void execute(@Nonnull CommandContext context, @Nonnull Store<EntityStore> store, 
+    protected void execute(@Nonnull CommandContext context, @Nonnull Store<EntityStore> store,
                           @Nonnull Ref<EntityStore> ref, @Nonnull PlayerRef playerRef, @Nonnull World world) {
+        int zoneNumber = context.get(zoneArg);
+        
         ZoneConfig config = MobDistanceScalingPlugin.getStaticConfigManager().getZoneConfig();
+        List<DifficultyZone> zones = config.getZones();
+        
+        if (zoneNumber < 1 || zoneNumber > zones.size()) {
+            context.sendMessage(Message.raw("Invalid zone number. Valid zones: 1-" + zones.size()).color(Color.RED));
+            return;
+        }
+        
+        DifficultyZone targetZone = zones.get(zoneNumber - 1);
+        
+        double minDist = targetZone.getRadiusStart();
+        double maxDist;
+        if (zoneNumber < zones.size()) {
+            maxDist = zones.get(zoneNumber).getRadiusStart();
+        } else {
+            maxDist = minDist + 5000;
+        }
         
         IWorldGen worldGen = world.getChunkStore().getGenerator();
         if (!(worldGen instanceof ChunkGenerator)) {
-            context.sendMessage(Message.raw(config.getRtpvMessageWorldNotSupported()).color(Color.RED));
+            context.sendMessage(Message.raw("World generation not supported in this world").color(Color.RED));
             return;
         }
 
         ChunkGenerator generator = (ChunkGenerator) worldGen;
-        Zone[] zones = generator.getZonePatternProvider().getZones();
-
-        String targetZonePrefix = context.get(zoneArg);
-        Zone targetZone = null;
         
-        if (targetZonePrefix != null && !targetZonePrefix.isEmpty()) {
-            String prefix = targetZonePrefix.toLowerCase();
-            
-            List<Zone> matchingZones = new ArrayList<>();
-            for (Zone zone : zones) {
-                String zoneName = zone.name().toLowerCase();
-                if (zoneName.startsWith(prefix) && !zoneName.contains("ocean")) {
-                    matchingZones.add(zone);
-                }
-            }
-            
-            if (matchingZones.isEmpty()) {
-                for (Zone zone : zones) {
-                    if (zone.name().toLowerCase().startsWith(prefix)) {
-                        matchingZones.add(zone);
-                    }
-                }
-            }
-            
-            if (matchingZones.isEmpty()) {
-                StringBuilder availableZones = new StringBuilder(config.getRtpvMessageAvailableZones() + ": ");
-                for (int i = 0; i < zones.length; i++) {
-                    availableZones.append(zones[i].name());
-                    if (i < zones.length - 1) availableZones.append(", ");
-                }
-                context.sendMessage(Message.raw(config.getRtpvMessageZoneNotFound()
-                    .replace("{zone}", prefix) + " " + availableZones.toString()).color(Color.RED));
-                return;
-            }
-            
-            targetZone = matchingZones.get(random.nextInt(matchingZones.size()));
-            
-            String zoneDisplay = extractZoneNumber(targetZone.name());
-            LOGGER.at(Level.INFO).log("Selected zone: " + targetZone.name() + " (" + zoneDisplay + ") from " + matchingZones.size() + " matching zones for prefix: " + prefix);
-        }
-
-        final Zone finalTargetZone = targetZone;
-        context.sendMessage(Message.raw(config.getRtpvMessageTeleporting()).color(Color.GREEN));
+        context.sendMessage(Message.raw("Teleporting to " + targetZone.getName() + "...").color(Color.GREEN));
         
         world.execute(() -> {
             try {
-                Vector3d safePosition = rtpService.findSafePosition(world, generator, finalTargetZone, 50);
+                double targetDistance = minDist + random.nextDouble() * (maxDist - minDist);
+                double angle = random.nextDouble() * 2 * Math.PI;
+                
+                double targetX = Math.cos(angle) * targetDistance;
+                double targetZ = Math.sin(angle) * targetDistance;
+                
+                Vector3d safePosition = rtpService.findSafePosition(world, generator, null, 50, targetX, targetZ);
                 
                 if (safePosition != null) {
                     teleportPlayer(store, ref, world, safePosition);
-                    String zoneName = finalTargetZone != null ? extractZoneNumber(finalTargetZone.name()) : config.getRtpvMessageRandomZone();
-                    context.sendMessage(Message.raw(config.getRtpvMessageSuccess()
-                        .replace("{zone}", zoneName)
-                        .replace("{x}", String.valueOf((int)safePosition.x))
-                        .replace("{y}", String.valueOf((int)safePosition.y))
-                        .replace("{z}", String.valueOf((int)safePosition.z))).color(Color.GREEN));
+                    context.sendMessage(Message.raw("Teleported to " + targetZone.getName() + 
+                        " at " + (int)safePosition.x + ", " + (int)safePosition.y + ", " + (int)safePosition.z).color(Color.GREEN));
                 } else {
-                    context.sendMessage(Message.raw(config.getRtpvMessageNoSafeLocation()
-                        .replace("{attempts}", "50")).color(Color.RED));
+                    context.sendMessage(Message.raw("Could not find safe location in " + targetZone.getName() + " after 50 attempts").color(Color.RED));
                 }
             } catch (Exception e) {
-                LOGGER.at(Level.SEVERE).log("Erreur lors de la téléportation RTP: " + e.getMessage(), e);
-                context.sendMessage(Message.raw(config.getRtpvMessageError()).color(Color.RED));
+                LOGGER.at(Level.SEVERE).log("Error during RTP: " + e.getMessage(), e);
+                context.sendMessage(Message.raw("Teleportation failed").color(Color.RED));
             }
         });
-    }
-    
-    private String extractZoneNumber(String zoneName) {
-        if (zoneName.toLowerCase().startsWith("zone")) {
-            String num = zoneName.substring(4, 5);
-            return "Zone " + num;
-        }
-        return zoneName;
     }
 
     private void teleportPlayer(Store<EntityStore> store, Ref<EntityStore> ref, World world, Vector3d position) {

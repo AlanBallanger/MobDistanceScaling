@@ -10,6 +10,9 @@ import com.hypixel.hytale.server.core.entity.entities.Player;
 import com.hypixel.hytale.server.core.universe.PlayerRef;
 import com.mobdistancescaling.essence.EssenceManager;
 import com.mobdistancescaling.essence.PlayerEssenceData;
+import com.mobdistancescaling.faction.FactionManager;
+import com.mobdistancescaling.hud.ZoneHUDManager;
+import com.mobdistancescaling.MobDistanceScalingPlugin;
 import org.checkerframework.checker.nullness.compatqual.NonNullDecl;
 
 import javax.annotation.Nonnull;
@@ -19,13 +22,16 @@ import java.util.concurrent.CompletableFuture;
 
 public class EssenceCommand extends AbstractAsyncCommand {
     private final EssenceManager essenceManager;
+    private final FactionManager factionManager;
 
-    public EssenceCommand(@Nonnull EssenceManager essenceManager) {
+    public EssenceCommand(@Nonnull EssenceManager essenceManager, @Nonnull FactionManager factionManager) {
         super("essence", "Check your essence or view leaderboard");
         this.essenceManager = essenceManager;
+        this.factionManager = factionManager;
         this.addSubCommand(new TopSubCommand(essenceManager));
         this.addSubCommand(new GiveSubCommand(essenceManager));
         this.addSubCommand(new TakeSubCommand(essenceManager));
+        this.addSubCommand(new DepositSubCommand(essenceManager, factionManager));
     }
 
     @NonNullDecl
@@ -132,6 +138,68 @@ public class EssenceCommand extends AbstractAsyncCommand {
 
             essenceManager.addEssence(target.getUuid(), target.getUsername(), -amount);
             context.sendMessage(Message.raw("Removed " + amount + " essence from " + target.getUsername()).color(Color.GREEN));
+            return CompletableFuture.completedFuture(null);
+        }
+    }
+
+    public static class DepositSubCommand extends AbstractAsyncCommand {
+        private final EssenceManager essenceManager;
+        private final FactionManager factionManager;
+        private final RequiredArg<Integer> amountArg;
+
+        public DepositSubCommand(@Nonnull EssenceManager essenceManager, @Nonnull FactionManager factionManager) {
+            super("deposit", "Deposit essence to your faction");
+            this.essenceManager = essenceManager;
+            this.factionManager = factionManager;
+            this.amountArg = this.withRequiredArg("amount", "Amount to deposit", ArgTypes.INTEGER);
+        }
+
+        @NonNullDecl
+        @Override
+        protected CompletableFuture<Void> executeAsync(CommandContext context) {
+            CommandSender sender = context.sender();
+            if (!(sender instanceof Player player)) {
+                context.sendMessage(Message.raw("This command can only be used by players").color(Color.RED));
+                return CompletableFuture.completedFuture(null);
+            }
+
+            PlayerRef playerRef = player.getPlayerRef();
+            if (playerRef == null) {
+                context.sendMessage(Message.raw("Error: Could not get player reference").color(Color.RED));
+                return CompletableFuture.completedFuture(null);
+            }
+
+            FactionManager.Faction faction = factionManager.getFaction(playerRef.getUuid());
+            if (faction == null) {
+                context.sendMessage(Message.raw("You must join a faction first! Use /mds faction <noyau|fracture>").color(Color.RED));
+                return CompletableFuture.completedFuture(null);
+            }
+
+            int amount = context.get(amountArg);
+            if (amount <= 0) {
+                context.sendMessage(Message.raw("Amount must be > 0").color(Color.RED));
+                return CompletableFuture.completedFuture(null);
+            }
+
+            int currentEssence = essenceManager.getEssence(playerRef.getUuid());
+            if (currentEssence < amount) {
+                context.sendMessage(Message.raw("You only have " + currentEssence + " essence").color(Color.RED));
+                return CompletableFuture.completedFuture(null);
+            }
+
+            essenceManager.addEssence(playerRef.getUuid(), playerRef.getUsername(), -amount);
+            int contribution = amount * faction.getBalanceMultiplier();
+            essenceManager.addToGlobalBalance(contribution);
+
+            int newBalance = essenceManager.getGlobalBalance();
+            context.sendMessage(Message.raw("Deposited " + amount + " essence to " + faction.getDisplayName()).color(Color.GREEN));
+            context.sendMessage(Message.raw("Global balance: " + newBalance + "/10000").color(Color.YELLOW));
+
+            MobDistanceScalingPlugin plugin = MobDistanceScalingPlugin.getInstance();
+            if (plugin != null && plugin.getHudManager() != null) {
+                plugin.getHudManager().broadcastBalanceUpdate();
+            }
+
             return CompletableFuture.completedFuture(null);
         }
     }

@@ -21,12 +21,14 @@ import com.hypixel.hytale.server.core.universe.world.worldmap.provider.IWorldMap
 import com.mobdistancescaling.command.EssenceCommand;
 import com.mobdistancescaling.command.GiveEssenceCommand;
 import com.mobdistancescaling.command.MdsCommand;
+import com.mobdistancescaling.command.RtpzCommand;
 import com.mobdistancescaling.command.RtpvCommand;
 import com.mobdistancescaling.component.MobScalingComponent;
 import com.mobdistancescaling.config.ConfigManager;
 import com.mobdistancescaling.essence.EssenceKillSystem;
 import com.mobdistancescaling.essence.EssenceManager;
 import com.mobdistancescaling.essence.EssenceMiningSystem;
+import com.mobdistancescaling.faction.FactionManager;
 import com.mobdistancescaling.hud.ZoneHUDManager;
 import com.mobdistancescaling.map.ZoneWorldMapProvider;
 import com.mobdistancescaling.system.MobDamageScalingSystem;
@@ -41,8 +43,11 @@ public class MobDistanceScalingPlugin extends JavaPlugin {
     private static final HytaleLogger LOGGER = HytaleLogger.forEnclosingClass();
     private static ConfigManager staticConfigManager;
     private static EssenceManager staticEssenceManager;
+    private static FactionManager staticFactionManager;
+    private static MobDistanceScalingPlugin staticInstance;
     private ConfigManager configManager;
     private EssenceManager essenceManager;
+    private FactionManager factionManager;
     private ZoneHUDManager hudManager;
 
     public MobDistanceScalingPlugin(JavaPluginInit init) {
@@ -53,6 +58,7 @@ public class MobDistanceScalingPlugin extends JavaPlugin {
     @Override
     protected void setup() {
         try {
+            staticInstance = this;
             ComponentType<EntityStore, MobScalingComponent> mobScalingComponentType =
                     this.getEntityStoreRegistry().registerComponent(MobScalingComponent.class,
                             () -> new MobScalingComponent(1.0f, 1.0f, 1.0f));
@@ -66,6 +72,11 @@ public class MobDistanceScalingPlugin extends JavaPlugin {
             essenceManager = new EssenceManager(this.getDataDirectory().toFile());
             staticEssenceManager = essenceManager;
             LOGGER.at(Level.INFO).log("Essence system initialized");
+
+            // Initialiser le système de factions
+            factionManager = new FactionManager();
+            staticFactionManager = factionManager;
+            LOGGER.at(Level.INFO).log("Faction system initialized");
 
             MobScalingRefSystem mobScalingRefSystem = new MobScalingRefSystem(configManager);
             this.getEntityStoreRegistry().registerSystem(mobScalingRefSystem);
@@ -135,9 +146,10 @@ public class MobDistanceScalingPlugin extends JavaPlugin {
                 LOGGER.at(Level.WARNING).log("Zone HUD could not be initialized");
             }
 
-            this.getCommandRegistry().registerCommand(new MdsCommand(this));
+            this.getCommandRegistry().registerCommand(new MdsCommand(this, factionManager));
+            this.getCommandRegistry().registerCommand(new RtpzCommand());
             this.getCommandRegistry().registerCommand(new RtpvCommand());
-            this.getCommandRegistry().registerCommand(new EssenceCommand(essenceManager));
+            this.getCommandRegistry().registerCommand(new EssenceCommand(essenceManager, factionManager));
 
             LOGGER.at(Level.INFO).log("MobDistanceScaling initialized with {0} zones",
                     configManager.getZoneConfig().getZones().size());
@@ -202,5 +214,19 @@ public class MobDistanceScalingPlugin extends JavaPlugin {
     @Nullable
     public static EssenceManager getStaticEssenceManager() {
         return staticEssenceManager;
+    }
+
+    @Nullable
+    public static FactionManager getStaticFactionManager() {
+        return staticFactionManager;
+    }
+
+    public ZoneHUDManager getHudManager() {
+        return hudManager;
+    }
+
+    @Nullable
+    public static MobDistanceScalingPlugin getInstance() {
+        return staticInstance;
     }
 }

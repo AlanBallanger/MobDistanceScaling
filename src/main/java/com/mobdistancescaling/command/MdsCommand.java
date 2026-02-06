@@ -5,6 +5,8 @@ import com.hypixel.hytale.math.util.ChunkUtil;
 import com.hypixel.hytale.server.core.Message;
 import com.hypixel.hytale.server.core.command.system.CommandContext;
 import com.hypixel.hytale.server.core.command.system.CommandSender;
+import com.hypixel.hytale.server.core.command.system.arguments.system.RequiredArg;
+import com.hypixel.hytale.server.core.command.system.arguments.types.ArgTypes;
 import com.hypixel.hytale.server.core.command.system.basecommands.AbstractAsyncCommand;
 import com.hypixel.hytale.server.core.entity.entities.Player;
 import com.hypixel.hytale.server.core.modules.entity.component.TransformComponent;
@@ -14,6 +16,7 @@ import com.hypixel.hytale.server.core.universe.world.World;
 import com.hypixel.hytale.server.core.universe.world.storage.EntityStore;
 import com.mobdistancescaling.MobDistanceScalingPlugin;
 import com.mobdistancescaling.config.ConfigManager;
+import com.mobdistancescaling.faction.FactionManager;
 
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import it.unimi.dsi.fastutil.longs.LongSet;
@@ -25,14 +28,17 @@ import java.util.concurrent.Executor;
 
 public class MdsCommand extends AbstractAsyncCommand {
     private final MobDistanceScalingPlugin plugin;
+    private final FactionManager factionManager;
 
-    public MdsCommand(MobDistanceScalingPlugin plugin) {
+    public MdsCommand(MobDistanceScalingPlugin plugin, FactionManager factionManager) {
         super("mds", "MobDistanceScaling commands");
         this.plugin = plugin;
+        this.factionManager = factionManager;
         this.requirePermission("mobdistancescaling.admin");
         this.addSubCommand(new ReloadSubCommand(plugin));
         this.addSubCommand(new ClearMapSubCommand());
         this.addSubCommand(new ClearMapAllSubCommand());
+        this.addSubCommand(new FactionSubCommand(factionManager));
     }
 
     @NonNullDecl
@@ -42,6 +48,7 @@ public class MdsCommand extends AbstractAsyncCommand {
         commandContext.sendMessage(Message.raw("  /mds reload - Reload configuration").color(Color.GRAY));
         commandContext.sendMessage(Message.raw("  /mds clearmap - Clear map cache around you").color(Color.GRAY));
         commandContext.sendMessage(Message.raw("  /mds clearmapall - Clear map cache for all players").color(Color.GRAY));
+        commandContext.sendMessage(Message.raw("  /mds faction <noyau|fracture> - Join a faction").color(Color.GRAY));
         return CompletableFuture.completedFuture(null);
     }
 
@@ -178,6 +185,47 @@ public class MdsCommand extends AbstractAsyncCommand {
             commandContext.sendMessage(Message.raw("Entire map cache cleared for all players in " + worldCount + " world(s)!").color(Color.GREEN));
             commandContext.sendMessage(Message.raw("Maps will regenerate as players move around.").color(Color.YELLOW));
 
+            return CompletableFuture.completedFuture(null);
+        }
+    }
+
+    public static class FactionSubCommand extends AbstractAsyncCommand {
+        private final FactionManager factionManager;
+        private final RequiredArg<String> factionArg;
+
+        public FactionSubCommand(FactionManager factionManager) {
+            super("faction", "Join a faction (noyau or fracture)");
+            this.factionManager = factionManager;
+            this.factionArg = this.withRequiredArg("faction", "Faction name (noyau/fracture)", ArgTypes.STRING);
+        }
+
+        @NonNullDecl
+        @Override
+        protected CompletableFuture<Void> executeAsync(CommandContext commandContext) {
+            CommandSender sender = commandContext.sender();
+            if (!(sender instanceof Player)) {
+                commandContext.sendMessage(Message.raw("This command can only be used by players.").color(Color.RED));
+                return CompletableFuture.completedFuture(null);
+            }
+
+            String factionName = commandContext.get(factionArg);
+            FactionManager.Faction faction = FactionManager.Faction.fromString(factionName);
+            
+            if (faction == null) {
+                commandContext.sendMessage(Message.raw("Invalid faction. Choose: noyau or fracture").color(Color.RED));
+                return CompletableFuture.completedFuture(null);
+            }
+
+            Player player = (Player) sender;
+            PlayerRef playerRef = Universe.get().getPlayer(player.getUuid());
+            if (playerRef == null) {
+                commandContext.sendMessage(Message.raw("Could not get player reference.").color(Color.RED));
+                return CompletableFuture.completedFuture(null);
+            }
+
+            factionManager.setFaction(playerRef.getUuid(), faction);
+            commandContext.sendMessage(Message.raw("You have joined faction: " + faction.getDisplayName()).color(Color.GREEN));
+            
             return CompletableFuture.completedFuture(null);
         }
     }

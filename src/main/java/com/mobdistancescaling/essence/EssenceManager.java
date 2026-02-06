@@ -34,6 +34,9 @@ public class EssenceManager {
         if (newAmount < 0) {
             newAmount = 0;
         }
+        if (newAmount > 1000) {
+            newAmount = 1000;
+        }
 
         essenceCache.put(playerUuid, newAmount);
         database.setEssence(playerUuid, playerName, newAmount);
@@ -74,5 +77,13 @@ public class EssenceManager {
     public void shutdown() {
         saveAll();
         database.close();
+    }
+
+    public int getGlobalBalance() {
+        return database.getGlobalBalance();
+    }
+
+    public void addToGlobalBalance(int amount) {
+        database.addToGlobalBalance(amount);
     }
 }
