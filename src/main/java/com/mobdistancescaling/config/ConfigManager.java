@@ -2,6 +2,7 @@ package com.mobdistancescaling.config;
 
 import com.hypixel.hytale.logger.HytaleLogger;
 import com.moandjiezana.toml.Toml;
+import com.mobdistancescaling.safezone.SafeZoneConfig;
 
 import javax.annotation.Nonnull;
 import java.io.File;
@@ -18,6 +19,7 @@ public class ConfigManager {
 
     private final Path configPath;
     private ZoneConfig zoneConfig;
+    private SafeZoneConfig safeZoneConfig;
 
     public ConfigManager(@Nonnull Path pluginDataFolder) {
         this.configPath = pluginDataFolder.resolve(CONFIG_FILENAME);
@@ -29,6 +31,7 @@ public class ConfigManager {
         if (!configFile.exists()) {
             LOGGER.at(Level.INFO).log("Configuration file not found, creating default config at: {0}", configPath);
             zoneConfig = ZoneConfig.createDefault();
+            safeZoneConfig = new SafeZoneConfig();
             save();
             return;
         }
@@ -36,10 +39,12 @@ public class ConfigManager {
         try {
             Toml toml = new Toml().read(configFile);
             zoneConfig = parseZoneConfig(toml);
+            safeZoneConfig = parseSafeZoneConfig(toml);
             LOGGER.at(Level.INFO).log("Loaded configuration with {0} zones", zoneConfig.getZones().size());
         } catch (Exception e) {
             LOGGER.at(Level.SEVERE).log("Failed to load config, using default configuration", e);
             zoneConfig = ZoneConfig.createDefault();
+            safeZoneConfig = new SafeZoneConfig();
         }
     }
 
@@ -167,6 +172,30 @@ public class ConfigManager {
         sb.append("]\n\n");
 
         sb.append("# ==========================================================\n");
+        sb.append("# SAFE ZONE ROTATION SYSTEM\n");
+        sb.append("# Un quart de la carte est non-PvP et tourne dans le sens horaire\n");
+        sb.append("# ==========================================================\n");
+        sb.append("[safezone]\n");
+        sb.append("# Activer le système de zone safe rotative\n");
+        sb.append("enabled = ").append(safeZoneConfig.isEnabled()).append("\n\n");
+        sb.append("# Durée minimale avant rotation (minutes)\n");
+        sb.append("minRotationTimeMinutes = ").append(safeZoneConfig.getMinRotationTimeMinutes()).append("\n\n");
+        sb.append("# Durée maximale avant rotation (minutes)\n");
+        sb.append("maxRotationTimeMinutes = ").append(safeZoneConfig.getMaxRotationTimeMinutes()).append("\n\n");
+        sb.append("# Durée de chevauchement (les 2 zones sont safe) en minutes\n");
+        sb.append("overlapDurationMinutes = ").append(safeZoneConfig.getOverlapDurationMinutes()).append("\n\n");
+        sb.append("# Rayon maximum (-1 = illimité)\n");
+        sb.append("maxRadius = ").append(safeZoneConfig.getMaxRadius()).append("\n\n");
+        sb.append("# Titre affiché en entrant en zone safe\n");
+        sb.append("enterSafeZoneTitle = \"").append(safeZoneConfig.getEnterSafeZoneTitle()).append("\"\n\n");
+        sb.append("# Sous-titre affiché en entrant en zone safe\n");
+        sb.append("enterSafeZoneSubtitle = \"").append(safeZoneConfig.getEnterSafeZoneSubtitle()).append("\"\n\n");
+        sb.append("# Titre affiché en entrant en zone PvP\n");
+        sb.append("enterPvpZoneTitle = \"").append(safeZoneConfig.getEnterPvpZoneTitle()).append("\"\n\n");
+        sb.append("# Sous-titre affiché en entrant en zone PvP\n");
+        sb.append("enterPvpZoneSubtitle = \"").append(safeZoneConfig.getEnterPvpZoneSubtitle()).append("\"\n\n");
+
+        sb.append("# ==========================================================\n");
         sb.append("# MINIMAP OVERLAY SETTINGS\n");
         sb.append("# ==========================================================\n");
         sb.append("[minimap]\n");
@@ -260,8 +289,33 @@ public class ConfigManager {
     }
 
     @Nonnull
+    private SafeZoneConfig parseSafeZoneConfig(@Nonnull Toml toml) {
+        SafeZoneConfig config = new SafeZoneConfig();
+        
+        Toml safeZoneToml = toml.getTable("safezone");
+        if (safeZoneToml != null) {
+            config.setEnabled(safeZoneToml.getBoolean("enabled", true));
+            config.setMinRotationTimeMinutes(safeZoneToml.getLong("minRotationTimeMinutes", 60L).intValue());
+            config.setMaxRotationTimeMinutes(safeZoneToml.getLong("maxRotationTimeMinutes", 120L).intValue());
+            config.setOverlapDurationMinutes(safeZoneToml.getLong("overlapDurationMinutes", 10L).intValue());
+            config.setMaxRadius(safeZoneToml.getLong("maxRadius", -1L).intValue());
+            config.setEnterSafeZoneTitle(safeZoneToml.getString("enterSafeZoneTitle", "Zone Safe"));
+            config.setEnterSafeZoneSubtitle(safeZoneToml.getString("enterSafeZoneSubtitle", "PvP Désactivé"));
+            config.setEnterPvpZoneTitle(safeZoneToml.getString("enterPvpZoneTitle", "Zone PvP"));
+            config.setEnterPvpZoneSubtitle(safeZoneToml.getString("enterPvpZoneSubtitle", "Attention !"));
+        }
+        
+        return config;
+    }
+
+    @Nonnull
     public ZoneConfig getZoneConfig() {
         return zoneConfig;
+    }
+
+    @Nonnull
+    public SafeZoneConfig getSafeZoneConfig() {
+        return safeZoneConfig;
     }
 
     public void reload() {

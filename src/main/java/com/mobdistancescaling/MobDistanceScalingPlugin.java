@@ -31,6 +31,9 @@ import com.mobdistancescaling.essence.EssenceMiningSystem;
 import com.mobdistancescaling.faction.FactionManager;
 import com.mobdistancescaling.hud.ZoneHUDManager;
 import com.mobdistancescaling.map.ZoneWorldMapProvider;
+import com.mobdistancescaling.safezone.SafeZoneManager;
+import com.mobdistancescaling.safezone.SafeZoneNotificationSystem;
+import com.mobdistancescaling.safezone.SafeZonePvpSystem;
 import com.mobdistancescaling.system.MobDamageScalingSystem;
 import com.mobdistancescaling.system.MobLootScalingSystem;
 import com.mobdistancescaling.system.MobScalingRefSystem;
@@ -44,10 +47,14 @@ public class MobDistanceScalingPlugin extends JavaPlugin {
     private static ConfigManager staticConfigManager;
     private static EssenceManager staticEssenceManager;
     private static FactionManager staticFactionManager;
+    private static SafeZoneManager staticSafeZoneManager;
+    private static SafeZoneNotificationSystem staticSafeZoneNotificationSystem;
     private static MobDistanceScalingPlugin staticInstance;
     private ConfigManager configManager;
     private EssenceManager essenceManager;
     private FactionManager factionManager;
+    private SafeZoneManager safeZoneManager;
+    private SafeZoneNotificationSystem safeZoneNotificationSystem;
     private ZoneHUDManager hudManager;
 
     public MobDistanceScalingPlugin(JavaPluginInit init) {
@@ -95,6 +102,42 @@ public class MobDistanceScalingPlugin extends JavaPlugin {
             this.getEntityStoreRegistry().registerSystem(essenceMiningSystem);
             LOGGER.at(Level.INFO).log("Registered EssenceMiningSystem");
 
+            // Initialiser le système de safe zone
+            if (configManager.getSafeZoneConfig().isEnabled()) {
+                safeZoneManager = new SafeZoneManager(configManager.getSafeZoneConfig(), this.getDataDirectory());
+                staticSafeZoneManager = safeZoneManager;
+                
+                SafeZonePvpSystem safeZonePvpSystem = new SafeZonePvpSystem();
+                SafeZonePvpSystem.setSafeZoneManager(safeZoneManager);
+                this.getEntityStoreRegistry().registerSystem(safeZonePvpSystem);
+                
+                safeZoneNotificationSystem = new SafeZoneNotificationSystem(configManager.getSafeZoneConfig());
+                SafeZoneNotificationSystem.setSafeZoneManager(safeZoneManager);
+                this.getEntityStoreRegistry().registerSystem(safeZoneNotificationSystem);
+                staticSafeZoneNotificationSystem = safeZoneNotificationSystem;
+                
+                // Activer le PvP dans tous les mondes pour que le système de SafeZone fonctionne
+                this.getEventRegistry().registerGlobal(AddWorldEvent.class, event -> {
+                    World world = event.getWorld();
+                    if (!world.getWorldConfig().isDeleteOnRemove()) {
+                        world.getWorldConfig().setPvpEnabled(true);
+                        world.getWorldConfig().markChanged();
+                        LOGGER.at(Level.INFO).log("PvP enabled for world: {0} (controlled by SafeZone system)", world.getName());
+                    }
+                });
+                
+                // Activer aussi pour les mondes déjà chargés
+                for (World world : Universe.get().getWorlds().values()) {
+                    if (!world.getWorldConfig().isDeleteOnRemove()) {
+                        world.getWorldConfig().setPvpEnabled(true);
+                        world.getWorldConfig().markChanged();
+                        LOGGER.at(Level.INFO).log("PvP enabled for existing world: {0} (controlled by SafeZone system)", world.getName());
+                    }
+                }
+                
+                LOGGER.at(Level.INFO).log("Safe zone rotation system enabled");
+            }
+
             ZoneTitleTickingSystem zoneTitleSystem = new ZoneTitleTickingSystem(configManager, essenceManager);
             this.getEntityStoreRegistry().registerSystem(zoneTitleSystem);
 
@@ -141,6 +184,10 @@ public class MobDistanceScalingPlugin extends JavaPlugin {
                     hudManager.removePlayer(playerRef.getUuid());
                     // Sauvegarder l'essence du joueur à la déconnexion
                     essenceManager.savePlayer(playerRef.getUuid());
+                    // Nettoyer le tracking de zone safe
+                    if (safeZoneNotificationSystem != null) {
+                        safeZoneNotificationSystem.removePlayer(playerRef.getUuid());
+                    }
                 });
             } else {
                 LOGGER.at(Level.WARNING).log("Zone HUD could not be initialized");
@@ -165,6 +212,9 @@ public class MobDistanceScalingPlugin extends JavaPlugin {
         }
         if (hudManager != null) {
             hudManager.shutdown();
+        }
+        if (safeZoneManager != null) {
+            safeZoneManager.shutdown();
         }
     }
 
@@ -219,6 +269,11 @@ public class MobDistanceScalingPlugin extends JavaPlugin {
     @Nullable
     public static FactionManager getStaticFactionManager() {
         return staticFactionManager;
+    }
+
+    @Nullable
+    public static SafeZoneManager getStaticSafeZoneManager() {
+        return staticSafeZoneManager;
     }
 
     public ZoneHUDManager getHudManager() {
