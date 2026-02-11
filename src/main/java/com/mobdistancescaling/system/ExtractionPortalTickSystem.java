@@ -93,8 +93,6 @@ public class ExtractionPortalTickSystem extends EntityTickingSystem<EntityStore>
             Transform spawnPoint = spawnProvider.getSpawnPoint(world, playerId);
             Vector3d spawnPos = spawnPoint.getPosition();
 
-            LOGGER.at(Level.INFO).log("Teleporting player " + playerId + " to spawn at " + (int) spawnPos.x + ", " + (int) spawnPos.y + ", " + (int) spawnPos.z);
-
             Teleport teleport = Teleport.createForPlayer(world, spawnPos, new Vector3f(0, 0, 0));
             commandBuffer.addComponent(ref, Teleport.getComponentType(), teleport);
 
@@ -103,7 +101,7 @@ public class ExtractionPortalTickSystem extends EntityTickingSystem<EntityStore>
 
             manager.consumePortal(ownerId);
 
-            LOGGER.at(Level.INFO).log("Player " + playerId + " used extraction portal at " + portal.x() + ", " + portal.y() + ", " + portal.z());
+            LOGGER.at(Level.INFO).log("Player " + playerId + " used extraction portal at " + portal.x() + "," + portal.y() + "," + portal.z());
             return;
         }
     }

@@ -2,7 +2,6 @@ package com.mobdistancescaling.extraction;
 
 import com.hypixel.hytale.logger.HytaleLogger;
 import com.hypixel.hytale.math.util.ChunkUtil;
-import com.hypixel.hytale.math.vector.Vector3d;
 import com.hypixel.hytale.server.core.HytaleServer;
 import com.hypixel.hytale.server.core.Message;
 import com.hypixel.hytale.server.core.asset.type.blocktype.config.BlockType;
@@ -33,11 +32,23 @@ public class ExtractionPortalManager {
     private final Map<String, UUID> positionToOwner = new ConcurrentHashMap<>();
     private final Map<UUID, Long> cooldowns = new ConcurrentHashMap<>();
     private ExtractionConfig config;
+    private int portalBlockIndex = Integer.MIN_VALUE;
+    private BlockType portalBlockTypeRef;
 
     public ExtractionPortalManager(@Nonnull ExtractionConfig config) {
         this.config = config;
         instance = this;
         LOGGER.at(Level.INFO).log("ExtractionPortalManager initialized");
+    }
+
+    public void resolveBlockType() {
+        portalBlockIndex = BlockType.getAssetMap().getIndex(PORTAL_BLOCK_TYPE);
+        if (portalBlockIndex == Integer.MIN_VALUE) {
+            LOGGER.at(Level.SEVERE).log("Block type '" + PORTAL_BLOCK_TYPE + "' not found in asset map!");
+            return;
+        }
+        portalBlockTypeRef = BlockType.getAssetMap().getAsset(portalBlockIndex);
+        LOGGER.at(Level.INFO).log("ExtractionPortal block resolved: index=" + portalBlockIndex);
     }
 
     @Nullable
@@ -86,39 +97,36 @@ public class ExtractionPortalManager {
 
     @Nullable
     public UUID getPortalOwner(int x, int y, int z) {
-        String key = positionKey(x, y, z);
-        return positionToOwner.get(key);
+        return positionToOwner.get(positionKey(x, y, z));
     }
 
     public void placePortal(@Nonnull UUID ownerId, @Nonnull World world, int x, int y, int z) {
-        LOGGER.at(Level.INFO).log("Placing extraction portal for player " + ownerId + " at " + x + ", " + y + ", " + z);
+        if (portalBlockIndex == Integer.MIN_VALUE) {
+            resolveBlockType();
+            if (portalBlockIndex == Integer.MIN_VALUE) {
+                LOGGER.at(Level.SEVERE).log("Cannot place portal: block type not resolved");
+                return;
+            }
+        }
 
         String posKey = positionKey(x, y, z);
-
-        int blockIndex = BlockType.getAssetMap().getIndex(PORTAL_BLOCK_TYPE);
-        if (blockIndex == Integer.MIN_VALUE) {
-            LOGGER.at(Level.SEVERE).log("Block type '" + PORTAL_BLOCK_TYPE + "' not found in asset map! Check that the ExtractionPortal JSON is valid and loaded.");
-            return;
-        }
-        BlockType portalBlockType = BlockType.getAssetMap().getAsset(blockIndex);
-        LOGGER.at(Level.INFO).log("Block type resolved: " + PORTAL_BLOCK_TYPE + " -> index=" + blockIndex + ", type=" + portalBlockType.getId());
 
         try {
             long chunkIndex = ChunkUtil.indexChunkFromBlock(x, z);
             WorldChunk chunk = world.getChunk(chunkIndex);
             if (chunk == null) {
-                LOGGER.at(Level.SEVERE).log("Chunk not loaded at block position " + x + ", " + z + " (chunk index: " + chunkIndex + ")");
+                LOGGER.at(Level.WARNING).log("Chunk not loaded for portal at " + x + ", " + z + ", loading async");
                 world.getChunkAsync(chunkIndex).thenAccept(asyncChunk -> {
-                    placeBlockInChunk(asyncChunk, x, y, z, blockIndex, portalBlockType, ownerId);
+                    placeBlockInChunk(asyncChunk, x, y, z);
                 }).exceptionally(ex -> {
                     LOGGER.at(Level.SEVERE).log("Failed to load chunk for portal: " + ex.getMessage());
                     return null;
                 });
             } else {
-                placeBlockInChunk(chunk, x, y, z, blockIndex, portalBlockType, ownerId);
+                placeBlockInChunk(chunk, x, y, z);
             }
         } catch (Exception e) {
-            LOGGER.at(Level.SEVERE).log("Exception placing portal block: " + e.getClass().getName() + " - " + e.getMessage());
+            LOGGER.at(Level.SEVERE).log("Exception placing portal: " + e.getClass().getName() + " - " + e.getMessage());
         }
 
         ScheduledFuture<?> expiryTask = HytaleServer.SCHEDULED_EXECUTOR.schedule(
@@ -131,11 +139,10 @@ public class ExtractionPortalManager {
         playerPortals.put(ownerId, portalData);
         positionToOwner.put(posKey, ownerId);
 
-        LOGGER.at(Level.INFO).log("Portal registered for player " + ownerId + ", expires in " + config.getPortalDurationSeconds() + "s");
+        LOGGER.at(Level.INFO).log("Portal placed for " + ownerId + " at " + x + ", " + y + ", " + z + " (expires in " + config.getPortalDurationSeconds() + "s)");
     }
 
-    private void placeBlockInChunk(@Nonnull WorldChunk chunk, int x, int y, int z,
-                                    int blockIndex, @Nonnull BlockType portalBlockType, @Nonnull UUID ownerId) {
+    private void placeBlockInChunk(@Nonnull WorldChunk chunk, int x, int y, int z) {
         for (int dy = 0; dy < 4; ++dy) {
             for (int dx = -1; dx <= 1; ++dx) {
                 for (int dz = -1; dz <= 1; ++dz) {
@@ -143,26 +150,21 @@ public class ExtractionPortalManager {
                 }
             }
         }
-        boolean placed = chunk.setBlock(x, y, z, blockIndex, portalBlockType, 0, 0, 0);
-        LOGGER.at(Level.INFO).log("Portal block placed at " + x + ", " + y + ", " + z + " for player " + ownerId + " (success=" + placed + ", blockIndex=" + blockIndex + ")");
+        chunk.setBlock(x, y, z, portalBlockIndex, portalBlockTypeRef, 0, 0, 0);
     }
 
     public void consumePortal(@Nonnull UUID ownerId) {
         PortalData data = playerPortals.remove(ownerId);
         if (data == null) {
-            LOGGER.at(Level.WARNING).log("Tried to consume portal for player {0} but no portal found", ownerId);
             return;
         }
 
         data.expiryTask().cancel(false);
-        String posKey = positionKey(data.x(), data.y(), data.z());
-        positionToOwner.remove(posKey);
-
+        positionToOwner.remove(positionKey(data.x(), data.y(), data.z()));
         removePortalBlock(data);
-
         cooldowns.put(ownerId, System.currentTimeMillis() + (config.getCooldownSeconds() * 1000L));
 
-        LOGGER.at(Level.INFO).log("Portal consumed by player " + ownerId + " at " + data.x() + ", " + data.y() + ", " + data.z() + ". Cooldown set for " + config.getCooldownSeconds() + "s");
+        LOGGER.at(Level.INFO).log("Portal consumed by " + ownerId + " at " + data.x() + ", " + data.y() + ", " + data.z());
     }
 
     private void expirePortal(@Nonnull UUID ownerId) {
@@ -171,12 +173,10 @@ public class ExtractionPortalManager {
             return;
         }
 
-        String posKey = positionKey(data.x(), data.y(), data.z());
-        positionToOwner.remove(posKey);
-
+        positionToOwner.remove(positionKey(data.x(), data.y(), data.z()));
         removePortalBlock(data);
 
-        LOGGER.at(Level.INFO).log("Portal expired for player " + ownerId + " at " + data.x() + ", " + data.y() + ", " + data.z());
+        LOGGER.at(Level.INFO).log("Portal expired for " + ownerId);
 
         try {
             PlayerRef playerRef = Universe.get().getPlayer(ownerId);
@@ -184,7 +184,7 @@ public class ExtractionPortalManager {
                 playerRef.sendMessage(Message.raw(config.getMessagePortalExpired()).color(Color.YELLOW));
             }
         } catch (Exception e) {
-            LOGGER.at(Level.WARNING).log("Failed to notify player " + ownerId + " of portal expiry: " + e.getMessage());
+            LOGGER.at(Level.WARNING).log("Failed to notify player of portal expiry: " + e.getMessage());
         }
     }
 
@@ -194,10 +194,19 @@ public class ExtractionPortalManager {
         int y = data.y();
         int z = data.z();
 
-        world.getChunkAsync(ChunkUtil.indexChunkFromBlock(x, z)).thenAcceptAsync(chunk -> {
-            chunk.setBlock(x, y, z, BlockType.EMPTY);
-            LOGGER.at(Level.INFO).log("Portal block removed at " + x + ", " + y + ", " + z);
-        }, (Executor) world);
+        try {
+            long chunkIndex = ChunkUtil.indexChunkFromBlock(x, z);
+            WorldChunk chunk = world.getChunk(chunkIndex);
+            if (chunk != null) {
+                chunk.setBlock(x, y, z, BlockType.EMPTY);
+            } else {
+                world.getChunkAsync(chunkIndex).thenAcceptAsync(asyncChunk -> {
+                    asyncChunk.setBlock(x, y, z, BlockType.EMPTY);
+                }, (Executor) world);
+            }
+        } catch (Exception e) {
+            LOGGER.at(Level.WARNING).log("Failed to remove portal block at " + x + ", " + y + ", " + z + ": " + e.getMessage());
+        }
     }
 
     public void removePlayerPortal(@Nonnull UUID playerId) {
@@ -206,10 +215,9 @@ public class ExtractionPortalManager {
             return;
         }
         data.expiryTask().cancel(false);
-        String posKey = positionKey(data.x(), data.y(), data.z());
-        positionToOwner.remove(posKey);
+        positionToOwner.remove(positionKey(data.x(), data.y(), data.z()));
         removePortalBlock(data);
-        LOGGER.at(Level.INFO).log("Portal removed for disconnected player {0}", playerId);
+        LOGGER.at(Level.INFO).log("Portal removed for disconnected player " + playerId);
     }
 
     public void shutdown() {
@@ -221,7 +229,7 @@ public class ExtractionPortalManager {
         playerPortals.clear();
         positionToOwner.clear();
         cooldowns.clear();
-        LOGGER.at(Level.INFO).log("ExtractionPortalManager shut down, all portals removed");
+        LOGGER.at(Level.INFO).log("ExtractionPortalManager shut down");
     }
 
     private static String positionKey(int x, int y, int z) {

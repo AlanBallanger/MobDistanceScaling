@@ -76,8 +76,6 @@ public class ExtractCommand extends AbstractPlayerCommand {
         int minDist = config.getMinDistance();
         int maxDist = config.getMaxDistance();
 
-        LOGGER.at(Level.INFO).log("Player " + playerId + " requested extraction portal. Position: " + (int) playerX + ", " + (int) playerZ + ". Distance range: " + minDist + "-" + maxDist);
-
         context.sendMessage(Message.raw("Recherche d'un emplacement pour le portail...").color(Color.YELLOW));
 
         world.execute(() -> {
@@ -104,7 +102,7 @@ public class ExtractCommand extends AbstractPlayerCommand {
                     .replace("{z}", String.valueOf(pz));
                 context.sendMessage(Message.raw(msg).color(Color.GREEN));
 
-                LOGGER.at(Level.INFO).log("Extraction portal spawned for player " + playerId + " at " + px + ", " + py + ", " + pz + " (distance: " + (int) distance + ")");
+                LOGGER.at(Level.INFO).log("Portal spawned for " + playerId + " at " + px + "," + py + "," + pz + " dist=" + (int) distance);
 
             } catch (Exception e) {
                 LOGGER.at(Level.SEVERE).log("Error spawning extraction portal for player " + playerId + ": " + e.getMessage(), e);
@@ -125,7 +123,6 @@ public class ExtractCommand extends AbstractPlayerCommand {
 
             Double safeY = findSafeY(world, targetX, targetZ);
             if (safeY != null) {
-                LOGGER.at(Level.INFO).log("Portal position found after " + (attempt + 1) + " attempts at " + targetX + ", " + safeY.intValue() + ", " + targetZ);
                 return new Vector3d(targetX, safeY, targetZ);
             }
         }

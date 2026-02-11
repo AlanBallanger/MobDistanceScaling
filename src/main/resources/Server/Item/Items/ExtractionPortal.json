@@ -6,47 +6,37 @@
     "Blocks.Portals"
   ],
   "BlockType": {
+    "AmbientSoundEventId": "SFX_Portal_Neutral",
     "DrawType": "Model",
-    "Material": "Empty",
+    "Material": "Solid",
     "Opacity": "Transparent",
-    "CustomModel": "Blocks/Invisible_Platform_Magic_Portal.blockymodel",
+    "CustomModel": "Blocks/Miscellaneous/Platform_Magic_Exit.blockymodel",
     "CustomModelTexture": [
       {
-        "Texture": "Blocks/Miscellaneous/Invisible_Platform_Magic_Portal.png",
+        "Texture": "Blocks/Miscellaneous/Platform_Magic_Blue2.png",
         "Weight": 1
       }
     ],
-    "HitboxType": "Full",
+    "HitboxType": "Pad_Portal",
     "BlockParticleSetId": "Stone",
     "BlockSoundSetId": "Stone",
     "VariantRotation": "NESW",
-    "Flags": {
-      "IsUsable": true
-    },
     "Gathering": {
       "Breaking": {
         "GatherType": "Unbreakable"
       }
     },
-    "Light": {
-      "Color": "#5df",
-      "Radius": 6
-    },
-    "AmbientSoundEventId": "SFX_Portal_Neutral",
     "Particles": [
       {
-        "SystemId": "MagicPortal_World",
+        "SystemId": "MagicPortal_ForgottenTemple",
         "PositionOffset": {
-          "Y": 1.7
-        },
-        "Scale": 0.8
+          "Y": 2.5
+        }
       }
     ],
-    "CustomModelAnimation": "Blocks/Miscellaneous/Platform_Magic_Idle.blockyanim",
-    "IsDoor": false,
-    "AllowsMultipleUsers": true,
-    "Looping": true,
-    "InteractionHitboxType": "Portal_Trigger"
+    "Light": {
+      "Color": "#59d"
+    }
   },
   "PlayerAnimationsId": "Block",
   "Tags": {
