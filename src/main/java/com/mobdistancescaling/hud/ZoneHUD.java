@@ -10,6 +10,7 @@ import com.mobdistancescaling.MobDistanceScalingPlugin;
 import com.mobdistancescaling.config.DifficultyZone;
 import com.mobdistancescaling.config.ZoneConfig;
 import com.mobdistancescaling.essence.EssenceManager;
+import com.mobdistancescaling.safezone.SafeZoneManager;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -17,60 +18,34 @@ import java.util.logging.Level;
 
 public class ZoneHUD extends CustomUIHud {
     private static final HytaleLogger LOGGER = HytaleLogger.forEnclosingClass();
-    
+    private static final int PAGE_COUNT = 2;
+    private static final int PAGE_ZONE = 0;
+    private static final int PAGE_PVP = 1;
+
     @Nonnull
     private final ZoneConfig zoneConfig;
-    
+
     @Nullable
     private DifficultyZone currentZone;
     private double distanceFromSpawn;
     private int globalBalance;
     private int playerEssence;
     private boolean built;
+    private int currentPage = PAGE_ZONE;
+    private boolean inSafeZone;
+    private String safeQuadrantName = "";
+    private long safeTimeRemaining;
 
     public ZoneHUD(@Nonnull PlayerRef playerRef, @Nonnull ZoneConfig zoneConfig) {
         super(playerRef);
         this.zoneConfig = zoneConfig;
-        this.distanceFromSpawn = 0.0;
-        this.globalBalance = 0;
-        this.playerEssence = 0;
-        this.built = false;
     }
 
     @Override
     protected void build(@Nonnull UICommandBuilder builder) {
         try {
             builder.append("HUD/ZoneHUD.ui");
-            
-            String zoneName;
-            if (currentZone != null) {
-                String name = currentZone.getName();
-                zoneName = name.toLowerCase().startsWith("zone") ? name : "Zone " + name;
-            } else {
-                zoneName = "Spawn";
-            }
-            int distance = (int) Math.round(distanceFromSpawn);
-            
-            builder.set("#ZoneName.Text", zoneName + " - " + distance + "m");
-            
-            EssenceManager essenceManager = MobDistanceScalingPlugin.getStaticEssenceManager();
-            if (essenceManager != null) {
-                playerEssence = essenceManager.getEssence(getPlayerRef().getUuid());
-                globalBalance = essenceManager.getGlobalBalance();
-            }
-            builder.set("#Essence.Text", "Essence: " + playerEssence + "/1000");
-            
-            updateEssenceBar(builder);
-            
-            if (currentZone != null) {
-                builder.set("#HPMult.Text", zoneConfig.getHudLabelHealth() + ": x" + String.format("%.1f", currentZone.getHealthMultiplier()));
-                builder.set("#DMGMult.Text", zoneConfig.getHudLabelDamage() + ": x" + String.format("%.1f", currentZone.getDamageMultiplier()));
-                builder.set("#LootMult.Text", zoneConfig.getHudLabelLoot() + ": x" + String.format("%.1f", currentZone.getLootMultiplier()));
-            } else {
-                builder.set("#HPMult.Text", "");
-                builder.set("#DMGMult.Text", "");
-                builder.set("#LootMult.Text", "");
-            }
+            applyZonePage(builder);
         } catch (Exception e) {
             LOGGER.at(Level.WARNING).log("Failed to build zone HUD: " + e.getMessage());
             return;
@@ -78,23 +53,43 @@ public class ZoneHUD extends CustomUIHud {
         built = true;
     }
 
-    public void updateZoneInfo(@Nullable DifficultyZone zone, double distance) {
+    public void nextPage() {
+        currentPage = (currentPage + 1) % PAGE_COUNT;
+    }
+
+    public int getCurrentPage() {
+        return currentPage;
+    }
+
+    public void updateZoneInfo(@Nullable DifficultyZone zone, double distance, boolean inSafe, @Nonnull String quadrantName, long timeRemaining) {
         if (!built) {
             return;
         }
+
         boolean changed = false;
-        
+
         if (this.currentZone != zone) {
             this.currentZone = zone;
             changed = true;
         }
-        
         if (Math.abs(this.distanceFromSpawn - distance) > 1.0) {
             this.distanceFromSpawn = distance;
             changed = true;
         }
-        
-        // Récupérer l'essence du joueur et la balance globale
+        if (this.inSafeZone != inSafe) {
+            this.inSafeZone = inSafe;
+            changed = true;
+        }
+        if (!this.safeQuadrantName.equals(quadrantName)) {
+            this.safeQuadrantName = quadrantName;
+            changed = true;
+        }
+        long timeDiff = Math.abs(this.safeTimeRemaining - timeRemaining);
+        if (timeDiff > 1000) {
+            this.safeTimeRemaining = timeRemaining;
+            changed = true;
+        }
+
         EssenceManager essenceManager = MobDistanceScalingPlugin.getStaticEssenceManager();
         if (essenceManager != null) {
             int currentPlayerEssence = essenceManager.getEssence(getPlayerRef().getUuid());
@@ -105,37 +100,93 @@ public class ZoneHUD extends CustomUIHud {
                 changed = true;
             }
         }
-        
+
         if (changed) {
             UICommandBuilder builder = new UICommandBuilder();
-            
-            String zoneName;
-            if (currentZone != null) {
-                String name = currentZone.getName();
-                zoneName = name.toLowerCase().startsWith("zone") ? name : "Zone " + name;
+            if (currentPage == PAGE_ZONE) {
+                applyZonePage(builder);
             } else {
-                zoneName = "Spawn";
+                applyPvpPage(builder);
             }
-            int dist = (int) Math.round(distanceFromSpawn);
-            
-            builder.set("#ZoneName.Text", zoneName + " - " + dist + "m");
-            
-            builder.set("#Essence.Text", "Essence: " + playerEssence + "/1000");
-            
-            updateEssenceBar(builder);
-            
-            if (currentZone != null) {
-                builder.set("#HPMult.Text", zoneConfig.getHudLabelHealth() + ": x" + String.format("%.1f", currentZone.getHealthMultiplier()));
-                builder.set("#DMGMult.Text", zoneConfig.getHudLabelDamage() + ": x" + String.format("%.1f", currentZone.getDamageMultiplier()));
-                builder.set("#LootMult.Text", zoneConfig.getHudLabelLoot() + ": x" + String.format("%.1f", currentZone.getLootMultiplier()));
-            } else {
-                builder.set("#HPMult.Text", "");
-                builder.set("#DMGMult.Text", "");
-                builder.set("#LootMult.Text", "");
-            }
-            
             update(false, builder);
         }
+    }
+
+    public void forcePageUpdate() {
+        if (!built) {
+            return;
+        }
+        UICommandBuilder builder = new UICommandBuilder();
+        if (currentPage == PAGE_ZONE) {
+            applyZonePage(builder);
+        } else {
+            applyPvpPage(builder);
+        }
+        update(false, builder);
+    }
+
+    private void applyZonePage(@Nonnull UICommandBuilder builder) {
+        String zoneName;
+        if (currentZone != null) {
+            String name = currentZone.getName();
+            zoneName = name.toLowerCase().startsWith("zone") ? name : "Zone " + name;
+        } else {
+            zoneName = "Spawn";
+        }
+        int dist = (int) Math.round(distanceFromSpawn);
+
+        builder.set("#ZoneName.Text", zoneName + " - " + dist + "m");
+        builder.set("#ZoneName.Style.TextColor", "#FFFFFF");
+
+        EssenceManager essenceManager = MobDistanceScalingPlugin.getStaticEssenceManager();
+        if (essenceManager != null) {
+            playerEssence = essenceManager.getEssence(getPlayerRef().getUuid());
+            globalBalance = essenceManager.getGlobalBalance();
+        }
+        builder.set("#Essence.Text", "Essence: " + playerEssence + "/1000");
+        builder.set("#Essence.Style.TextColor", "#FFFF55");
+
+        if (currentZone != null) {
+            builder.set("#HPMult.Text", zoneConfig.getHudLabelHealth() + ": x" + String.format("%.1f", currentZone.getHealthMultiplier()));
+            builder.set("#DMGMult.Text", zoneConfig.getHudLabelDamage() + ": x" + String.format("%.1f", currentZone.getDamageMultiplier()));
+            builder.set("#LootMult.Text", zoneConfig.getHudLabelLoot() + ": x" + String.format("%.1f", currentZone.getLootMultiplier()));
+        } else {
+            builder.set("#HPMult.Text", "");
+            builder.set("#DMGMult.Text", "");
+            builder.set("#LootMult.Text", "");
+        }
+
+        builder.set("#DMGMult.Style.TextColor", "#FFAA55");
+        builder.set("#LootMult.Style.TextColor", "#55FF55");
+
+        updateEssenceBar(builder);
+    }
+
+    private void applyPvpPage(@Nonnull UICommandBuilder builder) {
+        String zoneName;
+        if (currentZone != null) {
+            String name = currentZone.getName();
+            zoneName = name.toLowerCase().startsWith("zone") ? name : "Zone " + name;
+        } else {
+            zoneName = "Spawn";
+        }
+        int dist = (int) Math.round(distanceFromSpawn);
+        builder.set("#ZoneName.Text", zoneName + " - " + dist + "m");
+        builder.set("#ZoneName.Style.TextColor", "#FFFFFF");
+
+        if (inSafeZone) {
+            builder.set("#Essence.Text", "PvP : D\u00e9sactiv\u00e9");
+            builder.set("#Essence.Style.TextColor", "#55FF55");
+        } else {
+            builder.set("#Essence.Text", "PvP : Actif");
+            builder.set("#Essence.Style.TextColor", "#FF5555");
+        }
+
+        builder.set("#HPMult.Text", "");
+        builder.set("#DMGMult.Text", "");
+        builder.set("#LootMult.Text", "");
+
+        updateEssenceBar(builder);
     }
 
     @Nullable
@@ -165,13 +216,13 @@ public class ZoneHUD extends CustomUIHud {
         int labelWidth = 80;
         int barEnd = left + width;
         int labelLeft = barEnd - (labelWidth / 2);
-        
+
         if (labelLeft < 0) {
             labelLeft = 0;
         } else if (labelLeft > totalWidth - labelWidth) {
             labelLeft = totalWidth - labelWidth;
         }
-        
+
         Anchor labelAnchor = new Anchor();
         labelAnchor.setLeft(Value.of(labelLeft));
         labelAnchor.setWidth(Value.of(labelWidth));
@@ -184,11 +235,11 @@ public class ZoneHUD extends CustomUIHud {
         if (!built) {
             return;
         }
-        
+
         EssenceManager essenceManager = MobDistanceScalingPlugin.getStaticEssenceManager();
         if (essenceManager != null) {
             this.globalBalance = essenceManager.getGlobalBalance();
-            
+
             UICommandBuilder builder = new UICommandBuilder();
             updateEssenceBar(builder);
             update(false, builder);

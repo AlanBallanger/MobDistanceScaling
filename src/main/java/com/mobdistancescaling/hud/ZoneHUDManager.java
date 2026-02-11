@@ -11,8 +11,10 @@ import com.hypixel.hytale.server.core.plugin.PluginBase;
 import com.hypixel.hytale.server.core.plugin.PluginManager;
 import com.hypixel.hytale.server.core.universe.PlayerRef;
 import com.hypixel.hytale.server.core.universe.Universe;
+import com.mobdistancescaling.MobDistanceScalingPlugin;
 import com.mobdistancescaling.config.DifficultyZone;
 import com.mobdistancescaling.config.ZoneConfig;
+import com.mobdistancescaling.safezone.SafeZoneManager;
 import com.mobdistancescaling.util.ZoneCalculator;
 
 import javax.annotation.Nonnull;
@@ -26,6 +28,7 @@ import java.util.logging.Level;
 public class ZoneHUDManager {
     private static final HytaleLogger LOGGER = HytaleLogger.forEnclosingClass();
     private static final long UPDATE_INTERVAL_MS = 1000;
+    private static final int PAGE_SWITCH_TICKS = 5;
     private static final String MULTIPLE_HUD_PLUGIN_ID = "Buuz135:MultipleHUD";
     private static final String MULTIPLE_CUSTOM_UI_HUD_CLASS = "com.buuz135.mhud.MultipleCustomUIHud";
     private static final int MULTIHUD_MAX_ATTEMPTS = 300;
@@ -34,43 +37,62 @@ public class ZoneHUDManager {
     private final Map<UUID, ZoneHUD> playerHuds = new ConcurrentHashMap<>();
     private final ZoneConfig zoneConfig;
     private ScheduledFuture<?> updateTask;
+    private int tickCounter = 0;
 
     public ZoneHUDManager(@Nonnull ZoneConfig zoneConfig) {
         this.zoneConfig = zoneConfig;
-        LOGGER.at(Level.INFO).log("ZoneHUDManager initialized with CustomUI HUD");
+        LOGGER.at(Level.INFO).log("ZoneHUDManager initialized");
         startUpdateTask();
     }
 
     private void startUpdateTask() {
         updateTask = HytaleServer.SCHEDULED_EXECUTOR.scheduleAtFixedRate(() -> {
             try {
-                updateAllHuds();
+                tickCounter++;
+                boolean switchPage = (tickCounter % PAGE_SWITCH_TICKS == 0);
+                updateAllHuds(switchPage);
             } catch (Exception e) {
                 LOGGER.at(Level.WARNING).log("Error updating HUDs: " + e.getMessage());
             }
         }, UPDATE_INTERVAL_MS, UPDATE_INTERVAL_MS, TimeUnit.MILLISECONDS);
-        
-        LOGGER.at(Level.INFO).log("HUD update task started (every " + UPDATE_INTERVAL_MS + "ms)");
     }
 
-    private void updateAllHuds() {
+    private void updateAllHuds(boolean switchPage) {
+        SafeZoneManager szm = MobDistanceScalingPlugin.getStaticSafeZoneManager();
+        boolean safeZoneAvailable = szm != null;
+        String quadrantName = "";
+        long timeRemaining = 0;
+
+        if (safeZoneAvailable) {
+            quadrantName = szm.getCurrentQuadrant() != null ? szm.getCurrentQuadrant().name() : "?";
+            timeRemaining = szm.getTimeUntilRotation();
+        }
+
         for (Map.Entry<UUID, ZoneHUD> entry : playerHuds.entrySet()) {
             UUID playerId = entry.getKey();
             ZoneHUD hud = entry.getValue();
-            
+
             PlayerRef playerRef = Universe.get().getPlayer(playerId);
             if (playerRef == null || playerRef.getReference() == null) {
                 continue;
             }
-            
+
             try {
                 Transform transform = playerRef.getTransform();
                 double x = transform.getPosition().x;
                 double z = transform.getPosition().z;
                 double distance = ZoneCalculator.calculate2DDistance(x, z);
                 DifficultyZone zone = ZoneCalculator.getZoneAtPosition(x, z, zoneConfig);
-                
-                hud.updateZoneInfo(zone, distance);
+
+                boolean inSafe = safeZoneAvailable && szm.isInSafeZone(x, z);
+
+                if (switchPage && safeZoneAvailable) {
+                    hud.nextPage();
+                    hud.updateZoneInfo(zone, distance, inSafe, quadrantName, timeRemaining);
+                    hud.forcePageUpdate();
+                } else {
+                    hud.updateZoneInfo(zone, distance, inSafe, quadrantName, timeRemaining);
+                }
             } catch (Exception e) {
                 LOGGER.at(Level.WARNING).log("Error updating HUD for player " + playerId + ": " + e.getMessage());
             }
@@ -80,10 +102,8 @@ public class ZoneHUDManager {
     public void shutdown() {
         if (updateTask != null) {
             updateTask.cancel(false);
-            LOGGER.at(Level.INFO).log("HUD update task stopped");
         }
     }
-
 
     public boolean isAvailable() {
         return true;
@@ -94,10 +114,8 @@ public class ZoneHUDManager {
         ZoneHUD hud = playerHuds.get(playerId);
 
         if (hud == null) {
-            LOGGER.at(Level.INFO).log("Creating new ZoneHUD for player " + playerId);
             hud = new ZoneHUD(playerRef, zoneConfig);
             playerHuds.put(playerId, hud);
-
             tryRegisterWithMultipleHud(player, playerRef, hud, 0);
         }
     }
@@ -109,9 +127,8 @@ public class ZoneHUDManager {
         if (!multipleHudEnabled) {
             try {
                 player.getHudManager().setCustomHud(playerRef, hud);
-                LOGGER.at(Level.INFO).log("HUD registered with direct API for player " + playerRef.getUuid());
             } catch (Exception e) {
-                LOGGER.at(Level.SEVERE).log("Failed to register HUD with direct API: " + e.getMessage());
+                LOGGER.at(Level.SEVERE).log("Failed to register HUD: " + e.getMessage());
             }
             return;
         }
@@ -122,33 +139,20 @@ public class ZoneHUDManager {
                 currentHud.getClass()
                     .getMethod("add", String.class, CustomUIHud.class)
                     .invoke(currentHud, "MobDistanceScaling_Zone", hud);
-                LOGGER.at(Level.INFO).log("Added HUD to existing MultipleCustomUIHud for player " + playerRef.getUuid());
                 return;
             }
 
             if (currentHud == null && attempt >= 20) {
-                LOGGER.at(Level.INFO).log("No custom HUD yet; creating MultipleCustomUIHud for player " + playerRef.getUuid());
                 MultipleHUD.getInstance().setCustomHud(player, playerRef, "MobDistanceScaling_Zone", hud);
-                LOGGER.at(Level.INFO).log("HUD registered with MultipleHUD for player " + playerRef.getUuid());
                 return;
             }
 
             if (attempt >= MULTIHUD_MAX_ATTEMPTS) {
-                String currentHudName = currentHud != null ? currentHud.getClass().getName() : "null";
-                LOGGER.at(Level.WARNING).log(
-                    "MultipleCustomUIHud not ready after retries for player " + playerRef.getUuid()
-                        + " (currentHud=" + currentHudName + ")"
-                );
+                LOGGER.at(Level.WARNING).log("MultipleCustomUIHud not ready after retries for player " + playerRef.getUuid());
                 return;
             }
 
             int nextAttempt = attempt + 1;
-            if (nextAttempt % 20 == 0) {
-                String currentHudName = currentHud != null ? currentHud.getClass().getName() : "null";
-                LOGGER.at(Level.INFO).log(
-                    "Waiting for MultipleCustomUIHud... attempt " + nextAttempt + " (currentHud=" + currentHudName + ")"
-                );
-            }
             HytaleServer.SCHEDULED_EXECUTOR.schedule(
                 () -> tryRegisterWithMultipleHud(player, playerRef, hud, nextAttempt),
                 MULTIHUD_RETRY_DELAY_MS,
@@ -168,7 +172,7 @@ public class ZoneHUDManager {
             try {
                 hud.updateGlobalBalance();
             } catch (Exception e) {
-                LOGGER.at(Level.WARNING).log("Failed to update global balance for HUD: " + e.getMessage());
+                LOGGER.at(Level.WARNING).log("Failed to update global balance: " + e.getMessage());
             }
         }
     }
