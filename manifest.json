@@ -1,7 +1,7 @@
 {
   "Group": "MobDistanceScaling",
   "Name": "MobDistanceScaling",
-  "Version": "0.1.2",
+  "Version": "0.1.4",
   "Description": "Scale mob difficulty based on distance from spawn",
   "Authors": [
     {

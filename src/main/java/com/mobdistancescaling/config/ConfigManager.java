@@ -20,6 +20,7 @@ public class ConfigManager {
     private final Path configPath;
     private ZoneConfig zoneConfig;
     private SafeZoneConfig safeZoneConfig;
+    private ExtractionConfig extractionConfig;
 
     public ConfigManager(@Nonnull Path pluginDataFolder) {
         this.configPath = pluginDataFolder.resolve(CONFIG_FILENAME);
@@ -32,6 +33,7 @@ public class ConfigManager {
             LOGGER.at(Level.INFO).log("Configuration file not found, creating default config at: {0}", configPath);
             zoneConfig = ZoneConfig.createDefault();
             safeZoneConfig = new SafeZoneConfig();
+            extractionConfig = new ExtractionConfig();
             save();
             return;
         }
@@ -40,11 +42,13 @@ public class ConfigManager {
             Toml toml = new Toml().read(configFile);
             zoneConfig = parseZoneConfig(toml);
             safeZoneConfig = parseSafeZoneConfig(toml);
+            extractionConfig = parseExtractionConfig(toml);
             LOGGER.at(Level.INFO).log("Loaded configuration with {0} zones", zoneConfig.getZones().size());
         } catch (Exception e) {
             LOGGER.at(Level.SEVERE).log("Failed to load config, using default configuration", e);
             zoneConfig = ZoneConfig.createDefault();
             safeZoneConfig = new SafeZoneConfig();
+            extractionConfig = new ExtractionConfig();
         }
     }
 
@@ -262,6 +266,31 @@ public class ConfigManager {
         sb.append("messageRandomZone = \"").append(config.getRtpvMessageRandomZone()).append("\"\n\n");
 
         sb.append("# ==========================================================\n");
+        sb.append("# EXTRACTION PORTAL SYSTEM\n");
+        sb.append("# /extract spawns a portal at a random distance from the player\n");
+        sb.append("# Walking into the portal teleports the owner back to spawn\n");
+        sb.append("# Placeholders: {distance}, {x}, {y}, {z}, {remaining}\n");
+        sb.append("# ==========================================================\n");
+        sb.append("[extraction]\n");
+        sb.append("enabled = ").append(extractionConfig.isEnabled()).append("\n\n");
+        sb.append("# Distance min/max du portail par rapport au joueur (en blocs)\n");
+        sb.append("minDistance = ").append(extractionConfig.getMinDistance()).append("\n");
+        sb.append("maxDistance = ").append(extractionConfig.getMaxDistance()).append("\n\n");
+        sb.append("# Duree de vie du portail (secondes)\n");
+        sb.append("portalDurationSeconds = ").append(extractionConfig.getPortalDurationSeconds()).append("\n\n");
+        sb.append("# Cooldown entre chaque utilisation de /extract (secondes)\n");
+        sb.append("cooldownSeconds = ").append(extractionConfig.getCooldownSeconds()).append("\n\n");
+        sb.append("# Messages\n");
+        sb.append("messagePortalSpawned = \"").append(extractionConfig.getMessagePortalSpawned()).append("\"\n");
+        sb.append("messagePortalExpired = \"").append(extractionConfig.getMessagePortalExpired()).append("\"\n");
+        sb.append("messageCooldown = \"").append(extractionConfig.getMessageCooldown()).append("\"\n");
+        sb.append("messageTeleporting = \"").append(extractionConfig.getMessageTeleporting()).append("\"\n");
+        sb.append("messageNotYourPortal = \"").append(extractionConfig.getMessageNotYourPortal()).append("\"\n");
+        sb.append("messageNoSafeLocation = \"").append(extractionConfig.getMessageNoSafeLocation()).append("\"\n");
+        sb.append("messageError = \"").append(extractionConfig.getMessageError()).append("\"\n");
+        sb.append("messageAlreadyHasPortal = \"").append(extractionConfig.getMessageAlreadyHasPortal()).append("\"\n\n");
+
+        sb.append("# ==========================================================\n");
         sb.append("# DIFFICULTY ZONES\n");
         sb.append("# Each zone has separate multipliers for HP, damage, and loot\n");
         sb.append("# \n");
@@ -286,6 +315,30 @@ public class ConfigManager {
         }
 
         return sb.toString();
+    }
+
+    @Nonnull
+    private ExtractionConfig parseExtractionConfig(@Nonnull Toml toml) {
+        ExtractionConfig config = new ExtractionConfig();
+
+        Toml extractionToml = toml.getTable("extraction");
+        if (extractionToml != null) {
+            config.setEnabled(extractionToml.getBoolean("enabled", true));
+            config.setMinDistance(extractionToml.getLong("minDistance", 100L).intValue());
+            config.setMaxDistance(extractionToml.getLong("maxDistance", 200L).intValue());
+            config.setPortalDurationSeconds(extractionToml.getLong("portalDurationSeconds", 300L).intValue());
+            config.setCooldownSeconds(extractionToml.getLong("cooldownSeconds", 300L).intValue());
+            config.setMessagePortalSpawned(extractionToml.getString("messagePortalSpawned", config.getMessagePortalSpawned()));
+            config.setMessagePortalExpired(extractionToml.getString("messagePortalExpired", config.getMessagePortalExpired()));
+            config.setMessageCooldown(extractionToml.getString("messageCooldown", config.getMessageCooldown()));
+            config.setMessageTeleporting(extractionToml.getString("messageTeleporting", config.getMessageTeleporting()));
+            config.setMessageNotYourPortal(extractionToml.getString("messageNotYourPortal", config.getMessageNotYourPortal()));
+            config.setMessageNoSafeLocation(extractionToml.getString("messageNoSafeLocation", config.getMessageNoSafeLocation()));
+            config.setMessageError(extractionToml.getString("messageError", config.getMessageError()));
+            config.setMessageAlreadyHasPortal(extractionToml.getString("messageAlreadyHasPortal", config.getMessageAlreadyHasPortal()));
+        }
+
+        return config;
     }
 
     @Nonnull
@@ -316,6 +369,11 @@ public class ConfigManager {
     @Nonnull
     public SafeZoneConfig getSafeZoneConfig() {
         return safeZoneConfig;
+    }
+
+    @Nonnull
+    public ExtractionConfig getExtractionConfig() {
+        return extractionConfig;
     }
 
     public void reload() {

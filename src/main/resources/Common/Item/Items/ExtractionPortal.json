@@ -1,0 +1,60 @@
+{
+  "TranslationProperties": {
+    "Name": "Extraction Portal"
+  },
+  "Categories": [
+    "Blocks.Portals"
+  ],
+  "BlockType": {
+    "DrawType": "Model",
+    "Material": "Empty",
+    "Opacity": "Transparent",
+    "CustomModel": "Blocks/Invisible_Platform_Magic_Portal.blockymodel",
+    "CustomModelTexture": [
+      {
+        "Texture": "Blocks/Miscellaneous/Invisible_Platform_Magic_Portal.png",
+        "Weight": 1
+      }
+    ],
+    "HitboxType": "Full",
+    "BlockParticleSetId": "Stone",
+    "BlockSoundSetId": "Stone",
+    "VariantRotation": "NESW",
+    "Flags": {
+      "IsUsable": true
+    },
+    "Gathering": {
+      "Breaking": {
+        "GatherType": "Unbreakable"
+      }
+    },
+    "Light": {
+      "Color": "#5df",
+      "Radius": 6
+    },
+    "AmbientSoundEventId": "SFX_Portal_Neutral",
+    "Particles": [
+      {
+        "SystemId": "MagicPortal_World",
+        "PositionOffset": {
+          "Y": 1.7
+        },
+        "Scale": 0.8
+      }
+    ],
+    "CustomModelAnimation": "Blocks/Miscellaneous/Platform_Magic_Idle.blockyanim",
+    "IsDoor": false,
+    "AllowsMultipleUsers": true,
+    "Looping": true,
+    "InteractionHitboxType": "Portal_Trigger"
+  },
+  "PlayerAnimationsId": "Block",
+  "Tags": {
+    "Type": [
+      "Portal",
+      "ExtractionPortal"
+    ]
+  },
+  "Quality": "Developer",
+  "ItemSoundSetId": "ISS_Blocks_Stone"
+}

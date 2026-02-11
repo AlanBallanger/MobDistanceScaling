@@ -19,6 +19,7 @@ import com.hypixel.hytale.server.core.universe.world.events.AddWorldEvent;
 import com.hypixel.hytale.server.core.universe.world.storage.EntityStore;
 import com.hypixel.hytale.server.core.universe.world.worldmap.provider.IWorldMapProvider;
 import com.mobdistancescaling.command.EssenceCommand;
+import com.mobdistancescaling.command.ExtractCommand;
 import com.mobdistancescaling.command.GiveEssenceCommand;
 import com.mobdistancescaling.command.MdsCommand;
 import com.mobdistancescaling.command.RtpzCommand;
@@ -27,6 +28,8 @@ import com.mobdistancescaling.component.MobScalingComponent;
 import com.mobdistancescaling.config.ConfigManager;
 import com.mobdistancescaling.essence.EssenceKillSystem;
 import com.mobdistancescaling.essence.EssenceManager;
+import com.mobdistancescaling.extraction.ExtractionPortalManager;
+import com.mobdistancescaling.system.ExtractionPortalTickSystem;
 import com.mobdistancescaling.essence.EssenceMiningSystem;
 import com.mobdistancescaling.faction.FactionManager;
 import com.mobdistancescaling.hud.ZoneHUDManager;
@@ -56,6 +59,7 @@ public class MobDistanceScalingPlugin extends JavaPlugin {
     private SafeZoneManager safeZoneManager;
     private SafeZoneNotificationSystem safeZoneNotificationSystem;
     private ZoneHUDManager hudManager;
+    private ExtractionPortalManager extractionPortalManager;
 
     public MobDistanceScalingPlugin(JavaPluginInit init) {
         super(init);
@@ -84,6 +88,15 @@ public class MobDistanceScalingPlugin extends JavaPlugin {
             factionManager = new FactionManager();
             staticFactionManager = factionManager;
             LOGGER.at(Level.INFO).log("Faction system initialized");
+
+            extractionPortalManager = new ExtractionPortalManager(configManager.getExtractionConfig());
+            ExtractionPortalTickSystem extractionTickSystem = new ExtractionPortalTickSystem();
+            this.getEntityStoreRegistry().registerSystem(extractionTickSystem);
+            LOGGER.at(Level.INFO).log("Extraction portal system initialized (distance: " +
+                configManager.getExtractionConfig().getMinDistance() + "-" +
+                configManager.getExtractionConfig().getMaxDistance() + ", duration: " +
+                configManager.getExtractionConfig().getPortalDurationSeconds() + "s, cooldown: " +
+                configManager.getExtractionConfig().getCooldownSeconds() + "s)");
 
             MobScalingRefSystem mobScalingRefSystem = new MobScalingRefSystem(configManager);
             this.getEntityStoreRegistry().registerSystem(mobScalingRefSystem);
@@ -182,11 +195,12 @@ public class MobDistanceScalingPlugin extends JavaPlugin {
                 this.getEventRegistry().registerGlobal(PlayerDisconnectEvent.class, event -> {
                     PlayerRef playerRef = event.getPlayerRef();
                     hudManager.removePlayer(playerRef.getUuid());
-                    // Sauvegarder l'essence du joueur à la déconnexion
                     essenceManager.savePlayer(playerRef.getUuid());
-                    // Nettoyer le tracking de zone safe
                     if (safeZoneNotificationSystem != null) {
                         safeZoneNotificationSystem.removePlayer(playerRef.getUuid());
+                    }
+                    if (extractionPortalManager != null) {
+                        extractionPortalManager.removePlayerPortal(playerRef.getUuid());
                     }
                 });
             } else {
@@ -197,6 +211,8 @@ public class MobDistanceScalingPlugin extends JavaPlugin {
             this.getCommandRegistry().registerCommand(new RtpzCommand());
             this.getCommandRegistry().registerCommand(new RtpvCommand());
             this.getCommandRegistry().registerCommand(new EssenceCommand(essenceManager, factionManager));
+            this.getCommandRegistry().registerCommand(new ExtractCommand());
+            LOGGER.at(Level.INFO).log("Registered /extract command");
 
             LOGGER.at(Level.INFO).log("MobDistanceScaling initialized with {0} zones",
                     configManager.getZoneConfig().getZones().size());
@@ -215,6 +231,9 @@ public class MobDistanceScalingPlugin extends JavaPlugin {
         }
         if (safeZoneManager != null) {
             safeZoneManager.shutdown();
+        }
+        if (extractionPortalManager != null) {
+            extractionPortalManager.shutdown();
         }
     }
 
