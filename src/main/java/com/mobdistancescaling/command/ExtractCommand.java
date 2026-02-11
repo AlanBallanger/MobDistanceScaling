@@ -9,12 +9,14 @@ import com.hypixel.hytale.math.vector.Vector3d;
 import com.hypixel.hytale.server.core.Message;
 import com.hypixel.hytale.server.core.command.system.CommandContext;
 import com.hypixel.hytale.server.core.command.system.basecommands.AbstractPlayerCommand;
+import com.hypixel.hytale.protocol.BlockMaterial;
+import com.hypixel.hytale.protocol.GameMode;
+import com.hypixel.hytale.server.core.asset.type.blocktype.config.BlockType;
+import com.hypixel.hytale.server.core.entity.entities.Player;
 import com.hypixel.hytale.server.core.universe.PlayerRef;
 import com.hypixel.hytale.server.core.universe.world.World;
 import com.hypixel.hytale.server.core.universe.world.chunk.WorldChunk;
 import com.hypixel.hytale.server.core.universe.world.storage.EntityStore;
-import com.hypixel.hytale.protocol.BlockMaterial;
-import com.hypixel.hytale.server.core.asset.type.blocktype.config.BlockType;
 import com.mobdistancescaling.config.ExtractionConfig;
 import com.mobdistancescaling.extraction.ExtractionPortalManager;
 
@@ -28,12 +30,16 @@ import java.util.logging.Level;
 
 public class ExtractCommand extends AbstractPlayerCommand {
     private static final HytaleLogger LOGGER = HytaleLogger.forEnclosingClass();
+    private static final String PERM_USE = "mobdistancescaling.extract";
+    private static final String PERM_BYPASS = "mobdistancescaling.extract.bypass";
     private static final int START_Y = 200;
     private static final int MIN_Y = 0;
     private final Random random = new Random();
 
     public ExtractCommand() {
         super("extract", "Spawn an extraction portal nearby");
+        this.setPermissionGroup(GameMode.Adventure);
+        this.requirePermission(PERM_USE);
     }
 
     @Override
@@ -44,7 +50,6 @@ public class ExtractCommand extends AbstractPlayerCommand {
 
         if (manager == null) {
             context.sendMessage(Message.raw("Extraction system not available.").color(Color.RED));
-            LOGGER.at(Level.WARNING).log("ExtractCommand: ExtractionPortalManager not initialized");
             return;
         }
 
@@ -55,17 +60,22 @@ public class ExtractCommand extends AbstractPlayerCommand {
             return;
         }
 
+        Player player = store.getComponent(ref, Player.getComponentType());
+        boolean bypass = player != null && player.hasPermission(PERM_BYPASS);
+
         if (manager.hasActivePortal(playerId)) {
-            context.sendMessage(Message.raw(config.getMessageAlreadyHasPortal()).color(Color.RED));
-            LOGGER.at(Level.INFO).log("Player {0} already has an active portal", playerId);
-            return;
+            if (bypass) {
+                manager.removePlayerPortal(playerId);
+            } else {
+                context.sendMessage(Message.raw(config.getMessageAlreadyHasPortal()).color(Color.RED));
+                return;
+            }
         }
 
-        if (manager.isOnCooldown(playerId)) {
+        if (!bypass && manager.isOnCooldown(playerId)) {
             long remaining = manager.getCooldownRemainingSeconds(playerId);
             String msg = config.getMessageCooldown().replace("{remaining}", String.valueOf(remaining));
             context.sendMessage(Message.raw(msg).color(Color.RED));
-            LOGGER.at(Level.INFO).log("Player " + playerId + " on cooldown, " + remaining + "s remaining");
             return;
         }
 
