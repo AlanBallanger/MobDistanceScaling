@@ -16,6 +16,7 @@ import com.hypixel.hytale.server.core.universe.world.storage.EntityStore;
 import com.varyon.VaryonPlugin;
 import com.varyon.config.ConfigManager;
 import com.varyon.faction.FactionManager;
+import com.varyon.deposit.DepositBlockManager;
 
 import org.checkerframework.checker.nullness.compatqual.NonNullDecl;
 
@@ -26,11 +27,13 @@ import java.util.concurrent.Executor;
 public class VaryonCommand extends AbstractAsyncCommand {
     private final VaryonPlugin plugin;
     private final FactionManager factionManager;
+    private final DepositBlockManager depositBlockManager;
 
-    public VaryonCommand(VaryonPlugin plugin, FactionManager factionManager) {
+    public VaryonCommand(VaryonPlugin plugin, FactionManager factionManager, DepositBlockManager depositBlockManager) {
         super("varyon", "Varyon commands");
         this.plugin = plugin;
         this.factionManager = factionManager;
+        this.depositBlockManager = depositBlockManager;
         this.addSubCommand(new HelpSubCommand());
         this.addSubCommand(new ExtractSubCommand());
         this.addSubCommand(new ReloadSubCommand(plugin));
@@ -38,6 +41,8 @@ public class VaryonCommand extends AbstractAsyncCommand {
         this.addSubCommand(new FactionSubCommand(factionManager));
         this.addSubCommand(new ResetRewardsSubCommand());
         this.addSubCommand(new ResetBalanceSubCommand());
+        this.addSubCommand(new com.varyon.command.CreateDepositSubCommand(depositBlockManager));
+        this.addSubCommand(new com.varyon.command.ResetDepositSubCommand(depositBlockManager));
     }
 
     @NonNullDecl
@@ -75,6 +80,8 @@ public class VaryonCommand extends AbstractAsyncCommand {
             if (isAdmin) {
                 context.sendMessage(Message.raw("  /varyon reload - Recharger la configuration").color(Color.WHITE));
                 context.sendMessage(Message.raw("  /varyon clearmap - Vider le cache de la map").color(Color.WHITE));
+                context.sendMessage(Message.raw("  /varyon createdeposit - Créer un bloc de dépôt").color(Color.WHITE));
+                context.sendMessage(Message.raw("  /varyon resetdeposit - Supprimer tous les blocs de dépôt").color(Color.WHITE));
                 context.sendMessage(Message.raw("  /varyon resetrewards - Reset cooldowns des récompenses").color(Color.WHITE));
                 context.sendMessage(Message.raw("  /varyon resetbalance - Reset la jauge globale à 0").color(Color.WHITE));
                 context.sendMessage(Message.raw("  /essence give <joueur> <montant>").color(Color.WHITE));

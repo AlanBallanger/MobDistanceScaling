@@ -18,6 +18,7 @@ public class SafeZoneManager {
     private static final String STATE_FILE = "safezone_state.dat";
     
     private final SafeZoneConfig config;
+    private final com.varyon.config.ZoneConfig zoneConfig;
     private final Path dataDirectory;
     private final Random random = new Random();
     
@@ -30,8 +31,9 @@ public class SafeZoneManager {
     private ScheduledFuture<?> rotationTask;
     private ScheduledFuture<?> announcementTask;
 
-    public SafeZoneManager(@Nonnull SafeZoneConfig config, @Nonnull Path dataDirectory) {
+    public SafeZoneManager(@Nonnull SafeZoneConfig config, @Nonnull com.varyon.config.ZoneConfig zoneConfig, @Nonnull Path dataDirectory) {
         this.config = config;
+        this.zoneConfig = zoneConfig;
         this.dataDirectory = dataDirectory;
         this.currentQuadrant = SafeZoneQuadrant.NORTH_EAST;
         this.nextQuadrant = SafeZoneQuadrant.SOUTH_EAST;
@@ -133,6 +135,11 @@ public class SafeZoneManager {
 
     private void broadcastMessage(Message message) {
         Universe.get().getWorlds().values().forEach(world -> {
+            // Vérifier si ce monde est activé dans la config
+            if (!zoneConfig.isWorldEnabled(world.getName())) {
+                return;
+            }
+            
             world.execute(() -> {
                 world.getPlayerRefs().forEach(playerRef -> {
                     playerRef.sendMessage(message);

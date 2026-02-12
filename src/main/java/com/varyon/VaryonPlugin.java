@@ -27,6 +27,9 @@ import com.varyon.component.MobScalingComponent;
 import com.varyon.config.ConfigManager;
 import com.varyon.config.EssenceRewardsConfig;
 import com.varyon.config.GlobalRewardsConfig;
+import com.varyon.deposit.DepositBlockInteractionSystem;
+import com.varyon.deposit.DepositBlockManager;
+import com.varyon.deposit.DepositUIManager;
 import com.varyon.essence.EssenceKillSystem;
 import com.varyon.essence.EssenceManager;
 import com.varyon.essence.GlobalRewardsManager;
@@ -66,6 +69,8 @@ public class VaryonPlugin extends JavaPlugin {
     private EssenceRewardsConfig essenceRewardsConfig;
     private GlobalRewardsConfig globalRewardsConfig;
     private GlobalRewardsManager globalRewardsManager;
+    private DepositBlockManager depositBlockManager;
+    private DepositUIManager depositUIManager;
 
     public VaryonPlugin(JavaPluginInit init) {
         super(init);
@@ -136,9 +141,17 @@ public class VaryonPlugin extends JavaPlugin {
             this.getEntityStoreRegistry().registerSystem(essenceMiningSystem);
             LOGGER.at(Level.INFO).log("Essence reward systems registered");
 
+            // Initialiser le système de dépôt d'essence
+            depositBlockManager = new DepositBlockManager(this.getDataDirectory());
+            depositUIManager = new DepositUIManager(essenceManager);
+            
+            DepositBlockInteractionSystem depositInteractionSystem = new DepositBlockInteractionSystem(depositBlockManager, depositUIManager);
+            this.getEntityStoreRegistry().registerSystem(depositInteractionSystem);
+            LOGGER.at(Level.INFO).log("Deposit block system initialized");
+
             // Initialiser le système de safe zone
             if (configManager.getSafeZoneConfig().isEnabled()) {
-                safeZoneManager = new SafeZoneManager(configManager.getSafeZoneConfig(), this.getDataDirectory());
+                safeZoneManager = new SafeZoneManager(configManager.getSafeZoneConfig(), configManager.getZoneConfig(), this.getDataDirectory());
                 staticSafeZoneManager = safeZoneManager;
                 
                 SafeZonePvpSystem safeZonePvpSystem = new SafeZonePvpSystem();
@@ -228,7 +241,7 @@ public class VaryonPlugin extends JavaPlugin {
                 LOGGER.at(Level.WARNING).log("Zone HUD could not be initialized");
             }
 
-            this.getCommandRegistry().registerCommand(new VaryonCommand(this, factionManager));
+            this.getCommandRegistry().registerCommand(new VaryonCommand(this, factionManager, depositBlockManager));
             this.getCommandRegistry().registerCommand(new ExtractCommand("extract"));
             this.getCommandRegistry().registerCommand(new ExtractCommand("ex"));
             this.getCommandRegistry().registerCommand(new EssenceCommand(essenceManager, factionManager));
