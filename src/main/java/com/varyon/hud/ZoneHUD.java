@@ -120,7 +120,7 @@ public class ZoneHUD extends CustomUIHud {
         String zoneName;
         if (currentZone != null) {
             String name = currentZone.getName();
-            zoneName = name.toLowerCase().startsWith("zone") ? name : "Zone " + name;
+            zoneName = (name.toLowerCase().startsWith("zone") ? name : "Zone " + name) + " [" + currentZone.getZoneId() + "]";
         } else {
             zoneName = "Spawn";
         }
@@ -134,39 +134,10 @@ public class ZoneHUD extends CustomUIHud {
             playerEssence = essenceManager.getEssence(getPlayerRef().getUuid());
             globalBalance = essenceManager.getGlobalBalance();
         }
-        builder.set("#Essence.Text", "Essence: " + (int) Math.floor(playerEssence) + "/1000");
-        builder.set("#Essence.Style.TextColor", "#FFFF55");
-
-        if (currentZone != null) {
-            builder.set("#HPMult.Text", zoneConfig.getHudLabelHealth() + ": x" + String.format("%.1f", currentZone.getHealthMultiplier()));
-            builder.set("#DMGMult.Text", zoneConfig.getHudLabelDamage() + ": x" + String.format("%.1f", currentZone.getDamageMultiplier()));
-            builder.set("#LootMult.Text", zoneConfig.getHudLabelLoot() + ": x" + String.format("%.1f", currentZone.getLootMultiplier()));
-        } else {
-            builder.set("#HPMult.Text", "");
-            builder.set("#DMGMult.Text", "");
-            builder.set("#LootMult.Text", "");
-        }
-
-        builder.set("#HPMult.Style.TextColor", "#FFFFFF");
-        builder.set("#DMGMult.Style.TextColor", "#FFAA55");
-        builder.set("#LootMult.Style.TextColor", "#55FF55");
-
-        updateEssenceBar(builder);
-    }
-
-    private void applyPvpPage(@Nonnull UICommandBuilder builder) {
-        String zoneName;
-        if (currentZone != null) {
-            String name = currentZone.getName();
-            zoneName = name.toLowerCase().startsWith("zone") ? name : "Zone " + name;
-        } else {
-            zoneName = "Spawn";
-        }
-        int dist = (int) Math.round(distanceFromSpawn);
-        builder.set("#ZoneName.Text", zoneName + " - " + dist + "m");
-        builder.set("#ZoneName.Style.TextColor", "#FFFFFF");
-
-        builder.set("#Essence.Text", "Essence: " + (int) Math.floor(playerEssence) + "/1000");
+        
+        int currentEssence = (int) Math.floor(playerEssence);
+        int maxEssence = currentEssence > 1000 ? ((currentEssence / 1000) + 1) * 1000 : 1000;
+        builder.set("#Essence.Text", "Essence: " + currentEssence + "/" + maxEssence);
         builder.set("#Essence.Style.TextColor", "#FFFF55");
 
         if (inSafeZone) {
@@ -177,7 +148,65 @@ public class ZoneHUD extends CustomUIHud {
             builder.set("#HPMult.Style.TextColor", "#FF5555");
         }
 
-        builder.set("#DMGMult.Text", "");
+        if (currentZone != null) {
+            builder.set("#DMGMult.Text", zoneConfig.getHudLabelHealth() + ": x" + String.format("%.1f", currentZone.getHealthMultiplier()));
+            builder.set("#LootMult.Text", zoneConfig.getHudLabelDamage() + ": x" + String.format("%.1f", currentZone.getDamageMultiplier()));
+        } else {
+            builder.set("#DMGMult.Text", "");
+            builder.set("#LootMult.Text", "");
+        }
+
+        builder.set("#DMGMult.Style.TextColor", "#FFFFFF");
+        builder.set("#LootMult.Style.TextColor", "#FFAA55");
+        
+        // Réinitialiser la largeur de DMGMult à sa taille normale sur cette page
+        Anchor dmgAnchor = new Anchor();
+        dmgAnchor.setWidth(Value.of(70));
+        dmgAnchor.setHeight(Value.of(22));
+        builder.setObject("#DMGMult.Anchor", dmgAnchor);
+        
+        // Remettre le séparateur 4 visible sur cette page
+        builder.set("#Separator4.Text", "|");
+
+        updateEssenceBar(builder);
+    }
+
+    private void applyPvpPage(@Nonnull UICommandBuilder builder) {
+        String zoneName;
+        if (currentZone != null) {
+            String name = currentZone.getName();
+            zoneName = (name.toLowerCase().startsWith("zone") ? name : "Zone " + name) + " [" + currentZone.getZoneId() + "]";
+        } else {
+            zoneName = "Spawn";
+        }
+        int dist = (int) Math.round(distanceFromSpawn);
+        builder.set("#ZoneName.Text", zoneName + " - " + dist + "m");
+        builder.set("#ZoneName.Style.TextColor", "#FFFFFF");
+
+        int currentEssence = (int) Math.floor(playerEssence);
+        int maxEssence = currentEssence > 1000 ? ((currentEssence / 1000) + 1) * 1000 : 1000;
+        builder.set("#Essence.Text", "Essence: " + currentEssence + "/" + maxEssence);
+        builder.set("#Essence.Style.TextColor", "#FFFF55");
+
+        if (currentZone != null) {
+            builder.set("#HPMult.Text", zoneConfig.getHudLabelLoot() + ": x" + String.format("%.1f", currentZone.getLootMultiplier()));
+            builder.set("#HPMult.Style.TextColor", "#55FF55");
+        } else {
+            builder.set("#HPMult.Text", "");
+            builder.set("#HPMult.Style.TextColor", "#55FF55");
+        }
+
+        builder.set("#DMGMult.Text", "Loot spécial : Actif");
+        builder.set("#DMGMult.Style.TextColor", "#55FF55");
+        
+        // Étendre la largeur de DMGMult pour prendre l'espace de 2 zones + séparateur
+        Anchor dmgAnchor = new Anchor();
+        dmgAnchor.setWidth(Value.of(158)); // 70 + 18 + 70
+        dmgAnchor.setHeight(Value.of(22));
+        builder.setObject("#DMGMult.Anchor", dmgAnchor);
+
+        // Cacher le séparateur 4 et la zone LootMult sur cette page
+        builder.set("#Separator4.Text", "");
         builder.set("#LootMult.Text", "");
 
         updateEssenceBar(builder);
@@ -192,25 +221,56 @@ public class ZoneHUD extends CustomUIHud {
         int totalWidth = 320;
         int halfWidth = totalWidth / 2;
         int clamped = Math.max(-10000, Math.min(10000, globalBalance));
-        int width = (int) Math.round(Math.abs(clamped) / 10000.0 * halfWidth);
-        int left = clamped >= 0 ? halfWidth : halfWidth - width;
+        
+        if (clamped >= 0) {
+            // Balance positive - barre Fracture (droite)
+            int width = (int) Math.round(clamped / 10000.0 * halfWidth);
+            
+            Anchor fractureAnchor = new Anchor();
+            fractureAnchor.setLeft(Value.of(halfWidth));
+            fractureAnchor.setWidth(Value.of(width));
+            fractureAnchor.setHeight(Value.of(14));
+            builder.setObject("#EssenceBarFracture.Anchor", fractureAnchor);
+            
+            // Cache la barre Noyau
+            Anchor noyauAnchor = new Anchor();
+            noyauAnchor.setLeft(Value.of(halfWidth));
+            noyauAnchor.setWidth(Value.of(0));
+            noyauAnchor.setHeight(Value.of(14));
+            builder.setObject("#EssenceBarNoyau.Anchor", noyauAnchor);
+        } else {
+            // Balance négative - barre Noyau (gauche)
+            int width = (int) Math.round(Math.abs(clamped) / 10000.0 * halfWidth);
+            int left = halfWidth - width;
+            
+            Anchor noyauAnchor = new Anchor();
+            noyauAnchor.setLeft(Value.of(left));
+            noyauAnchor.setWidth(Value.of(width));
+            noyauAnchor.setHeight(Value.of(14));
+            builder.setObject("#EssenceBarNoyau.Anchor", noyauAnchor);
+            
+            // Cache la barre Fracture
+            Anchor fractureAnchor = new Anchor();
+            fractureAnchor.setLeft(Value.of(halfWidth));
+            fractureAnchor.setWidth(Value.of(0));
+            fractureAnchor.setHeight(Value.of(14));
+            builder.setObject("#EssenceBarFracture.Anchor", fractureAnchor);
+        }
 
-        Anchor fillAnchor = new Anchor();
-        fillAnchor.setLeft(Value.of(left));
-        fillAnchor.setWidth(Value.of(width));
-        fillAnchor.setHeight(Value.of(14));
-        builder.setObject("#EssenceBar.Anchor", fillAnchor);
-
-        Anchor effectAnchor = new Anchor();
-        effectAnchor.setLeft(Value.of(left));
-        effectAnchor.setWidth(Value.of(width));
-        effectAnchor.setHeight(Value.of(12));
-        builder.setObject("#EssenceBarEffect.Anchor", effectAnchor);
-
+        // Position du label au centre de la barre active
         int labelWidth = 80;
-        int barEnd = left + width;
-        int labelLeft = barEnd - (labelWidth / 2);
-
+        int labelLeft;
+        
+        if (clamped >= 0) {
+            int width = (int) Math.round(clamped / 10000.0 * halfWidth);
+            int barEnd = halfWidth + width;
+            labelLeft = barEnd - (labelWidth / 2);
+        } else {
+            int width = (int) Math.round(Math.abs(clamped) / 10000.0 * halfWidth);
+            int barStart = halfWidth - width;
+            labelLeft = barStart + width - (labelWidth / 2);
+        }
+        
         if (labelLeft < 0) {
             labelLeft = 0;
         } else if (labelLeft > totalWidth - labelWidth) {

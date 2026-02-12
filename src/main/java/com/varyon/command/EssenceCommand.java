@@ -31,6 +31,7 @@ public class EssenceCommand extends AbstractAsyncCommand {
         this.addSubCommand(new TopSubCommand(essenceManager));
         this.addSubCommand(new GiveSubCommand(essenceManager));
         this.addSubCommand(new TakeSubCommand(essenceManager));
+        this.addSubCommand(new SetMaxSubCommand(essenceManager));
         this.addSubCommand(new DepositSubCommand(essenceManager, factionManager));
     }
 
@@ -142,6 +143,36 @@ public class EssenceCommand extends AbstractAsyncCommand {
         }
     }
 
+    public static class SetMaxSubCommand extends AbstractAsyncCommand {
+        private final EssenceManager essenceManager;
+        private final RequiredArg<PlayerRef> playerArg;
+        private final RequiredArg<Integer> amountArg;
+
+        public SetMaxSubCommand(@Nonnull EssenceManager essenceManager) {
+            super("setmax", "Set essence for a player (bypasses 1000 limit)");
+            this.essenceManager = essenceManager;
+            this.requirePermission("varyon.admin");
+            this.playerArg = this.withRequiredArg("player", "Player name", ArgTypes.PLAYER_REF);
+            this.amountArg = this.withRequiredArg("amount", "Amount to set", ArgTypes.INTEGER);
+        }
+
+        @NonNullDecl
+        @Override
+        protected CompletableFuture<Void> executeAsync(CommandContext context) {
+            PlayerRef target = context.get(playerArg);
+            int amount = context.get(amountArg);
+
+            if (amount < 0) {
+                context.sendMessage(Message.raw("Le montant doit être >= 0").color(Color.RED));
+                return CompletableFuture.completedFuture(null);
+            }
+
+            essenceManager.setEssenceUncapped(target.getUuid(), target.getUsername(), amount);
+            context.sendMessage(Message.raw("Essence de " + target.getUsername() + " définie à " + amount).color(Color.GREEN));
+            return CompletableFuture.completedFuture(null);
+        }
+    }
+
     public static class DepositSubCommand extends AbstractAsyncCommand {
         private final EssenceManager essenceManager;
         private final FactionManager factionManager;
@@ -199,6 +230,12 @@ public class EssenceCommand extends AbstractAsyncCommand {
             VaryonPlugin plugin = VaryonPlugin.getInstance();
             if (plugin != null && plugin.getHudManager() != null) {
                 plugin.getHudManager().broadcastBalanceUpdate();
+            }
+            
+            // Check for rewards
+            com.varyon.essence.GlobalRewardsManager rewardsManager = VaryonPlugin.getStaticGlobalRewardsManager();
+            if (rewardsManager != null) {
+                rewardsManager.checkAndDistributeRewards();
             }
 
             return CompletableFuture.completedFuture(null);

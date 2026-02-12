@@ -26,8 +26,10 @@ import com.varyon.command.RtpvCommand;
 import com.varyon.component.MobScalingComponent;
 import com.varyon.config.ConfigManager;
 import com.varyon.config.EssenceRewardsConfig;
+import com.varyon.config.GlobalRewardsConfig;
 import com.varyon.essence.EssenceKillSystem;
 import com.varyon.essence.EssenceManager;
+import com.varyon.essence.GlobalRewardsManager;
 import com.varyon.extraction.ExtractionPortalManager;
 import com.varyon.system.ExtractionPortalTickSystem;
 import com.varyon.essence.EssenceMiningSystem;
@@ -52,6 +54,7 @@ public class VaryonPlugin extends JavaPlugin {
     private static FactionManager staticFactionManager;
     private static SafeZoneManager staticSafeZoneManager;
     private static SafeZoneNotificationSystem staticSafeZoneNotificationSystem;
+    private static GlobalRewardsManager staticGlobalRewardsManager;
     private static VaryonPlugin staticInstance;
     private ConfigManager configManager;
     private EssenceManager essenceManager;
@@ -61,6 +64,8 @@ public class VaryonPlugin extends JavaPlugin {
     private ZoneHUDManager hudManager;
     private ExtractionPortalManager extractionPortalManager;
     private EssenceRewardsConfig essenceRewardsConfig;
+    private GlobalRewardsConfig globalRewardsConfig;
+    private GlobalRewardsManager globalRewardsManager;
 
     public VaryonPlugin(JavaPluginInit init) {
         super(init);
@@ -92,6 +97,12 @@ public class VaryonPlugin extends JavaPlugin {
             factionManager = new FactionManager();
             staticFactionManager = factionManager;
             LOGGER.at(Level.INFO).log("Faction system initialized");
+
+            // Initialiser le système de récompenses globales
+            globalRewardsConfig = configManager.getGlobalRewardsConfig();
+            globalRewardsManager = new GlobalRewardsManager(globalRewardsConfig, essenceManager, factionManager);
+            staticGlobalRewardsManager = globalRewardsManager;
+            LOGGER.at(Level.INFO).log("Global rewards system initialized");
 
             extractionPortalManager = new ExtractionPortalManager(configManager.getExtractionConfig());
             ExtractionPortalTickSystem extractionTickSystem = new ExtractionPortalTickSystem();
@@ -301,6 +312,11 @@ public class VaryonPlugin extends JavaPlugin {
     @Nullable
     public static SafeZoneManager getStaticSafeZoneManager() {
         return staticSafeZoneManager;
+    }
+
+    @Nullable
+    public static GlobalRewardsManager getStaticGlobalRewardsManager() {
+        return staticGlobalRewardsManager;
     }
 
     public ZoneHUDManager getHudManager() {

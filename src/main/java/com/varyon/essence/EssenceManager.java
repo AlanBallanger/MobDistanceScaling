@@ -38,12 +38,9 @@ public class EssenceManager {
         if (newAmount < 0) {
             newAmount = 0;
         }
-        if (newAmount > 1000) {
-            newAmount = 1000;
-        }
 
         essenceCache.put(playerUuid, newAmount);
-        database.setEssence(playerUuid, playerName, newAmount);
+        database.setEssenceUncapped(playerUuid, playerName, newAmount);
 
         LOGGER.at(Level.FINE).log("Player " + playerName + " " + (amount > 0 ? "+" : "") +
             String.format("%.2f", amount) + " essence (total: " + String.format("%.1f", newAmount) + ")");
@@ -52,6 +49,11 @@ public class EssenceManager {
     public void setEssence(UUID playerUuid, String playerName, double amount) {
         essenceCache.put(playerUuid, amount);
         database.setEssence(playerUuid, playerName, amount);
+    }
+    
+    public void setEssenceUncapped(UUID playerUuid, String playerName, double amount) {
+        essenceCache.put(playerUuid, amount);
+        database.setEssenceUncapped(playerUuid, playerName, amount);
     }
 
     public List<PlayerEssenceData> getTopPlayers(int limit) {
@@ -86,5 +88,9 @@ public class EssenceManager {
 
     public void addToGlobalBalance(int amount) {
         database.addToGlobalBalance(amount);
+    }
+    
+    public void setGlobalBalance(int amount) {
+        database.setGlobalBalance(amount);
     }
 }

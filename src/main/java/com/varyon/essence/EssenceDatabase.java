@@ -105,6 +105,27 @@ public class EssenceDatabase {
             LOGGER.at(Level.WARNING).log("Failed to set essence for " + playerUuid + ": " + e.getMessage());
         }
     }
+    
+    public void setEssenceUncapped(UUID playerUuid, String playerName, double essence) {
+        String upsert = """
+            INSERT INTO player_essence (player_uuid, player_name, essence, last_updated)
+            VALUES (?, ?, ?, ?)
+            ON CONFLICT(player_uuid) DO UPDATE SET
+                player_name = excluded.player_name,
+                essence = excluded.essence,
+                last_updated = excluded.last_updated
+        """;
+
+        try (PreparedStatement stmt = connection.prepareStatement(upsert)) {
+            stmt.setString(1, playerUuid.toString());
+            stmt.setString(2, playerName);
+            stmt.setDouble(3, essence);
+            stmt.setLong(4, System.currentTimeMillis());
+            stmt.executeUpdate();
+        } catch (SQLException e) {
+            LOGGER.at(Level.WARNING).log("Failed to set essence (uncapped) for " + playerUuid + ": " + e.getMessage());
+        }
+    }
 
     public List<PlayerEssenceData> getTopPlayers(int limit) {
         List<PlayerEssenceData> topPlayers = new ArrayList<>();

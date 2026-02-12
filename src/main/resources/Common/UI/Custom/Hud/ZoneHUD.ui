@@ -130,13 +130,13 @@ Group {
             Anchor: (Width: 320, Height: 14, Left: 0, Top: 0);
             Background: "NewEssenceBarBackground.png";
 
-            Group #EssenceBar {
+            Group #EssenceBarNoyau {
               Anchor: (Width: 0, Height: 14, Left: 160, Top: 0);
-              Background: "NewEssenceBarFill.png";
+              Background: "NewEssenceBarFillNoyau.png";
             }
-            Group #EssenceBarEffect {
-              Anchor: (Width: 0, Height: 12, Left: 160, Top: 1);
-              Background: "NewEssenceBarEffect.png";
+            Group #EssenceBarFracture {
+              Anchor: (Width: 0, Height: 14, Left: 160, Top: 0);
+              Background: "NewEssenceBarFillFracture.png";
             }
           }
 

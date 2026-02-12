@@ -36,6 +36,8 @@ public class VaryonCommand extends AbstractAsyncCommand {
         this.addSubCommand(new ReloadSubCommand(plugin));
         this.addSubCommand(new ClearMapSubCommand());
         this.addSubCommand(new FactionSubCommand(factionManager));
+        this.addSubCommand(new ResetRewardsSubCommand());
+        this.addSubCommand(new ResetBalanceSubCommand());
     }
 
     @NonNullDecl
@@ -73,8 +75,11 @@ public class VaryonCommand extends AbstractAsyncCommand {
             if (isAdmin) {
                 context.sendMessage(Message.raw("  /varyon reload - Recharger la configuration").color(Color.WHITE));
                 context.sendMessage(Message.raw("  /varyon clearmap - Vider le cache de la map").color(Color.WHITE));
+                context.sendMessage(Message.raw("  /varyon resetrewards - Reset cooldowns des récompenses").color(Color.WHITE));
+                context.sendMessage(Message.raw("  /varyon resetbalance - Reset la jauge globale à 0").color(Color.WHITE));
                 context.sendMessage(Message.raw("  /essence give <joueur> <montant>").color(Color.WHITE));
                 context.sendMessage(Message.raw("  /essence take <joueur> <montant>").color(Color.WHITE));
+                context.sendMessage(Message.raw("  /essence setmax <joueur> <montant>").color(Color.WHITE));
                 context.sendMessage(Message.raw("  /essence deposit <montant>").color(Color.WHITE));
             }
 
@@ -215,6 +220,60 @@ public class VaryonCommand extends AbstractAsyncCommand {
 
             factionManager.setFaction(playerRef.getUuid(), faction);
             context.sendMessage(Message.raw("Vous avez rejoint: " + faction.getDisplayName()).color(Color.GREEN));
+            return CompletableFuture.completedFuture(null);
+        }
+    }
+
+    public static class ResetRewardsSubCommand extends AbstractAsyncCommand {
+        public ResetRewardsSubCommand() {
+            super("resetrewards", "Reset all reward tier cooldowns");
+            this.requirePermission("varyon.admin");
+        }
+
+        @NonNullDecl
+        @Override
+        protected CompletableFuture<Void> executeAsync(CommandContext context) {
+            com.varyon.essence.GlobalRewardsManager rewardsManager = VaryonPlugin.getStaticGlobalRewardsManager();
+            
+            if (rewardsManager == null) {
+                context.sendMessage(Message.raw("Système de récompenses non initialisé.").color(Color.RED));
+                return CompletableFuture.completedFuture(null);
+            }
+            
+            rewardsManager.resetAllCooldowns();
+            context.sendMessage(Message.raw("Tous les cooldowns de récompenses ont été réinitialisés.").color(Color.GREEN));
+            
+            return CompletableFuture.completedFuture(null);
+        }
+    }
+
+    public static class ResetBalanceSubCommand extends AbstractAsyncCommand {
+        public ResetBalanceSubCommand() {
+            super("resetbalance", "Reset global essence balance to 0");
+            this.requirePermission("varyon.admin");
+        }
+
+        @NonNullDecl
+        @Override
+        protected CompletableFuture<Void> executeAsync(CommandContext context) {
+            com.varyon.essence.EssenceManager essenceManager = VaryonPlugin.getStaticEssenceManager();
+            
+            if (essenceManager == null) {
+                context.sendMessage(Message.raw("Système d'essence non initialisé.").color(Color.RED));
+                return CompletableFuture.completedFuture(null);
+            }
+            
+            int oldBalance = essenceManager.getGlobalBalance();
+            essenceManager.setGlobalBalance(0);
+            
+            context.sendMessage(Message.raw("Balance globale réinitialisée: " + oldBalance + " → 0").color(Color.GREEN));
+            
+            // Update all HUDs
+            VaryonPlugin plugin = VaryonPlugin.getInstance();
+            if (plugin != null && plugin.getHudManager() != null) {
+                plugin.getHudManager().broadcastBalanceUpdate();
+            }
+            
             return CompletableFuture.completedFuture(null);
         }
     }
