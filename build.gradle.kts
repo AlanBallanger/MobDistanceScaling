@@ -27,7 +27,7 @@ dependencies {
 
 val fatJar = tasks.register<Jar>("fatJar") {
     archiveClassifier.set("")
-    archiveBaseName.set("MobDistanceScaling")
+    archiveBaseName.set("Varyon")
     archiveVersion.set("0.1.4")
     duplicatesStrategy = DuplicatesStrategy.EXCLUDE
     
