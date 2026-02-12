@@ -14,10 +14,15 @@ public class EssenceManager {
     private static final HytaleLogger LOGGER = HytaleLogger.forEnclosingClass();
     private final EssenceDatabase database;
     private final Map<UUID, Double> essenceCache = new ConcurrentHashMap<>();
+    private GlobalRewardsManager rewardsManager;
 
     public EssenceManager(@Nonnull File pluginFolder) {
         this.database = new EssenceDatabase(pluginFolder);
         this.database.initialize();
+    }
+    
+    public void setRewardsManager(GlobalRewardsManager rewardsManager) {
+        this.rewardsManager = rewardsManager;
     }
 
     public double getEssence(UUID playerUuid) {
@@ -88,9 +93,19 @@ public class EssenceManager {
 
     public void addToGlobalBalance(int amount) {
         database.addToGlobalBalance(amount);
+        
+        // Vérifier les récompenses après changement de balance
+        if (rewardsManager != null) {
+            rewardsManager.checkAndDistributeRewards();
+        }
     }
     
     public void setGlobalBalance(int amount) {
         database.setGlobalBalance(amount);
+        
+        // Vérifier les récompenses après changement de balance
+        if (rewardsManager != null) {
+            rewardsManager.checkAndDistributeRewards();
+        }
     }
 }

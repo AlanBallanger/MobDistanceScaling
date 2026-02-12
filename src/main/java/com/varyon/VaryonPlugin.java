@@ -102,7 +102,14 @@ public class VaryonPlugin extends JavaPlugin {
             globalRewardsConfig = configManager.getGlobalRewardsConfig();
             globalRewardsManager = new GlobalRewardsManager(globalRewardsConfig, essenceManager, factionManager);
             staticGlobalRewardsManager = globalRewardsManager;
+            
+            // Lier le rewards manager à l'essence manager
+            essenceManager.setRewardsManager(globalRewardsManager);
+            
             LOGGER.at(Level.INFO).log("Global rewards system initialized");
+            
+            // Vérifier les récompenses au démarrage
+            globalRewardsManager.checkAndDistributeRewards();
 
             extractionPortalManager = new ExtractionPortalManager(configManager.getExtractionConfig());
             ExtractionPortalTickSystem extractionTickSystem = new ExtractionPortalTickSystem();

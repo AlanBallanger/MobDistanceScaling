@@ -33,8 +33,8 @@ public class SafeZoneManager {
     public SafeZoneManager(@Nonnull SafeZoneConfig config, @Nonnull Path dataDirectory) {
         this.config = config;
         this.dataDirectory = dataDirectory;
-        this.currentQuadrant = SafeZoneQuadrant.NORTH;
-        this.nextQuadrant = SafeZoneQuadrant.EAST;
+        this.currentQuadrant = SafeZoneQuadrant.NORTH_EAST;
+        this.nextQuadrant = SafeZoneQuadrant.SOUTH_EAST;
         this.rotationStartTime = System.currentTimeMillis();
         this.nextRotationTime = rotationStartTime + getRandomRotationDuration();
         this.isOverlapActive = false;
@@ -105,13 +105,13 @@ public class SafeZoneManager {
     }
 
     private void announceRotation() {
-        String message = "[Zone Safe] La zone safe est maintenant au " + currentQuadrant.getDisplayName() + " !";
+        String message = "[PvP] La zone non-PvP est maintenant au " + currentQuadrant.getDisplayName() + " !";
         broadcastMessage(Message.raw(message).color(java.awt.Color.GREEN));
     }
 
     private void announceOverlapStart() {
-        String message = "[Zone Safe] Début de la transition ! Les zones " + currentQuadrant.getDisplayName() + 
-                        " et " + nextQuadrant.getDisplayName() + " sont toutes les deux safe pendant 10 minutes.";
+        String message = "[PvP] Début de la transition ! Les zones " + currentQuadrant.getDisplayName() + 
+                        " et " + nextQuadrant.getDisplayName() + " sont toutes les deux non-PvP pendant 10 minutes.";
         broadcastMessage(Message.raw(message).color(java.awt.Color.GREEN));
     }
 
@@ -126,7 +126,7 @@ public class SafeZoneManager {
         long minutesRemaining = timeRemaining / 60000;
         
         if (minutesRemaining <= 5) {
-            String message = "[Zone Safe] La zone safe changera dans " + minutesRemaining + " minute(s) !";
+            String message = "[PvP] La zone non-PvP changera dans " + minutesRemaining + " minute(s) !";
             broadcastMessage(Message.raw(message).color(java.awt.Color.GREEN));
         }
     }

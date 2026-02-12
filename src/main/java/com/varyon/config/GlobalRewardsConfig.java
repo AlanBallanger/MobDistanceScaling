@@ -62,15 +62,15 @@ public class GlobalRewardsConfig {
         config.rewardCooldownMinutes = 30;
         
         List<RewardItem> tier1Items = new ArrayList<>();
-        tier1Items.add(new RewardItem("soil_grass", 10));
+        tier1Items.add(new RewardItem("Ingredient_Bar_Copper", 10));
         config.tiers.add(new RewardTier(3300, tier1Items, new ArrayList<>()));
         
         List<RewardItem> tier2Items = new ArrayList<>();
-        tier2Items.add(new RewardItem("soil_grass", 20));
+        tier2Items.add(new RewardItem("Ingredient_Bar_Iron", 20));
         config.tiers.add(new RewardTier(6600, tier2Items, new ArrayList<>()));
         
         List<RewardItem> tier3Items = new ArrayList<>();
-        tier3Items.add(new RewardItem("soil_grass", 50));
+        tier3Items.add(new RewardItem("Ingredient_Bar_Thorium", 50));
         config.tiers.add(new RewardTier(10000, tier3Items, new ArrayList<>()));
         
         return config;

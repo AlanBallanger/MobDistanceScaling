@@ -65,6 +65,11 @@ public class ConfigManager {
                 parentDir.mkdirs();
             }
 
+            // S'assurer que globalRewardsConfig est initialisé
+            if (globalRewardsConfig == null) {
+                globalRewardsConfig = GlobalRewardsConfig.createDefault();
+            }
+
             String tomlContent = generateTomlWithComments(zoneConfig);
             try (FileWriter writer = new FileWriter(configFile)) {
                 writer.write(tomlContent);
@@ -399,35 +404,41 @@ public class ConfigManager {
 
     @Nonnull
     private GlobalRewardsConfig parseGlobalRewardsConfig(@Nonnull Toml toml) {
-        GlobalRewardsConfig config = new GlobalRewardsConfig();
-        
         Toml rewardsToml = toml.getTable("global_rewards");
-        if (rewardsToml != null) {
-            config.setRewardCooldownMinutes(rewardsToml.getLong("cooldownMinutes", 30L).intValue());
-            
-            List<Toml> tiersList = rewardsToml.getTables("tiers");
-            if (tiersList != null) {
-                for (Toml tierToml : tiersList) {
-                    int threshold = tierToml.getLong("threshold", 3300L).intValue();
-                    
-                    List<GlobalRewardsConfig.RewardItem> items = new ArrayList<>();
-                    List<Toml> itemsList = tierToml.getTables("items");
-                    if (itemsList != null) {
-                        for (Toml itemToml : itemsList) {
-                            String itemId = itemToml.getString("itemId", "soil_grass");
-                            int amount = itemToml.getLong("amount", 1L).intValue();
-                            items.add(new GlobalRewardsConfig.RewardItem(itemId, amount));
-                        }
+        
+        // Si la section n'existe pas, retourner la config par défaut
+        if (rewardsToml == null) {
+            return GlobalRewardsConfig.createDefault();
+        }
+        
+        GlobalRewardsConfig config = new GlobalRewardsConfig();
+        config.setRewardCooldownMinutes(rewardsToml.getLong("cooldownMinutes", 30L).intValue());
+        
+        List<Toml> tiersList = rewardsToml.getTables("tiers");
+        if (tiersList != null && !tiersList.isEmpty()) {
+            for (Toml tierToml : tiersList) {
+                int threshold = tierToml.getLong("threshold", 3300L).intValue();
+                
+                List<GlobalRewardsConfig.RewardItem> items = new ArrayList<>();
+                List<Toml> itemsList = tierToml.getTables("items");
+                if (itemsList != null) {
+                    for (Toml itemToml : itemsList) {
+                        String itemId = itemToml.getString("itemId", "soil_grass");
+                        int amount = itemToml.getLong("amount", 1L).intValue();
+                        items.add(new GlobalRewardsConfig.RewardItem(itemId, amount));
                     }
-                    
-                    List<String> commands = tierToml.getList("commands");
-                    if (commands == null) {
-                        commands = new ArrayList<>();
-                    }
-                    
-                    config.addTier(new GlobalRewardsConfig.RewardTier(threshold, items, commands));
                 }
+                
+                List<String> commands = tierToml.getList("commands");
+                if (commands == null) {
+                    commands = new ArrayList<>();
+                }
+                
+                config.addTier(new GlobalRewardsConfig.RewardTier(threshold, items, commands));
             }
+        } else {
+            // Si aucun tier n'est défini, utiliser les valeurs par défaut
+            return GlobalRewardsConfig.createDefault();
         }
         
         return config;

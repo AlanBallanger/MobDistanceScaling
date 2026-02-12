@@ -1,10 +1,10 @@
 package com.varyon.safezone;
 
 public enum SafeZoneQuadrant {
-    NORTH(0, 90, "Nord"),
-    EAST(90, 180, "Est"),
-    SOUTH(180, 270, "Sud"),
-    WEST(270, 360, "Ouest");
+    NORTH_EAST(0, 90, "Nord-Est"),
+    SOUTH_EAST(90, 180, "Sud-Est"),
+    SOUTH_WEST(180, 270, "Sud-Ouest"),
+    NORTH_WEST(270, 360, "Nord-Ouest");
 
     private final int startAngle;
     private final int endAngle;
@@ -45,6 +45,6 @@ public enum SafeZoneQuadrant {
             }
         }
         
-        return NORTH;
+        return NORTH_EAST;
     }
 }
