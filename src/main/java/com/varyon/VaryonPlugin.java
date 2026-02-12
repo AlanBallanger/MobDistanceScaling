@@ -272,6 +272,10 @@ public class VaryonPlugin extends JavaPlugin {
 
         // Set our world map provider
         world.getWorldConfig().setWorldMapProvider(new ZoneWorldMapProvider());
+        
+        // Register extraction portal marker provider
+        world.getWorldMapManager().addMarkerProvider("extraction_portal", new com.varyon.extraction.ExtractionPortalMarkerProvider());
+        
         LOGGER.at(Level.INFO).log("Set Varyon minimap for world: {0}", world.getName());
     }
 
