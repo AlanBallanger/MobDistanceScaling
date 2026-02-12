@@ -3,11 +3,13 @@ package com.varyon.system;
 import com.hypixel.hytale.component.AddReason;
 import com.hypixel.hytale.component.Archetype;
 import com.hypixel.hytale.component.CommandBuffer;
+import com.hypixel.hytale.component.ComponentType;
 import com.hypixel.hytale.component.query.Query;
 import com.hypixel.hytale.component.Ref;
 import com.hypixel.hytale.component.RemoveReason;
 import com.hypixel.hytale.component.Store;
 import com.hypixel.hytale.component.system.RefSystem;
+import com.hypixel.hytale.logger.HytaleLogger;
 import com.hypixel.hytale.math.vector.Vector3d;
 import com.hypixel.hytale.server.core.modules.entity.component.TransformComponent;
 import com.hypixel.hytale.server.core.modules.entitystats.EntityStatMap;
@@ -23,9 +25,14 @@ import com.varyon.util.ZoneCalculator;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.util.List;
+import java.util.Random;
+import java.util.logging.Level;
 
 public class MobScalingRefSystem extends RefSystem<EntityStore> {
+    private static final HytaleLogger LOGGER = HytaleLogger.forEnclosingClass();
     private static final String HEALTH_MODIFIER_KEY = "Varyon_Health";
+    private static final Random RANDOM = new Random();
 
     private final ConfigManager configManager;
     private Query<EntityStore> query;
@@ -37,8 +44,6 @@ public class MobScalingRefSystem extends RefSystem<EntityStore> {
     @Override
     @Nullable
     public Query<EntityStore> getQuery() {
-        // Use empty archetype because NPCEntity.getComponentType() is not available at plugin setup time
-        // We filter for NPCs manually in onEntityAdded()
         if (query == null) {
             query = Archetype.empty();
         }
@@ -48,22 +53,18 @@ public class MobScalingRefSystem extends RefSystem<EntityStore> {
     @Override
     public void onEntityAdded(@Nonnull Ref<EntityStore> ref, @Nonnull AddReason reason,
                               @Nonnull Store<EntityStore> store, @Nonnull CommandBuffer<EntityStore> commandBuffer) {
-        // Filter for NPCs only
         NPCEntity npcEntity = store.getComponent(ref, NPCEntity.getComponentType());
         if (npcEntity == null) {
-            return; // Not an NPC
+            return;
         }
 
-        // Only process NPCs that are freshly spawned, not loaded from disk
-        // (loaded NPCs already have their MobScalingComponent from when they were spawned)
         if (reason != AddReason.SPAWN) {
             return;
         }
 
-        // Check if scaling is enabled for this world
         String worldName = store.getExternalData().getWorld().getName();
         if (!configManager.getZoneConfig().isWorldEnabled(worldName)) {
-            return; // Scaling not enabled for this world
+            return;
         }
 
         TransformComponent transform = store.getComponent(ref, TransformComponent.getComponentType());
@@ -74,15 +75,7 @@ public class MobScalingRefSystem extends RefSystem<EntityStore> {
         Vector3d pos = transform.getPosition();
         DifficultyZone zone = ZoneCalculator.getZoneAtPosition(pos.getX(), pos.getZ(), configManager.getZoneConfig());
 
-        // No scaling needed if zone not found or all multipliers are 1.0
         if (zone == null) {
-            return;
-        }
-
-        boolean needsScaling = zone.getHealthMultiplier() != 1.0 ||
-                               zone.getDamageMultiplier() != 1.0 ||
-                               zone.getLootMultiplier() != 1.0;
-        if (!needsScaling) {
             return;
         }
 
@@ -92,26 +85,70 @@ public class MobScalingRefSystem extends RefSystem<EntityStore> {
     @Override
     public void onEntityRemove(@Nonnull Ref<EntityStore> ref, @Nonnull RemoveReason reason,
                                @Nonnull Store<EntityStore> store, @Nonnull CommandBuffer<EntityStore> commandBuffer) {
-        // Nothing to do on remove
     }
 
     private void applyScaling(@Nonnull Ref<EntityStore> ref, @Nonnull Store<EntityStore> store,
                               @Nonnull CommandBuffer<EntityStore> commandBuffer, @Nonnull DifficultyZone zone) {
-        float healthMultiplier = (float) zone.getHealthMultiplier();
-        float damageMultiplier = (float) zone.getDamageMultiplier();
-        float lootMultiplier = (float) zone.getLootMultiplier();
-
-        // Check if component already exists (safety check)
         MobScalingComponent existing = store.getComponent(ref, MobScalingComponent.getComponentType());
         if (existing != null) {
             return;
         }
 
-        // Add MobScalingComponent to store all multipliers for damage and loot scaling
-        commandBuffer.addComponent(ref, MobScalingComponent.getComponentType(),
-                new MobScalingComponent(healthMultiplier, damageMultiplier, lootMultiplier));
+        List<DifficultyZone> zones = configManager.getZoneConfig().getZones();
+        int zoneIndex = -1;
+        for (int i = 0; i < zones.size(); i++) {
+            if (zones.get(i).getZoneId() == zone.getZoneId()) {
+                zoneIndex = i;
+                break;
+            }
+        }
 
-        // Apply health scaling if needed
+        if (zoneIndex < 0) {
+            return;
+        }
+
+        int minLevel = (zoneIndex + 1) * 10 - 9;
+        int maxLevel = (zoneIndex + 1) * 10;
+        int mobLevel = RANDOM.nextInt(maxLevel - minLevel + 1) + minLevel;
+
+        double currentHealthMult = zone.getHealthMultiplier();
+        double currentDamageMult = zone.getDamageMultiplier();
+        double currentLootMult = zone.getLootMultiplier();
+        double currentEssenceMult = zone.getEssenceMultiplier();
+        double nextHealthMult = currentHealthMult;
+        double nextDamageMult = currentDamageMult;
+        double nextLootMult = currentLootMult;
+        double nextEssenceMult = currentEssenceMult;
+
+        if (zoneIndex + 1 < zones.size()) {
+            DifficultyZone nextZone = zones.get(zoneIndex + 1);
+            nextHealthMult = nextZone.getHealthMultiplier();
+            nextDamageMult = nextZone.getDamageMultiplier();
+            nextLootMult = nextZone.getLootMultiplier();
+            nextEssenceMult = nextZone.getEssenceMultiplier();
+        } else {
+            nextHealthMult = currentHealthMult + 0.5;
+            nextDamageMult = currentDamageMult + 0.5;
+            nextLootMult = currentLootMult + 0.5;
+            nextEssenceMult = currentEssenceMult + 0.5;
+        }
+
+        double levelProgress = (mobLevel - minLevel) / 10.0;
+        float healthMultiplier = (float) (currentHealthMult + (nextHealthMult - currentHealthMult) * levelProgress);
+        float damageMultiplier = (float) (currentDamageMult + (nextDamageMult - currentDamageMult) * levelProgress);
+        float lootMultiplier = (float) (currentLootMult + (nextLootMult - currentLootMult) * levelProgress);
+        float essenceMultiplier = (float) (currentEssenceMult + (nextEssenceMult - currentEssenceMult) * levelProgress);
+
+        commandBuffer.addComponent(ref, MobScalingComponent.getComponentType(),
+                new MobScalingComponent(mobLevel, healthMultiplier, damageMultiplier, lootMultiplier, essenceMultiplier));
+
+        if (mobLevel >= 1) {
+            ComponentType<EntityStore, com.hypixel.hytale.server.core.entity.nameplate.Nameplate> nameplateType = 
+                com.hypixel.hytale.server.core.entity.nameplate.Nameplate.getComponentType();
+            String nameplate = "Lvl " + mobLevel;
+            commandBuffer.addComponent(ref, nameplateType, new com.hypixel.hytale.server.core.entity.nameplate.Nameplate(nameplate));
+        }
+
         if (healthMultiplier != 1.0f) {
             EntityStatMap statMap = store.getComponent(ref, EntityStatMap.getComponentType());
             if (statMap != null) {
@@ -120,7 +157,6 @@ public class MobScalingRefSystem extends RefSystem<EntityStore> {
                 if (healthStat != null) {
                     float originalMaxHealth = healthStat.getMax();
 
-                    // Apply multiplicative modifier to max health
                     StaticModifier healthModifier = new StaticModifier(
                             StaticModifier.ModifierTarget.MAX,
                             StaticModifier.CalculationType.MULTIPLICATIVE,
@@ -128,9 +164,11 @@ public class MobScalingRefSystem extends RefSystem<EntityStore> {
                     );
                     statMap.putModifier(healthIndex, HEALTH_MODIFIER_KEY, healthModifier);
 
-                    // Set current health to new max
                     float newMaxHealth = originalMaxHealth * healthMultiplier;
                     statMap.setStatValue(healthIndex, newMaxHealth);
+
+                    LOGGER.at(Level.FINE).log("Mob level " + mobLevel + " scaled: HP×" +
+                        String.format("%.2f", healthMultiplier) + " DMG×" + String.format("%.2f", damageMultiplier));
                 }
             }
         }

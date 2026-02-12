@@ -73,7 +73,7 @@ public class VaryonPlugin extends JavaPlugin {
             staticInstance = this;
             ComponentType<EntityStore, MobScalingComponent> mobScalingComponentType =
                     this.getEntityStoreRegistry().registerComponent(MobScalingComponent.class,
-                            () -> new MobScalingComponent(1.0f, 1.0f, 1.0f));
+                            () -> new MobScalingComponent(0, 1.0f, 1.0f, 1.0f, 1.0f));
             MobScalingComponent.setComponentType(mobScalingComponentType);
 
             configManager = new ConfigManager(this.getDataDirectory());

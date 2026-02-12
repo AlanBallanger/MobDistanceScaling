@@ -29,7 +29,7 @@ public class ZoneHUD extends CustomUIHud {
     private DifficultyZone currentZone;
     private double distanceFromSpawn;
     private int globalBalance;
-    private int playerEssence;
+    private double playerEssence;
     private boolean built;
     private int currentPage = PAGE_ZONE;
     private boolean inSafeZone;
@@ -92,9 +92,9 @@ public class ZoneHUD extends CustomUIHud {
 
         EssenceManager essenceManager = VaryonPlugin.getStaticEssenceManager();
         if (essenceManager != null) {
-            int currentPlayerEssence = essenceManager.getEssence(getPlayerRef().getUuid());
+            double currentPlayerEssence = essenceManager.getEssence(getPlayerRef().getUuid());
             int currentGlobalBalance = essenceManager.getGlobalBalance();
-            if (this.playerEssence != currentPlayerEssence || this.globalBalance != currentGlobalBalance) {
+            if (Math.abs(this.playerEssence - currentPlayerEssence) > 0.01 || this.globalBalance != currentGlobalBalance) {
                 this.playerEssence = currentPlayerEssence;
                 this.globalBalance = currentGlobalBalance;
                 changed = true;
@@ -134,7 +134,7 @@ public class ZoneHUD extends CustomUIHud {
             playerEssence = essenceManager.getEssence(getPlayerRef().getUuid());
             globalBalance = essenceManager.getGlobalBalance();
         }
-        builder.set("#Essence.Text", "Essence: " + playerEssence + "/1000");
+        builder.set("#Essence.Text", "Essence: " + (int) Math.floor(playerEssence) + "/1000");
         builder.set("#Essence.Style.TextColor", "#FFFF55");
 
         if (currentZone != null) {
@@ -147,6 +147,7 @@ public class ZoneHUD extends CustomUIHud {
             builder.set("#LootMult.Text", "");
         }
 
+        builder.set("#HPMult.Style.TextColor", "#FFFFFF");
         builder.set("#DMGMult.Style.TextColor", "#FFAA55");
         builder.set("#LootMult.Style.TextColor", "#55FF55");
 
@@ -165,15 +166,17 @@ public class ZoneHUD extends CustomUIHud {
         builder.set("#ZoneName.Text", zoneName + " - " + dist + "m");
         builder.set("#ZoneName.Style.TextColor", "#FFFFFF");
 
+        builder.set("#Essence.Text", "Essence: " + (int) Math.floor(playerEssence) + "/1000");
+        builder.set("#Essence.Style.TextColor", "#FFFF55");
+
         if (inSafeZone) {
-            builder.set("#Essence.Text", "PvP : D\u00e9sactiv\u00e9");
-            builder.set("#Essence.Style.TextColor", "#55FF55");
+            builder.set("#HPMult.Text", "PvP : OFF");
+            builder.set("#HPMult.Style.TextColor", "#55FF55");
         } else {
-            builder.set("#Essence.Text", "PvP : Actif");
-            builder.set("#Essence.Style.TextColor", "#FF5555");
+            builder.set("#HPMult.Text", "PvP : Actif");
+            builder.set("#HPMult.Style.TextColor", "#FF5555");
         }
 
-        builder.set("#HPMult.Text", "");
         builder.set("#DMGMult.Text", "");
         builder.set("#LootMult.Text", "");
 

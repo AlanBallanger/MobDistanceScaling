@@ -60,16 +60,16 @@ public class EssenceMiningSystem extends EntityEventSystem<EntityStore, BreakBlo
 
             DifficultyZone zone = ZoneCalculator.getCurrentZone(store, archetypeChunk.getReferenceTo(index), configManager.getZoneConfig());
             double zoneMultiplier = zone != null ? zone.getEssenceMultiplier() : 1.0;
+            double lootMultiplier = zone != null ? zone.getLootMultiplier() : 1.0;
 
-            int essenceGained = (int) Math.ceil(baseReward * zoneMultiplier);
+            double essenceGained = baseReward * zoneMultiplier * lootMultiplier;
             if (essenceGained <= 0) {
                 return;
             }
 
             essenceManager.addEssence(playerUuid, playerUuid.toString(), essenceGained);
 
-            LOGGER.at(Level.FINE).log("Mining essence: " + playerUuid + " +" + essenceGained +
-                " (block=" + blockId + " base=" + baseReward + " zone=" + zoneMultiplier + ")");
+            LOGGER.at(Level.INFO).log("Mine: block=" + blockId + " +" + String.format("%.2f", essenceGained) + " essence (base=" + baseReward + " zone=" + zoneMultiplier + " loot=" + String.format("%.2f", lootMultiplier) + ")");
         } catch (Exception e) {
             LOGGER.at(Level.WARNING).log("Error in EssenceMiningSystem: " + e.getMessage());
         }

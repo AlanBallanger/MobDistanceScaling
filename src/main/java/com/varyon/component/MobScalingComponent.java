@@ -14,14 +14,22 @@ import javax.annotation.Nullable;
 public class MobScalingComponent implements Component<EntityStore> {
     private static ComponentType<EntityStore, MobScalingComponent> COMPONENT_TYPE;
 
+    private final int mobLevel;
     private final float healthMultiplier;
     private final float damageMultiplier;
     private final float lootMultiplier;
+    private final float essenceMultiplier;
 
-    public MobScalingComponent(float healthMultiplier, float damageMultiplier, float lootMultiplier) {
+    public MobScalingComponent(int mobLevel, float healthMultiplier, float damageMultiplier, float lootMultiplier, float essenceMultiplier) {
+        this.mobLevel = mobLevel;
         this.healthMultiplier = healthMultiplier;
         this.damageMultiplier = damageMultiplier;
         this.lootMultiplier = lootMultiplier;
+        this.essenceMultiplier = essenceMultiplier;
+    }
+
+    public int getMobLevel() {
+        return mobLevel;
     }
 
     public float getHealthMultiplier() {
@@ -36,10 +44,14 @@ public class MobScalingComponent implements Component<EntityStore> {
         return lootMultiplier;
     }
 
+    public float getEssenceMultiplier() {
+        return essenceMultiplier;
+    }
+
     @Override
     @Nullable
     public Component<EntityStore> clone() {
-        return new MobScalingComponent(healthMultiplier, damageMultiplier, lootMultiplier);
+        return new MobScalingComponent(mobLevel, healthMultiplier, damageMultiplier, lootMultiplier, essenceMultiplier);
     }
 
     @Nonnull

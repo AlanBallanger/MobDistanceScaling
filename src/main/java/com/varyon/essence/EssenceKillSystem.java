@@ -8,9 +8,13 @@ import com.hypixel.hytale.component.Store;
 import com.hypixel.hytale.component.query.Query;
 import com.hypixel.hytale.component.system.EntityEventSystem;
 import com.hypixel.hytale.logger.HytaleLogger;
+import com.hypixel.hytale.server.core.entity.Entity;
+import com.hypixel.hytale.server.core.entity.EntityUtils;
 import com.hypixel.hytale.server.core.modules.entity.damage.event.KillFeedEvent;
 import com.hypixel.hytale.server.core.universe.PlayerRef;
 import com.hypixel.hytale.server.core.universe.world.storage.EntityStore;
+import com.hypixel.hytale.server.npc.entities.NPCEntity;
+import com.varyon.component.MobScalingComponent;
 import com.varyon.config.ConfigManager;
 import com.varyon.config.DifficultyZone;
 import com.varyon.config.EssenceRewardsConfig;
@@ -18,13 +22,16 @@ import com.varyon.util.ZoneCalculator;
 
 import javax.annotation.Nonnull;
 import java.lang.reflect.Method;
+import java.util.Set;
 import java.util.UUID;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 
 public class EssenceKillSystem extends EntityEventSystem<EntityStore, KillFeedEvent.KillerMessage> {
     private static final HytaleLogger LOGGER = HytaleLogger.forEnclosingClass();
-    private static final AtomicBoolean API_LOGGED = new AtomicBoolean(false);
+    private static final Set<String> UNSAFE_METHODS = Set.of(
+        "remove", "delete", "destroy", "kill", "unload", "clear", "close",
+        "unloadfromworld", "clearreference", "markneedssave", "invalidateequipmentnetwork"
+    );
 
     @Nonnull
     private final ComponentType<EntityStore, PlayerRef> playerRefComponentType = PlayerRef.getComponentType();
@@ -32,6 +39,9 @@ public class EssenceKillSystem extends EntityEventSystem<EntityStore, KillFeedEv
     private final EssenceManager essenceManager;
     private final ConfigManager configManager;
     private final EssenceRewardsConfig rewardsConfig;
+
+    private volatile Method cachedNameMethod;
+    private volatile String cachedNameSource;
 
     public EssenceKillSystem(@Nonnull EssenceManager essenceManager, @Nonnull ConfigManager configManager,
                              @Nonnull EssenceRewardsConfig rewardsConfig) {
@@ -53,17 +63,14 @@ public class EssenceKillSystem extends EntityEventSystem<EntityStore, KillFeedEv
             }
 
             UUID playerUuid = playerRef.getUuid();
+            Ref<EntityStore> victimRef = event.getTargetRef();
 
-            if (!API_LOGGED.getAndSet(true)) {
-                logEventApi(event);
+            String mobId = "unknown";
+            if (victimRef != null && victimRef.isValid()) {
+                mobId = resolveMobName(victimRef, store, commandBuffer);
             }
 
-            String mobId = resolveMobId(event, commandBuffer);
-
             double baseReward = rewardsConfig.getMobReward(mobId);
-
-            LOGGER.at(Level.INFO).log("Kill: mob=" + mobId + " base=" + baseReward);
-
             if (baseReward <= 0) {
                 return;
             }
@@ -71,85 +78,116 @@ public class EssenceKillSystem extends EntityEventSystem<EntityStore, KillFeedEv
             DifficultyZone zone = ZoneCalculator.getCurrentZone(store, archetypeChunk.getReferenceTo(index), configManager.getZoneConfig());
             double zoneMultiplier = zone != null ? zone.getEssenceMultiplier() : 1.0;
 
-            int essenceGained = (int) Math.ceil(baseReward * zoneMultiplier);
+            double lootMultiplier = 1.0;
+            if (victimRef != null && victimRef.isValid()) {
+                MobScalingComponent scaling = store.getComponent(victimRef, MobScalingComponent.getComponentType());
+                if (scaling != null) {
+                    lootMultiplier = scaling.getLootMultiplier();
+                    zoneMultiplier = scaling.getEssenceMultiplier();
+                }
+            }
+
+            double essenceGained = baseReward * zoneMultiplier * lootMultiplier;
             if (essenceGained <= 0) {
                 return;
             }
 
             essenceManager.addEssence(playerUuid, playerUuid.toString(), essenceGained);
 
-            LOGGER.at(Level.INFO).log("Kill essence: +" + essenceGained +
-                " (mob=" + mobId + " base=" + baseReward + " zone=" + zoneMultiplier + ")");
+            LOGGER.at(Level.INFO).log("Kill: mob=" + mobId + " +" + String.format("%.2f", essenceGained) + " essence (base=" + baseReward + " loot=" + String.format("%.2f", lootMultiplier) + " essence=" + String.format("%.2f", zoneMultiplier) + ")");
         } catch (Exception e) {
             LOGGER.at(Level.WARNING).log("Error in EssenceKillSystem: " + e.getMessage());
         }
     }
 
     @Nonnull
-    private String resolveMobId(@Nonnull KillFeedEvent.KillerMessage event,
-                                @Nonnull CommandBuffer<EntityStore> commandBuffer) {
+    private String resolveMobName(@Nonnull Ref<EntityStore> ref,
+                                  @Nonnull Store<EntityStore> store,
+                                  @Nonnull CommandBuffer<EntityStore> commandBuffer) {
+        if (cachedNameMethod != null) {
+            return resolveWithCachedMethod(ref, store, commandBuffer);
+        }
+
         try {
-            Method[] methods = event.getClass().getMethods();
-            for (Method m : methods) {
-                String name = m.getName().toLowerCase();
-                if ((name.contains("victim") || name.contains("target") || name.contains("killed"))
-                    && m.getParameterCount() == 0) {
-                    Object result = m.invoke(event);
-                    if (result instanceof Ref) {
-                        @SuppressWarnings("unchecked")
-                        Ref<EntityStore> victimRef = (Ref<EntityStore>) result;
-                        if (victimRef.isValid()) {
-                            return resolveEntityName(victimRef, commandBuffer);
-                        }
-                    }
-                    if (result instanceof String s) {
-                        return s.toLowerCase();
-                    }
-                }
+            Entity entity = null;
+            try { entity = EntityUtils.getEntity(ref, commandBuffer); } catch (Exception ignored) {}
+            if (entity == null) {
+                try { entity = EntityUtils.getEntity(ref, store); } catch (Exception ignored) {}
+            }
+
+            if (entity != null) {
+                String result = scanStringMethods(entity, "Entity");
+                if (result != null) return result;
+            }
+
+            NPCEntity npc = null;
+            try { npc = store.getComponent(ref, NPCEntity.getComponentType()); } catch (Exception ignored) {}
+            if (npc == null) {
+                try { npc = commandBuffer.getComponent(ref, NPCEntity.getComponentType()); } catch (Exception ignored) {}
+            }
+
+            if (npc != null) {
+                String result = scanStringMethods(npc, "NPCEntity");
+                if (result != null) return result;
             }
         } catch (Exception e) {
-            LOGGER.at(Level.INFO).log("Could not resolve mob id via reflection: " + e.getMessage());
+            LOGGER.at(Level.FINE).log("resolveMobName error: " + e.getMessage());
         }
         return "unknown";
+    }
+
+    private String scanStringMethods(@Nonnull Object obj, @Nonnull String source) {
+        for (Method m : obj.getClass().getMethods()) {
+            if (m.getDeclaringClass() == Object.class) continue;
+            if (m.getParameterCount() != 0) continue;
+            if (m.getReturnType() != String.class) continue;
+            if (UNSAFE_METHODS.contains(m.getName().toLowerCase())) continue;
+
+            try {
+                String val = (String) m.invoke(obj);
+                if (val != null && !val.isEmpty() && val.length() < 100) {
+                    String lower = val.toLowerCase();
+                    if (rewardsConfig.getMobReward(lower) > 0) {
+                        cachedNameMethod = m;
+                        cachedNameSource = source;
+                        LOGGER.at(Level.INFO).log("Mob name resolved via " + source + "." + m.getName() + "() = " + val);
+                        return lower;
+                    }
+                }
+            } catch (Exception ignored) {}
+        }
+        return null;
     }
 
     @Nonnull
-    private String resolveEntityName(@Nonnull Ref<EntityStore> ref, @Nonnull CommandBuffer<EntityStore> commandBuffer) {
+    private String resolveWithCachedMethod(@Nonnull Ref<EntityStore> ref,
+                                           @Nonnull Store<EntityStore> store,
+                                           @Nonnull CommandBuffer<EntityStore> commandBuffer) {
         try {
-            Object npc = commandBuffer.getComponent(ref, com.hypixel.hytale.server.npc.entities.NPCEntity.getComponentType());
-            if (npc != null) {
-                for (Method m : npc.getClass().getMethods()) {
-                    String name = m.getName().toLowerCase();
-                    if ((name.equals("getname") || name.equals("gettype") || name.equals("getid")
-                        || name.equals("gettypename") || name.equals("getentitytype"))
-                        && m.getParameterCount() == 0 && m.getReturnType() == String.class) {
-                        String result = (String) m.invoke(npc);
-                        if (result != null && !result.isEmpty()) {
-                            LOGGER.at(Level.INFO).log("Resolved mob name via NPCEntity." + m.getName() + "(): " + result);
-                            return result.toLowerCase();
-                        }
-                    }
+            Object target = null;
+            if ("Entity".equals(cachedNameSource)) {
+                try { target = EntityUtils.getEntity(ref, commandBuffer); } catch (Exception ignored) {}
+                if (target == null) {
+                    try { target = EntityUtils.getEntity(ref, store); } catch (Exception ignored) {}
+                }
+            } else {
+                try { target = store.getComponent(ref, NPCEntity.getComponentType()); } catch (Exception ignored) {}
+                if (target == null) {
+                    try { target = commandBuffer.getComponent(ref, NPCEntity.getComponentType()); } catch (Exception ignored) {}
+                }
+            }
+
+            if (target != null) {
+                String val = (String) cachedNameMethod.invoke(target);
+                if (val != null && !val.isEmpty()) {
+                    return val.toLowerCase();
                 }
             }
         } catch (Exception e) {
-            LOGGER.at(Level.INFO).log("Could not resolve entity name: " + e.getMessage());
+            cachedNameMethod = null;
+            cachedNameSource = null;
         }
         return "unknown";
-    }
-
-    private void logEventApi(@Nonnull KillFeedEvent.KillerMessage event) {
-        StringBuilder sb = new StringBuilder("[EssenceKillSystem] KillerMessage API discovery:\n");
-        for (Method m : event.getClass().getMethods()) {
-            if (m.getDeclaringClass() == Object.class) continue;
-            sb.append("  ").append(m.getReturnType().getSimpleName()).append(" ").append(m.getName()).append("(");
-            Class<?>[] params = m.getParameterTypes();
-            for (int i = 0; i < params.length; i++) {
-                if (i > 0) sb.append(", ");
-                sb.append(params[i].getSimpleName());
-            }
-            sb.append(")\n");
-        }
-        LOGGER.at(Level.INFO).log(sb.toString());
     }
 
     @Nonnull

@@ -50,7 +50,7 @@ public class EssenceCommand extends AbstractAsyncCommand {
             return CompletableFuture.completedFuture(null);
         }
 
-        int essence = essenceManager.getEssence(playerRef.getUuid());
+        int essence = essenceManager.getEssenceDisplay(playerRef.getUuid());
         int rank = essenceManager.getPlayerRank(playerRef.getUuid());
 
         context.sendMessage(Message.raw("Essence: " + essence).color(Color.YELLOW));
@@ -77,7 +77,7 @@ public class EssenceCommand extends AbstractAsyncCommand {
             for (int i = 0; i < topPlayers.size(); i++) {
                 PlayerEssenceData data = topPlayers.get(i);
                 String position = "#" + (i + 1);
-                context.sendMessage(Message.raw(position + " " + data.name() + " - " + data.essence() + " essence").color(Color.WHITE));
+                context.sendMessage(Message.raw(position + " " + data.name() + " - " + (int) Math.floor(data.essence()) + " essence").color(Color.WHITE));
             }
 
             return CompletableFuture.completedFuture(null);
@@ -182,7 +182,7 @@ public class EssenceCommand extends AbstractAsyncCommand {
                 return CompletableFuture.completedFuture(null);
             }
 
-            int currentEssence = essenceManager.getEssence(playerRef.getUuid());
+            int currentEssence = essenceManager.getEssenceDisplay(playerRef.getUuid());
             if (currentEssence < amount) {
                 context.sendMessage(Message.raw("Vous n'avez que " + currentEssence + " essence").color(Color.RED));
                 return CompletableFuture.completedFuture(null);

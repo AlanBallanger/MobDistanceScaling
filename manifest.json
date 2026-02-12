@@ -1,18 +1,18 @@
 {
-  "Group": "MobDistanceScaling",
-  "Name": "MobDistanceScaling",
-  "Version": "0.1.4",
-  "Description": "Scale mob difficulty based on distance from spawn",
+  "Group": "Frotty27",
+  "Name": "Elite Mobs",
+  "Version": "1.0.0",
+  "Description": "Modifies spawned NPC's to be have tiers of  on stronger (modifying speed, max health, scale size and equipped armor).",
   "Authors": [
     {
-      "Name": "It's you!"
+      "Name": "Frotty27"
     }
   ],
-  "Website": "",
+  "Website": "frotty27.com",
   "ServerVersion": "*",
   "Dependencies": {},
   "OptionalDependencies": {},
   "DisabledByDefault": false,
-  "IncludesAssetPack": true,
-  "Main": "com.mobdistancescaling.MobDistanceScalingPlugin"
+  "Main": "com.frotty27.elitemobs.plugin.EliteMobsPlugin",
+  "IncludesAssetPack": true
 }

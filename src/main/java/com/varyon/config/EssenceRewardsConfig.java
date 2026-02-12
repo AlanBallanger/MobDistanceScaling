@@ -67,9 +67,17 @@ public class EssenceRewardsConfig {
         String id = blockId.toLowerCase();
         Double exact = oreRewards.get(id);
         if (exact != null) return exact * globalMultiplier;
+        String bestKey = null;
+        double bestVal = 0;
         for (Map.Entry<String, Double> entry : oreRewards.entrySet()) {
-            if (id.contains(entry.getKey())) return entry.getValue() * globalMultiplier;
+            if (id.contains(entry.getKey())) {
+                if (bestKey == null || entry.getKey().length() > bestKey.length()) {
+                    bestKey = entry.getKey();
+                    bestVal = entry.getValue();
+                }
+            }
         }
+        if (bestKey != null) return bestVal * globalMultiplier;
         return defaultOreReward * globalMultiplier;
     }
 
@@ -77,9 +85,17 @@ public class EssenceRewardsConfig {
         String id = mobId.toLowerCase();
         Double exact = mobRewards.get(id);
         if (exact != null) return exact * globalMultiplier;
+        String bestKey = null;
+        double bestVal = 0;
         for (Map.Entry<String, Double> entry : mobRewards.entrySet()) {
-            if (id.contains(entry.getKey())) return entry.getValue() * globalMultiplier;
+            if (id.contains(entry.getKey())) {
+                if (bestKey == null || entry.getKey().length() > bestKey.length()) {
+                    bestKey = entry.getKey();
+                    bestVal = entry.getValue();
+                }
+            }
         }
+        if (bestKey != null) return bestVal * globalMultiplier;
         return defaultMobReward * globalMultiplier;
     }
 
@@ -111,7 +127,7 @@ public class EssenceRewardsConfig {
         oreRewards.put("rock_gem_voidstone", 30.0);
         oreRewards.put("rock_crystal", 4.0);
 
-        // Critters (5 XP) -> 1 point
+        // Critters (5 XP) -> 1 essence
         mobRewards.put("frog", 1.0);
         mobRewards.put("mouse", 1.0);
         mobRewards.put("squirrel", 1.0);
@@ -124,119 +140,119 @@ public class EssenceRewardsConfig {
         mobRewards.put("woodpecker", 1.0);
         mobRewards.put("pigeon", 1.0);
 
-        // Petits (8 XP) -> 2 points
-        mobRewards.put("meerkat", 2.0);
-        mobRewards.put("larva_silk", 2.0);
-        mobRewards.put("chicken", 2.0);
-        mobRewards.put("turkey", 2.0);
-        mobRewards.put("skrill", 2.0);
-        mobRewards.put("bunny", 2.0);
-        mobRewards.put("crow", 2.0);
-        mobRewards.put("duck", 2.0);
-        mobRewards.put("rat", 2.0);
+        // Petits (8 XP) -> 1 essence
+        mobRewards.put("meerkat", 1.5);
+        mobRewards.put("larva_silk", 1.5);
+        mobRewards.put("chicken", 1.5);
+        mobRewards.put("turkey", 1.5);
+        mobRewards.put("skrill", 1.5);
+        mobRewards.put("bunny", 1.5);
+        mobRewards.put("crow", 1.5);
+        mobRewards.put("duck", 1.5);
+        mobRewards.put("rat", 1.5);
 
-        // Moyens (10-12 XP) -> 2 points
-        mobRewards.put("owl", 2.0);
-        mobRewards.put("pig", 2.0);
-        mobRewards.put("rabbit", 2.0);
-        mobRewards.put("salmon", 2.0);
-        mobRewards.put("fox", 2.0);
+        // Moyens (10-12 XP) -> 1 essence
+        mobRewards.put("owl", 2.5);
+        mobRewards.put("pig", 2.5);
+        mobRewards.put("rabbit", 2.5);
+        mobRewards.put("salmon", 2.5);
+        mobRewards.put("fox", 2.5);
 
-        // Notables (12-20 XP) -> 3 points
-        mobRewards.put("kweebec", 3.0);
-        mobRewards.put("feran", 3.0);
-        mobRewards.put("mouflon", 3.0);
-        mobRewards.put("boar", 3.0);
-        mobRewards.put("cow", 3.0);
-        mobRewards.put("penguin", 3.0);
-        mobRewards.put("flamingo", 3.0);
-        mobRewards.put("crab", 3.0);
-        mobRewards.put("hawk", 3.0);
-        mobRewards.put("parrot", 3.0);
+        // Notables (12-20 XP) -> 1 essence
+        mobRewards.put("kweebec", 3.5);
+        mobRewards.put("feran", 3.5);
+        mobRewards.put("mouflon", 3.5);
+        mobRewards.put("boar", 3.5);
+        mobRewards.put("cow", 3.5);
+        mobRewards.put("penguin", 3.5);
+        mobRewards.put("flamingo", 3.5);
+        mobRewards.put("crab", 3.5);
+        mobRewards.put("hawk", 3.5);
+        mobRewards.put("parrot", 3.5);
 
-        // Hostiles faibles (20-35 XP) -> 4 points
-        mobRewards.put("snake", 4.0);
-        mobRewards.put("snail", 4.0);
-        mobRewards.put("cactee", 4.0);
-        mobRewards.put("spark_living", 4.0);
-        mobRewards.put("tortoise", 4.0);
-        mobRewards.put("scarab", 4.0);
-        mobRewards.put("molerat", 4.0);
+        // Hostiles faibles (20-35 XP) -> 1 essence
+        mobRewards.put("snake", 6.5);
+        mobRewards.put("snail", 6.5);
+        mobRewards.put("cactee", 6.5);
+        mobRewards.put("spark_living", 6.5);
+        mobRewards.put("tortoise", 6.5);
+        mobRewards.put("scarab", 6.5);
+        mobRewards.put("molerat", 6.5);
 
-        // Hostiles moyens (40-55 XP) -> 6 points
-        mobRewards.put("spider", 6.0);
-        mobRewards.put("fen_stalker", 6.0);
-        mobRewards.put("chicken_undead", 6.0);
-        mobRewards.put("frostgill", 6.0);
-        mobRewards.put("snapjaw", 6.0);
-        mobRewards.put("trilobite", 6.0);
+        // Hostiles moyens (40-55 XP) -> 2 essence
+        mobRewards.put("spider", 12.5);
+        mobRewards.put("fen_stalker", 12.5);
+        mobRewards.put("chicken_undead", 12.5);
+        mobRewards.put("frostgill", 12.5);
+        mobRewards.put("snapjaw", 12.5);
+        mobRewards.put("trilobite", 12.5);
 
-        // Hostiles (55-65 XP) -> 8 points
-        mobRewards.put("wolf", 8.0);
-        mobRewards.put("hyena", 8.0);
-        mobRewards.put("leopard", 8.0);
-        mobRewards.put("snapdragon", 8.0);
-        mobRewards.put("moose", 8.0);
-        mobRewards.put("goblin", 8.0);
-        mobRewards.put("klops", 8.0);
-        mobRewards.put("slug_magma", 8.0);
-        mobRewards.put("armadillo", 8.0);
+        // Hostiles (55-65 XP) -> 2 essence
+        mobRewards.put("wolf", 17.5);
+        mobRewards.put("hyena", 17.5);
+        mobRewards.put("leopard", 17.5);
+        mobRewards.put("snapdragon", 17.5);
+        mobRewards.put("moose", 17.5);
+        mobRewards.put("goblin", 17.5);
+        mobRewards.put("klops", 17.5);
+        mobRewards.put("slug_magma", 17.5);
+        mobRewards.put("armadillo", 17.5);
 
-        // Hostiles forts (65-85 XP) -> 11 points
-        mobRewards.put("trork", 11.0);
-        mobRewards.put("skeleton", 11.0);
-        mobRewards.put("zombie", 11.0);
-        mobRewards.put("scarak", 11.0);
-        mobRewards.put("bramblekin", 11.0);
-        mobRewards.put("spirit", 11.0);
-        mobRewards.put("outlander", 11.0);
+        // Hostiles forts (65-85 XP) -> 3 essence
+        mobRewards.put("trork", 25.0);
+        mobRewards.put("skeleton", 25.0);
+        mobRewards.put("zombie", 25.0);
+        mobRewards.put("scarak", 25.0);
+        mobRewards.put("bramblekin", 25.0);
+        mobRewards.put("spirit", 25.0);
+        mobRewards.put("outlander", 25.0);
 
-        // Elites (85 XP) -> 13 points
-        mobRewards.put("bear", 13.0);
-        mobRewards.put("raptor", 13.0);
-        mobRewards.put("tiger", 13.0);
-        mobRewards.put("crocodile", 13.0);
-        mobRewards.put("scorpion", 13.0);
-        mobRewards.put("toad_rhino", 13.0);
-        mobRewards.put("mosshorn", 13.0);
-        mobRewards.put("goblin_ogre", 13.0);
-        mobRewards.put("skeleton_burnt", 13.0);
-        mobRewards.put("zombie_burnt", 13.0);
-        mobRewards.put("hound_bleached", 13.0);
-        mobRewards.put("cow_undead", 13.0);
-        mobRewards.put("pig_undead", 13.0);
-        mobRewards.put("shark", 13.0);
-        mobRewards.put("whale", 13.0);
-        mobRewards.put("scarak_broodmother", 13.0);
-        mobRewards.put("trillodon", 13.0);
+        // Elites (85 XP) -> 4 essence
+        mobRewards.put("bear", 37.5);
+        mobRewards.put("raptor", 37.5);
+        mobRewards.put("tiger", 37.5);
+        mobRewards.put("crocodile", 37.5);
+        mobRewards.put("scorpion", 37.5);
+        mobRewards.put("toad_rhino", 37.5);
+        mobRewards.put("mosshorn", 37.5);
+        mobRewards.put("goblin_ogre", 37.5);
+        mobRewards.put("skeleton_burnt", 37.5);
+        mobRewards.put("zombie_burnt", 37.5);
+        mobRewards.put("hound_bleached", 37.5);
+        mobRewards.put("cow_undead", 37.5);
+        mobRewards.put("pig_undead", 37.5);
+        mobRewards.put("shark", 37.5);
+        mobRewards.put("whale", 37.5);
+        mobRewards.put("scarak_broodmother", 37.5);
+        mobRewards.put("trillodon", 37.5);
 
-        // Mini-boss (130 XP) -> 20 points
-        mobRewards.put("emberwulf", 20.0);
-        mobRewards.put("golem", 20.0);
-        mobRewards.put("ghoul", 20.0);
-        mobRewards.put("wraith", 20.0);
-        mobRewards.put("slothian", 20.0);
-        mobRewards.put("spirit_thunder", 20.0);
-        mobRewards.put("rex_cave", 20.0);
+        // Mini-boss (130 XP) -> 7 essence
+        mobRewards.put("emberwulf", 70.0);
+        mobRewards.put("golem", 70.0);
+        mobRewards.put("ghoul", 70.0);
+        mobRewards.put("wraith", 70.0);
+        mobRewards.put("slothian", 70.0);
+        mobRewards.put("spirit_thunder", 70.0);
+        mobRewards.put("rex_cave", 70.0);
 
-        // Boss (175 XP) -> 30 points
-        mobRewards.put("yeti", 30.0);
-        mobRewards.put("werewolf", 30.0);
-        mobRewards.put("hedera", 30.0);
+        // Boss (175 XP) -> 12 essence
+        mobRewards.put("yeti", 120.0);
+        mobRewards.put("werewolf", 120.0);
+        mobRewards.put("hedera", 120.0);
 
-        // Boss haut (250 XP) -> 40 points
-        mobRewards.put("void", 40.0);
-        mobRewards.put("shadow_knight", 40.0);
-        mobRewards.put("zombie_aberrant", 40.0);
+        // Boss haut (250 XP) -> 5 essence
+        mobRewards.put("void", 50.0);
+        mobRewards.put("shadow_knight", 50.0);
+        mobRewards.put("zombie_aberrant", 50.0);
 
-        // Boss elite (350-400 XP) -> 60 points
-        mobRewards.put("goblin_duke", 60.0);
-        mobRewards.put("golem_guardian", 60.0);
-        mobRewards.put("elite", 60.0);
+        // Boss elite (350-400 XP) -> 35 essence
+        mobRewards.put("goblin_duke", 350.0);
+        mobRewards.put("golem_guardian", 350.0);
+        mobRewards.put("elite", 350.0);
 
-        // Boss final (500 XP) -> 80 points
-        mobRewards.put("dragon", 80.0);
-        mobRewards.put("boss", 80.0);
+        // Boss final (500 XP) -> 50 essence
+        mobRewards.put("dragon", 500.0);
+        mobRewards.put("boss", 500.0);
     }
 
     private void save(@Nonnull File file) {
