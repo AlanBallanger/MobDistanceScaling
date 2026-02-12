@@ -17,7 +17,7 @@ public class SafeZoneConfig {
         this.maxRotationTimeMinutes = 120;
         this.overlapDurationMinutes = 10;
         this.maxRadius = -1;
-        this.enterSafeZoneTitle = "Zone Safe";
+        this.enterSafeZoneTitle = "Zone non-PvP";
         this.enterSafeZoneSubtitle = "PvP Désactivé";
         this.enterPvpZoneTitle = "Zone PvP";
         this.enterPvpZoneSubtitle = "Attention !";

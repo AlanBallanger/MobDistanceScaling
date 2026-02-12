@@ -107,6 +107,11 @@ public class ZoneHUDManager {
     }
 
     public void registerPlayer(@Nonnull Player player, @Nonnull PlayerRef playerRef) {
+        String worldName = player.getWorld().getName();
+        if (!zoneConfig.isWorldEnabled(worldName)) {
+            return;
+        }
+
         UUID playerId = playerRef.getUuid();
         ZoneHUD hud = playerHuds.get(playerId);
 

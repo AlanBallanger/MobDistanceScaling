@@ -101,7 +101,7 @@ public class SafeZonePvpSystem extends DamageEventSystem {
 
             PlayerRef attackerPlayerRef = commandBuffer.getComponent(attackerRef, PlayerRef.getComponentType());
             if (attackerPlayerRef != null) {
-                attackerPlayerRef.sendMessage(Message.raw("§c[PvP] Vous êtes dans une zone safe !"));
+                attackerPlayerRef.sendMessage(Message.raw("[PvP] Vous êtes dans une zone safe !").color(java.awt.Color.RED));
             }
 
             LOGGER.at(Level.FINE).log("Blocked PvP damage in safe zone");

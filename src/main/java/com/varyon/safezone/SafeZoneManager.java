@@ -105,14 +105,14 @@ public class SafeZoneManager {
     }
 
     private void announceRotation() {
-        String message = "§a[Zone Safe] §fLa zone safe est maintenant au §e" + currentQuadrant.getDisplayName() + " §f!";
-        broadcastMessage(message);
+        String message = "[Zone Safe] La zone safe est maintenant au " + currentQuadrant.getDisplayName() + " !";
+        broadcastMessage(Message.raw(message).color(java.awt.Color.GREEN));
     }
 
     private void announceOverlapStart() {
-        String message = "§a[Zone Safe] §fDébut de la transition ! Les zones §e" + currentQuadrant.getDisplayName() + 
-                        " §fet §e" + nextQuadrant.getDisplayName() + " §fsont toutes les deux safe pendant 10 minutes.";
-        broadcastMessage(message);
+        String message = "[Zone Safe] Début de la transition ! Les zones " + currentQuadrant.getDisplayName() + 
+                        " et " + nextQuadrant.getDisplayName() + " sont toutes les deux safe pendant 10 minutes.";
+        broadcastMessage(Message.raw(message).color(java.awt.Color.GREEN));
     }
 
     private void announceTimeRemaining() {
@@ -126,16 +126,16 @@ public class SafeZoneManager {
         long minutesRemaining = timeRemaining / 60000;
         
         if (minutesRemaining <= 5) {
-            String message = "§a[Zone Safe] §fLa zone safe changera dans §e" + minutesRemaining + " minute(s) §f!";
-            broadcastMessage(message);
+            String message = "[Zone Safe] La zone safe changera dans " + minutesRemaining + " minute(s) !";
+            broadcastMessage(Message.raw(message).color(java.awt.Color.GREEN));
         }
     }
 
-    private void broadcastMessage(String message) {
+    private void broadcastMessage(Message message) {
         Universe.get().getWorlds().values().forEach(world -> {
             world.execute(() -> {
                 world.getPlayerRefs().forEach(playerRef -> {
-                    playerRef.sendMessage(Message.raw(message));
+                    playerRef.sendMessage(message);
                 });
             });
         });
