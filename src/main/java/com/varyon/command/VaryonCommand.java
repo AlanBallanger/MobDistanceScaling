@@ -76,6 +76,7 @@ public class VaryonCommand extends AbstractAsyncCommand {
             context.sendMessage(Message.raw("  /varyon faction <nom> - Rejoindre une faction").color(Color.WHITE));
             context.sendMessage(Message.raw("  /essence - Voir votre essence").color(Color.WHITE));
             context.sendMessage(Message.raw("  /essence top - Classement d'essence").color(Color.WHITE));
+            context.sendMessage(Message.raw("  /essence deposit <montant> - Déposer de l'essence").color(Color.WHITE));
 
             if (isAdmin) {
                 context.sendMessage(Message.raw("  /varyon reload - Recharger la configuration").color(Color.WHITE));
@@ -87,7 +88,6 @@ public class VaryonCommand extends AbstractAsyncCommand {
                 context.sendMessage(Message.raw("  /essence give <joueur> <montant>").color(Color.WHITE));
                 context.sendMessage(Message.raw("  /essence take <joueur> <montant>").color(Color.WHITE));
                 context.sendMessage(Message.raw("  /essence setmax <joueur> <montant>").color(Color.WHITE));
-                context.sendMessage(Message.raw("  /essence deposit <montant>").color(Color.WHITE));
             }
 
             if (hasRtp) {

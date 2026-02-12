@@ -69,6 +69,7 @@ public class RtpzCommand extends AbstractPlayerCommand {
         Zone[] zones = generator.getZonePatternProvider().getZones();
 
         Zone targetZone = null;
+        Integer extractedZoneNumber = null;
         
         if (targetZonePrefix != null && !targetZonePrefix.isEmpty()) {
             String prefix = targetZonePrefix.toLowerCase();
@@ -102,8 +103,41 @@ public class RtpzCommand extends AbstractPlayerCommand {
             
             targetZone = matchingZones.get(random.nextInt(matchingZones.size()));
             
+            // Extraire le numéro de zone pour la vérification de permission
+            String zoneName = targetZone.name().toLowerCase();
+            if (zoneName.startsWith("zone") && zoneName.length() > 4) {
+                try {
+                    extractedZoneNumber = Integer.parseInt(zoneName.substring(4, 5));
+                } catch (NumberFormatException e) {
+                    // Pas un numéro, on ignore
+                }
+            }
+            
             String zoneDisplay = extractZoneNumber(targetZone.name());
             LOGGER.at(Level.INFO).log("Selected zone: " + targetZone.name() + " (" + zoneDisplay + ") from " + matchingZones.size() + " matching zones for prefix: " + prefix);
+        }
+        
+        // Vérifier la permission pour cette zone vanilla
+        if (extractedZoneNumber != null) {
+            com.hypixel.hytale.server.core.entity.entities.Player player = 
+                (com.hypixel.hytale.server.core.entity.entities.Player) store.getComponent(ref, 
+                    com.hypixel.hytale.server.core.entity.entities.Player.getComponentType());
+            
+            if (player != null && !player.hasPermission("varyon.rtp")) {
+                // Pas de permission globale, vérifier les permissions granulaires
+                boolean hasAccess = false;
+                for (int i = extractedZoneNumber; i <= 10; i++) {
+                    if (player.hasPermission("varyon.rtp." + i)) {
+                        hasAccess = true;
+                        break;
+                    }
+                }
+                
+                if (!hasAccess) {
+                    context.sendMessage(Message.raw("Vous n'avez pas la permission pour cette zone. Permission requise: varyon.rtp." + extractedZoneNumber).color(Color.RED));
+                    return;
+                }
+            }
         }
 
         final Zone finalTargetZone = targetZone;

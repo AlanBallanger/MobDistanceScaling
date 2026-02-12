@@ -53,6 +53,27 @@ public class RtpvCommand extends AbstractPlayerCommand {
             return;
         }
         
+        // Vérifier la permission pour cette zone
+        com.hypixel.hytale.server.core.entity.entities.Player player = 
+            (com.hypixel.hytale.server.core.entity.entities.Player) store.getComponent(ref, 
+                com.hypixel.hytale.server.core.entity.entities.Player.getComponentType());
+        
+        if (player != null && !player.hasPermission("varyon.rtp")) {
+            // Pas de permission globale, vérifier les permissions granulaires
+            boolean hasAccess = false;
+            for (int i = zoneNumber; i <= zones.size(); i++) {
+                if (player.hasPermission("varyon.rtp." + i)) {
+                    hasAccess = true;
+                    break;
+                }
+            }
+            
+            if (!hasAccess) {
+                context.sendMessage(Message.raw("Vous n'avez pas la permission pour cette zone. Permission requise: varyon.rtp." + zoneNumber).color(Color.RED));
+                return;
+            }
+        }
+        
         DifficultyZone targetZone = zones.get(zoneNumber - 1);
         
         double minDist = targetZone.getRadiusStart();

@@ -182,7 +182,7 @@ public class EssenceCommand extends AbstractAsyncCommand {
             super("deposit", "Deposit essence to your faction");
             this.essenceManager = essenceManager;
             this.factionManager = factionManager;
-            this.requirePermission("varyon.admin");
+            this.requirePermission("varyon.deposit");
             this.amountArg = this.withRequiredArg("amount", "Amount to deposit", ArgTypes.INTEGER);
         }
 
