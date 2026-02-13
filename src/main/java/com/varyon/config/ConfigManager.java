@@ -15,16 +15,19 @@ import java.util.logging.Level;
 
 public class ConfigManager {
     private static final HytaleLogger LOGGER = HytaleLogger.forEnclosingClass();
-    private static final String CONFIG_FILENAME = "mdsconfig.toml";
+    private static final String CONFIG_FILENAME = "config.toml";
 
     private final Path configPath;
+    private final Path pluginDataFolder;
     private ZoneConfig zoneConfig;
     private SafeZoneConfig safeZoneConfig;
     private ExtractionConfig extractionConfig;
     private GlobalRewardsConfig globalRewardsConfig;
     private ReturnConfig returnConfig;
+    private MessagesConfig messagesConfig;
 
     public ConfigManager(@Nonnull Path pluginDataFolder) {
+        this.pluginDataFolder = pluginDataFolder;
         this.configPath = pluginDataFolder.resolve(CONFIG_FILENAME);
     }
 
@@ -48,6 +51,7 @@ public class ConfigManager {
             extractionConfig = parseExtractionConfig(toml);
             globalRewardsConfig = parseGlobalRewardsConfig(toml);
             returnConfig = parseReturnConfig(toml);
+            messagesConfig = MessagesConfig.load(pluginDataFolder);
             LOGGER.at(Level.INFO).log("Loaded configuration with {0} zones", zoneConfig.getZones().size());
         } catch (Exception e) {
             LOGGER.at(Level.SEVERE).log("Failed to load config, using default configuration", e);
@@ -56,6 +60,7 @@ public class ConfigManager {
             extractionConfig = new ExtractionConfig();
             globalRewardsConfig = GlobalRewardsConfig.createDefault();
             returnConfig = ReturnConfig.createDefault();
+            messagesConfig = MessagesConfig.createDefault();
         }
     }
 
@@ -470,6 +475,11 @@ public class ConfigManager {
     @Nonnull
     public ReturnConfig getReturnConfig() {
         return returnConfig != null ? returnConfig : ReturnConfig.createDefault();
+    }
+    
+    @Nonnull
+    public MessagesConfig getMessagesConfig() {
+        return messagesConfig != null ? messagesConfig : MessagesConfig.createDefault();
     }
     
     @Nonnull
