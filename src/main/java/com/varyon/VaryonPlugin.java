@@ -23,10 +23,13 @@ import com.varyon.command.ExtractCommand;
 import com.varyon.command.VaryonCommand;
 import com.varyon.command.RtpzCommand;
 import com.varyon.command.RtpvCommand;
+import com.varyon.command.ReturnCommand;
 import com.varyon.component.MobScalingComponent;
 import com.varyon.config.ConfigManager;
 import com.varyon.config.EssenceRewardsConfig;
 import com.varyon.config.GlobalRewardsConfig;
+import com.varyon.death.DeathDetectionSystem;
+import com.varyon.death.DeathPointManager;
 import com.varyon.deposit.DepositBlockInteractionSystem;
 import com.varyon.deposit.DepositBlockManager;
 import com.varyon.deposit.DepositUIManager;
@@ -71,6 +74,7 @@ public class VaryonPlugin extends JavaPlugin {
     private GlobalRewardsManager globalRewardsManager;
     private DepositBlockManager depositBlockManager;
     private DepositUIManager depositUIManager;
+    private DeathPointManager deathPointManager;
 
     public VaryonPlugin(JavaPluginInit init) {
         super(init);
@@ -148,6 +152,13 @@ public class VaryonPlugin extends JavaPlugin {
             DepositBlockInteractionSystem depositInteractionSystem = new DepositBlockInteractionSystem(depositBlockManager, depositUIManager);
             this.getEntityStoreRegistry().registerSystem(depositInteractionSystem);
             LOGGER.at(Level.INFO).log("Deposit block system initialized");
+
+            // Initialiser le système de retour au point de mort
+            deathPointManager = new DeathPointManager(this.getDataDirectory());
+            
+            DeathDetectionSystem deathDetectionSystem = new DeathDetectionSystem(deathPointManager);
+            this.getEntityStoreRegistry().registerSystem(deathDetectionSystem);
+            LOGGER.at(Level.INFO).log("Death point system initialized");
 
             // Initialiser le système de safe zone
             if (configManager.getSafeZoneConfig().isEnabled()) {
@@ -244,6 +255,7 @@ public class VaryonPlugin extends JavaPlugin {
             this.getCommandRegistry().registerCommand(new VaryonCommand(this, factionManager, depositBlockManager));
             this.getCommandRegistry().registerCommand(new ExtractCommand("extract"));
             this.getCommandRegistry().registerCommand(new ExtractCommand("ex"));
+            this.getCommandRegistry().registerCommand(new ReturnCommand());
             this.getCommandRegistry().registerCommand(new EssenceCommand(essenceManager, factionManager));
             this.getCommandRegistry().registerCommand(new RtpzCommand());
             this.getCommandRegistry().registerCommand(new RtpvCommand());
@@ -269,6 +281,9 @@ public class VaryonPlugin extends JavaPlugin {
         }
         if (extractionPortalManager != null) {
             extractionPortalManager.shutdown();
+        }
+        if (deathPointManager != null) {
+            deathPointManager.shutdown();
         }
     }
 
@@ -341,6 +356,10 @@ public class VaryonPlugin extends JavaPlugin {
 
     public ZoneHUDManager getHudManager() {
         return hudManager;
+    }
+    
+    public DeathPointManager getDeathPointManager() {
+        return deathPointManager;
     }
 
     @Nullable

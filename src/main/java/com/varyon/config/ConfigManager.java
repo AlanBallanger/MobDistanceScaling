@@ -22,6 +22,7 @@ public class ConfigManager {
     private SafeZoneConfig safeZoneConfig;
     private ExtractionConfig extractionConfig;
     private GlobalRewardsConfig globalRewardsConfig;
+    private ReturnConfig returnConfig;
 
     public ConfigManager(@Nonnull Path pluginDataFolder) {
         this.configPath = pluginDataFolder.resolve(CONFIG_FILENAME);
@@ -46,6 +47,7 @@ public class ConfigManager {
             safeZoneConfig = parseSafeZoneConfig(toml);
             extractionConfig = parseExtractionConfig(toml);
             globalRewardsConfig = parseGlobalRewardsConfig(toml);
+            returnConfig = parseReturnConfig(toml);
             LOGGER.at(Level.INFO).log("Loaded configuration with {0} zones", zoneConfig.getZones().size());
         } catch (Exception e) {
             LOGGER.at(Level.SEVERE).log("Failed to load config, using default configuration", e);
@@ -53,6 +55,7 @@ public class ConfigManager {
             safeZoneConfig = new SafeZoneConfig();
             extractionConfig = new ExtractionConfig();
             globalRewardsConfig = GlobalRewardsConfig.createDefault();
+            returnConfig = ReturnConfig.createDefault();
         }
     }
 
@@ -462,6 +465,49 @@ public class ConfigManager {
     @Nonnull
     public GlobalRewardsConfig getGlobalRewardsConfig() {
         return globalRewardsConfig;
+    }
+    
+    @Nonnull
+    public ReturnConfig getReturnConfig() {
+        return returnConfig != null ? returnConfig : ReturnConfig.createDefault();
+    }
+    
+    @Nonnull
+    private ReturnConfig parseReturnConfig(@Nonnull Toml toml) {
+        Toml returnToml = toml.getTable("return");
+        
+        if (returnToml == null) {
+            return ReturnConfig.createDefault();
+        }
+        
+        boolean enabled = returnToml.getBoolean("enabled", true);
+        int cooldownSeconds = returnToml.getLong("cooldownSeconds", 1800L).intValue();
+        int minDistance = returnToml.getLong("minDistance", 100L).intValue();
+        int maxDistance = returnToml.getLong("maxDistance", 200L).intValue();
+        int expirationMinutes = returnToml.getLong("expirationMinutes", 30L).intValue();
+        
+        String messageSuccess = returnToml.getString("messageSuccess", 
+            "Téléporté près de votre point de mort à {distance}m ({x}, {y}, {z})");
+        String messageCooldown = returnToml.getString("messageCooldown", 
+            "Cooldown actif. Temps restant: {remaining} secondes");
+        String messageNoDeathPoint = returnToml.getString("messageNoDeathPoint", 
+            "Aucun point de mort enregistré");
+        String messageExpired = returnToml.getString("messageExpired", 
+            "Votre point de mort a expiré");
+        String messageAlreadyUsed = returnToml.getString("messageAlreadyUsed", 
+            "Vous avez déjà utilisé votre téléportation pour cette mort");
+        String messageTeleporting = returnToml.getString("messageTeleporting", 
+            "Recherche d'un emplacement sûr près de votre point de mort...");
+        String messageNoSafeLocation = returnToml.getString("messageNoSafeLocation", 
+            "Impossible de trouver un emplacement sûr après {attempts} tentatives");
+        String messageError = returnToml.getString("messageError", 
+            "Erreur lors de la téléportation");
+        String messageFirstUseWarning = returnToml.getString("messageFirstUseWarning", 
+            "⚠ ATTENTION: Vous ne pourrez utiliser /return qu'UNE SEULE FOIS pour cette mort!");
+        
+        return new ReturnConfig(enabled, cooldownSeconds, minDistance, maxDistance, expirationMinutes,
+            messageSuccess, messageCooldown, messageNoDeathPoint, messageExpired, messageAlreadyUsed,
+            messageTeleporting, messageNoSafeLocation, messageError, messageFirstUseWarning);
     }
 
     public void reload() {

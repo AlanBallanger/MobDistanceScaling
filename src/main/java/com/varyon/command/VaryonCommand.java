@@ -74,6 +74,7 @@ public class VaryonCommand extends AbstractAsyncCommand {
             context.sendMessage(Message.raw("=== Varyon ===").color(Color.YELLOW));
             context.sendMessage(Message.raw("  /varyon extract - Invoque un portail d'extraction").color(Color.WHITE));
             context.sendMessage(Message.raw("  /varyon faction <nom> - Rejoindre une faction").color(Color.WHITE));
+            context.sendMessage(Message.raw("  /return - Retour près de votre point de mort").color(Color.WHITE));
             context.sendMessage(Message.raw("  /essence - Voir votre essence").color(Color.WHITE));
             context.sendMessage(Message.raw("  /essence top - Classement d'essence").color(Color.WHITE));
             context.sendMessage(Message.raw("  /essence deposit <montant> - Déposer de l'essence").color(Color.WHITE));
