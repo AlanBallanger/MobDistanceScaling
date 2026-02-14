@@ -169,7 +169,7 @@ public class VaryonPlugin extends JavaPlugin {
                 SafeZonePvpSystem.setSafeZoneManager(safeZoneManager);
                 this.getEntityStoreRegistry().registerSystem(safeZonePvpSystem);
                 
-                safeZoneNotificationSystem = new SafeZoneNotificationSystem(configManager.getSafeZoneConfig());
+                safeZoneNotificationSystem = new SafeZoneNotificationSystem(configManager.getSafeZoneConfig(), configManager.getZoneConfig());
                 SafeZoneNotificationSystem.setSafeZoneManager(safeZoneManager);
                 this.getEntityStoreRegistry().registerSystem(safeZoneNotificationSystem);
                 staticSafeZoneNotificationSystem = safeZoneNotificationSystem;

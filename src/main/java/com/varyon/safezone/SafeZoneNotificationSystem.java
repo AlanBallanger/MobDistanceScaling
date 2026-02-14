@@ -12,6 +12,7 @@ import com.hypixel.hytale.server.core.entity.entities.Player;
 import com.hypixel.hytale.server.core.util.EventTitleUtil;
 import com.hypixel.hytale.server.core.universe.PlayerRef;
 import com.hypixel.hytale.server.core.universe.world.storage.EntityStore;
+import com.varyon.config.ZoneConfig;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -26,9 +27,11 @@ public class SafeZoneNotificationSystem extends EntityTickingSystem<EntityStore>
     private static SafeZoneManager safeZoneManager;
     private final Map<UUID, Boolean> playerInSafeZone = new ConcurrentHashMap<>();
     private final SafeZoneConfig config;
+    private final ZoneConfig zoneConfig;
 
-    public SafeZoneNotificationSystem(@Nonnull SafeZoneConfig config) {
+    public SafeZoneNotificationSystem(@Nonnull SafeZoneConfig config, @Nonnull ZoneConfig zoneConfig) {
         this.config = config;
+        this.zoneConfig = zoneConfig;
     }
 
     public static void setSafeZoneManager(@Nonnull SafeZoneManager manager) {
@@ -48,6 +51,11 @@ public class SafeZoneNotificationSystem extends EntityTickingSystem<EntityStore>
         Player player = store.getComponent(ref, Player.getComponentType());
 
         if (playerRef == null || player == null) {
+            return;
+        }
+
+        String worldName = ((EntityStore)store.getExternalData()).getWorld().getName();
+        if (!zoneConfig.isWorldEnabled(worldName)) {
             return;
         }
 
