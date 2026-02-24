@@ -281,15 +281,16 @@ public class ZoneConfig {
         config.rtpvMessageRandomZone = "random";
 
         // Zone constructor: (id, color, healthMultiplier, damageMultiplier, lootMultiplier, essenceMultiplier, radiusStart, name)
-        config.addZone(new DifficultyZone(1, "#55FF55", 1.5, 1.25, 1.2, 1.2, 0, "Easy"));
-        config.addZone(new DifficultyZone(2, "#55FFAA", 2.0, 1.5, 1.4, 1.4, 5000, "Normal"));
-        config.addZone(new DifficultyZone(3, "#E6FF33", 2.75, 1.9, 1.6, 1.6, 7500, "Moderate"));
-        config.addZone(new DifficultyZone(4, "#FFC533", 3.5, 2.25, 1.8, 1.8, 10000, "Challenging"));
-        config.addZone(new DifficultyZone(5, "#FF7A1A", 4.5, 2.8, 2.0, 2.0, 12500, "Hard"));
-        config.addZone(new DifficultyZone(6, "#FF3030", 5.5, 3.5, 2.25, 2.25, 15000, "Very Hard"));
-        config.addZone(new DifficultyZone(7, "#C0003A", 7.0, 4.25, 2.5, 2.5, 17500, "Extreme"));
-        config.addZone(new DifficultyZone(8, "#8A2BFF", 8.5, 5.0, 2.75, 2.75, 20000, "Nightmare"));
-        config.addZone(new DifficultyZone(9, "#05000A", 11.0, 6.0, 3.0, 3.0, 22500, "Hell"));
+        config.addZone(new DifficultyZone(1,  "#55FF55", 1.5,  1.25, 1.2,  1.2,  0,     "Easy"));
+        config.addZone(new DifficultyZone(2,  "#55FFAA", 2.0,  1.5,  1.4,  1.4,  5000,  "Normal"));
+        config.addZone(new DifficultyZone(3,  "#E6FF33", 2.75, 1.9,  1.6,  1.6,  7500,  "Moderate"));
+        config.addZone(new DifficultyZone(4,  "#FFC533", 3.5,  2.25, 1.8,  1.8,  10000, "Challenging"));
+        config.addZone(new DifficultyZone(5,  "#FF7A1A", 4.5,  2.8,  2.0,  2.0,  12500, "Hard"));
+        config.addZone(new DifficultyZone(6,  "#FF3030", 5.5,  3.5,  2.25, 2.25, 15000, "Very Hard"));
+        config.addZone(new DifficultyZone(7,  "#C0003A", 7.0,  4.25, 2.5,  2.5,  17500, "Extreme"));
+        config.addZone(new DifficultyZone(8,  "#8A2BFF", 8.5,  5.0,  2.75, 2.75, 20000, "Nightmare"));
+        config.addZone(new DifficultyZone(9,  "#05000A", 11.0, 6.0,  3.0,  3.0,  22500, "Hell"));
+        config.addZone(new DifficultyZone(10, "#3D0000", 14.0, 7.5,  3.25, 3.25, 25000, "Abyss"));
 
         return config;
     }

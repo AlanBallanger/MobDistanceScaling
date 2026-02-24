@@ -25,6 +25,8 @@ public class ConfigManager {
     private GlobalRewardsConfig globalRewardsConfig;
     private ReturnConfig returnConfig;
     private MessagesConfig messagesConfig;
+    private ZoneLootConfig zoneLootConfig;
+    private MobFragmentsConfig mobFragmentsConfig;
 
     public ConfigManager(@Nonnull Path pluginDataFolder) {
         this.pluginDataFolder = pluginDataFolder;
@@ -40,6 +42,10 @@ public class ConfigManager {
             safeZoneConfig = new SafeZoneConfig();
             extractionConfig = new ExtractionConfig();
             globalRewardsConfig = GlobalRewardsConfig.createDefault();
+            zoneLootConfig = ZoneLootConfig.createDefault();
+            zoneLootConfig.save(pluginDataFolder);
+            mobFragmentsConfig = MobFragmentsConfig.createDefault();
+            mobFragmentsConfig.save(pluginDataFolder);
             save();
             return;
         }
@@ -52,6 +58,8 @@ public class ConfigManager {
             globalRewardsConfig = parseGlobalRewardsConfig(toml);
             returnConfig = parseReturnConfig(toml);
             messagesConfig = MessagesConfig.load(pluginDataFolder);
+            zoneLootConfig = ZoneLootConfig.load(pluginDataFolder);
+            mobFragmentsConfig = MobFragmentsConfig.load(pluginDataFolder);
             LOGGER.at(Level.INFO).log("Loaded configuration with {0} zones", zoneConfig.getZones().size());
         } catch (Exception e) {
             LOGGER.at(Level.SEVERE).log("Failed to load config, using default configuration", e);
@@ -61,6 +69,8 @@ public class ConfigManager {
             globalRewardsConfig = GlobalRewardsConfig.createDefault();
             returnConfig = ReturnConfig.createDefault();
             messagesConfig = MessagesConfig.createDefault();
+            zoneLootConfig = ZoneLootConfig.createDefault();
+            mobFragmentsConfig = MobFragmentsConfig.createDefault();
         }
     }
 
@@ -480,6 +490,16 @@ public class ConfigManager {
     @Nonnull
     public MessagesConfig getMessagesConfig() {
         return messagesConfig != null ? messagesConfig : MessagesConfig.createDefault();
+    }
+
+    @Nonnull
+    public ZoneLootConfig getZoneLootConfig() {
+        return zoneLootConfig != null ? zoneLootConfig : ZoneLootConfig.createDefault();
+    }
+
+    @Nonnull
+    public MobFragmentsConfig getMobFragmentsConfig() {
+        return mobFragmentsConfig != null ? mobFragmentsConfig : MobFragmentsConfig.createDefault();
     }
     
     @Nonnull

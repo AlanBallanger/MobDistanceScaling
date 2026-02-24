@@ -48,6 +48,7 @@ import com.varyon.safezone.SafeZonePvpSystem;
 import com.varyon.system.MobDamageScalingSystem;
 import com.varyon.system.MobLootScalingSystem;
 import com.varyon.system.MobScalingRefSystem;
+import com.varyon.system.MobFragmentDropSystem;
 import com.varyon.system.ZoneTitleTickingSystem;
 
 import javax.annotation.Nullable;
@@ -137,6 +138,9 @@ public class VaryonPlugin extends JavaPlugin {
 
             MobLootScalingSystem mobLootScalingSystem = new MobLootScalingSystem();
             this.getEntityStoreRegistry().registerSystem(mobLootScalingSystem);
+
+            MobFragmentDropSystem mobFragmentDropSystem = new MobFragmentDropSystem(configManager.getMobFragmentsConfig(), configManager.getZoneLootConfig());
+            this.getEntityStoreRegistry().registerSystem(mobFragmentDropSystem);
 
             EssenceKillSystem essenceKillSystem = new EssenceKillSystem(essenceManager, configManager, essenceRewardsConfig);
             this.getEntityStoreRegistry().registerSystem(essenceKillSystem);
