@@ -5,8 +5,6 @@ import com.hypixel.hytale.math.util.ChunkUtil;
 import com.hypixel.hytale.server.core.Message;
 import com.hypixel.hytale.server.core.command.system.CommandContext;
 import com.hypixel.hytale.server.core.command.system.CommandSender;
-import com.hypixel.hytale.server.core.command.system.arguments.system.RequiredArg;
-import com.hypixel.hytale.server.core.command.system.arguments.types.ArgTypes;
 import com.hypixel.hytale.server.core.command.system.basecommands.AbstractAsyncCommand;
 import com.hypixel.hytale.server.core.entity.entities.Player;
 import com.hypixel.hytale.server.core.universe.PlayerRef;
@@ -35,14 +33,13 @@ public class VaryonCommand extends AbstractAsyncCommand {
         this.factionManager = factionManager;
         this.depositBlockManager = depositBlockManager;
         this.addSubCommand(new HelpSubCommand());
-        this.addSubCommand(new ExtractSubCommand());
         this.addSubCommand(new ReloadSubCommand(plugin));
         this.addSubCommand(new ClearMapSubCommand());
-        this.addSubCommand(new FactionSubCommand(factionManager));
         this.addSubCommand(new ResetRewardsSubCommand());
         this.addSubCommand(new ResetBalanceSubCommand());
         this.addSubCommand(new com.varyon.command.CreateDepositSubCommand(depositBlockManager));
         this.addSubCommand(new com.varyon.command.ResetDepositSubCommand(depositBlockManager));
+        this.addSubCommand(new WhoIsSubCommand(factionManager));
     }
 
     @NonNullDecl
@@ -71,39 +68,40 @@ public class VaryonCommand extends AbstractAsyncCommand {
                 hasRtp = true;
             }
 
-            context.sendMessage(Message.raw("=== Varyon ===").color(Color.YELLOW));
-            context.sendMessage(Message.raw("  /varyon extract - Invoque un portail d'extraction").color(Color.WHITE));
-            context.sendMessage(Message.raw("  /varyon faction <nom> - Rejoindre une faction").color(Color.WHITE));
-            context.sendMessage(Message.raw("  /return - Retour près de votre point de mort").color(Color.WHITE));
-            context.sendMessage(Message.raw("  /essence - Voir votre essence").color(Color.WHITE));
-            context.sendMessage(Message.raw("  /essence top - Classement d'essence").color(Color.WHITE));
-            context.sendMessage(Message.raw("  /essence deposit <montant> - Déposer de l'essence").color(Color.WHITE));
+            context.sendMessage(Message.raw("  /varyon extract : Invoque un portail d'extraction").color(Color.WHITE));
+            context.sendMessage(Message.raw("  /varyon whois : Voir votre faction détectée").color(Color.WHITE));
+            context.sendMessage(Message.raw("  /return : Retour près de votre point de mort").color(Color.WHITE));
+            context.sendMessage(Message.raw("  /essence : Voir votre essence").color(Color.WHITE));
+            context.sendMessage(Message.raw("  /essence top : Classement d'essence").color(Color.WHITE));
+            context.sendMessage(Message.raw("  /essence deposit <montant> : Déposer de l'essence dans votre faction").color(Color.WHITE));
 
             if (isAdmin) {
-                context.sendMessage(Message.raw("  /varyon reload - Recharger la configuration").color(Color.WHITE));
-                context.sendMessage(Message.raw("  /varyon clearmap - Vider le cache de la map").color(Color.WHITE));
-                context.sendMessage(Message.raw("  /varyon createdeposit - Créer un bloc de dépôt").color(Color.WHITE));
-                context.sendMessage(Message.raw("  /varyon resetdeposit - Supprimer tous les blocs de dépôt").color(Color.WHITE));
-                context.sendMessage(Message.raw("  /varyon resetrewards - Reset cooldowns des récompenses").color(Color.WHITE));
-                context.sendMessage(Message.raw("  /varyon resetbalance - Reset la jauge globale à 0").color(Color.WHITE));
-                context.sendMessage(Message.raw("  /essence give <joueur> <montant>").color(Color.WHITE));
-                context.sendMessage(Message.raw("  /essence take <joueur> <montant>").color(Color.WHITE));
-                context.sendMessage(Message.raw("  /essence setmax <joueur> <montant>").color(Color.WHITE));
+                context.sendMessage(Message.raw("  /varyon reload : Recharger la configuration").color(Color.WHITE));
+                context.sendMessage(Message.raw("  /varyon clearmap : Vider le cache de la map").color(Color.WHITE));
+                context.sendMessage(Message.raw("  /varyon createdeposit : Créer un bloc de dépôt").color(Color.WHITE));
+                context.sendMessage(Message.raw("  /varyon resetdeposit : Supprimer tous les blocs de dépôt").color(Color.WHITE));
+                context.sendMessage(Message.raw("  /varyon resetrewards : Reset les cooldowns des récompenses de faction").color(Color.WHITE));
+                context.sendMessage(Message.raw("  /varyon resetbalance : Reset la jauge globale d'essence à 0").color(Color.WHITE));
+                context.sendMessage(Message.raw("  /essence give <joueur> <montant> : Donner de l'essence à un joueur").color(Color.WHITE));
+                context.sendMessage(Message.raw("  /essence take <joueur> <montant> : Retirer de l'essence à un joueur").color(Color.WHITE));
+                context.sendMessage(Message.raw("  /essence setmax <joueur> <montant> : Définir le plafond d'essence d'un joueur").color(Color.WHITE));
             }
 
             if (hasRtp) {
-                context.sendMessage(Message.raw("  /rtpv <zone> - TP zone mod").color(Color.WHITE));
-                context.sendMessage(Message.raw("  /rtpz [zone] - TP zone vanilla").color(Color.WHITE));
+                context.sendMessage(Message.raw("  /rtpv <zone> : TP dans une zone de varyon").color(Color.WHITE));
+                context.sendMessage(Message.raw("  /rtpz [zone] : TP dans une zone du jeu vanilla").color(Color.WHITE));
             }
 
             return CompletableFuture.completedFuture(null);
         }
     }
 
-    public static class ExtractSubCommand extends AbstractAsyncCommand {
-        public ExtractSubCommand() {
-            super("extract", "Spawn an extraction portal nearby");
-            this.requirePermission("varyon.extract");
+    public static class WhoIsSubCommand extends AbstractAsyncCommand {
+        private final FactionManager factionManager;
+
+        public WhoIsSubCommand(FactionManager factionManager) {
+            super("whois", "Show your current faction");
+            this.factionManager = factionManager;
         }
 
         @NonNullDecl
@@ -114,23 +112,18 @@ public class VaryonCommand extends AbstractAsyncCommand {
                 context.sendMessage(Message.raw("Commande joueur uniquement.").color(Color.RED));
                 return CompletableFuture.completedFuture(null);
             }
+            PlayerRef playerRef = Universe.get().getPlayer(player.getUuid());
 
-            Ref ref = player.getReference();
-            if (ref == null || !ref.isValid()) {
-                context.sendMessage(Message.raw("Référence joueur invalide.").color(Color.RED));
-                return CompletableFuture.completedFuture(null);
-            }
+            context.sendMessage(Message.raw("=== Faction Debug ===").color(Color.YELLOW));
+            context.sendMessage(Message.raw("PlayerRef: " + (playerRef != null ? playerRef.getUsername() + " / " + playerRef.getUuid() : "NULL"))
+                .color(playerRef != null ? Color.GREEN : Color.RED));
+            context.sendMessage(Message.raw("hasPermission(group.fracture) = " + player.hasPermission("group.fracture")).color(Color.WHITE));
+            context.sendMessage(Message.raw("hasPermission(group.noyau)    = " + player.hasPermission("group.noyau")).color(Color.WHITE));
 
-            EntityStore entityStore = (EntityStore) ref.getStore().getExternalData();
-            World world = entityStore.getWorld();
-            PlayerRef playerRef = (PlayerRef) ref.getStore().getComponent(ref, PlayerRef.getComponentType());
-
-            if (playerRef == null) {
-                context.sendMessage(Message.raw("Impossible d'obtenir la référence joueur.").color(Color.RED));
-                return CompletableFuture.completedFuture(null);
-            }
-
-            ExtractCommand.executeExtract(context, ref.getStore(), ref, playerRef, world, player);
+            FactionManager.Faction faction = factionManager.getFactionVerbose(playerRef);
+            context.sendMessage(Message.raw("Faction LP : " + (faction != null ? faction.getDisplayName() : "aucune"))
+                .color(faction != null ? Color.GREEN : Color.RED));
+            context.sendMessage(Message.raw("(Voir les logs serveur pour le détail)").color(Color.GRAY));
             return CompletableFuture.completedFuture(null);
         }
     }
@@ -189,45 +182,6 @@ public class VaryonCommand extends AbstractAsyncCommand {
             }
 
             context.sendMessage(Message.raw("Cache map vidé pour " + worldCount + " monde(s)!").color(Color.GREEN));
-            return CompletableFuture.completedFuture(null);
-        }
-    }
-
-    public static class FactionSubCommand extends AbstractAsyncCommand {
-        private final FactionManager factionManager;
-        private final RequiredArg<String> factionArg;
-
-        public FactionSubCommand(FactionManager factionManager) {
-            super("faction", "Join a faction");
-            this.factionManager = factionManager;
-            this.factionArg = this.withRequiredArg("faction", "Faction name (noyau/fracture)", ArgTypes.STRING);
-        }
-
-        @NonNullDecl
-        @Override
-        protected CompletableFuture<Void> executeAsync(CommandContext context) {
-            CommandSender sender = context.sender();
-            if (!(sender instanceof Player player)) {
-                context.sendMessage(Message.raw("Commande joueur uniquement.").color(Color.RED));
-                return CompletableFuture.completedFuture(null);
-            }
-
-            String factionName = context.get(factionArg);
-            FactionManager.Faction faction = FactionManager.Faction.fromString(factionName);
-
-            if (faction == null) {
-                context.sendMessage(Message.raw("Faction invalide. Choix: noyau ou fracture").color(Color.RED));
-                return CompletableFuture.completedFuture(null);
-            }
-
-            PlayerRef playerRef = Universe.get().getPlayer(player.getUuid());
-            if (playerRef == null) {
-                context.sendMessage(Message.raw("Impossible d'obtenir la référence joueur.").color(Color.RED));
-                return CompletableFuture.completedFuture(null);
-            }
-
-            factionManager.setFaction(playerRef.getUuid(), faction);
-            context.sendMessage(Message.raw("Vous avez rejoint: " + faction.getDisplayName()).color(Color.GREEN));
             return CompletableFuture.completedFuture(null);
         }
     }

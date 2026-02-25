@@ -12,7 +12,8 @@
   "ServerVersion": "${server_version}",
   "Dependencies": {},
   "OptionalDependencies": {
-    "Frotty27:Elite Mobs": "*"
+    "Frotty27:Elite Mobs": "*",
+    "LuckPerms:LuckPerms": "*"
   },
   "DisabledByDefault": false,
   "IncludesAssetPack": true,
@@ -71,6 +72,16 @@
     {
       "Permission": "varyon.zone.10",
       "Description": "Access to all zones (1-10)",
+      "Default": false
+    },
+    {
+      "Permission": "varyon.admin",
+      "Description": "Access to admin commands",
+      "Default": false
+    },
+    {
+      "Permission": "varyon.deposit",
+      "Description": "Allow depositing essence",
       "Default": false
     }
   ]

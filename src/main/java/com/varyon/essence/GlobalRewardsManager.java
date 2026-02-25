@@ -123,7 +123,13 @@ public class GlobalRewardsManager {
         for (PlayerRef playerRef : Universe.get().getPlayers()) {
             if (playerRef == null || !playerRef.getReference().isValid()) continue;
             UUID uuid = playerRef.getUuid();
-            if (factionManager.getFaction(uuid) != faction) continue;
+
+            Ref ref = playerRef.getReference();
+            Store store = ref.getStore();
+            Player onlinePlayer = (Player) store.getComponent(ref, Player.getComponentType());
+            if (onlinePlayer == null) continue;
+            FactionManager.Faction playerFaction = factionManager.getFaction(onlinePlayer);
+            if (playerFaction != faction) continue;
 
             onlineUuids.add(uuid);
 
@@ -133,8 +139,6 @@ public class GlobalRewardsManager {
             if (fragments <= 0) continue;
 
             try {
-                Ref ref = playerRef.getReference();
-                Store store = ref.getStore();
                 World world = ((EntityStore) store.getExternalData()).getWorld();
                 final int finalFragments = fragments;
                 final boolean finalParticipated = participated;

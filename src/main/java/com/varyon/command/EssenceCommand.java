@@ -196,15 +196,15 @@ public class EssenceCommand extends AbstractAsyncCommand {
                 return CompletableFuture.completedFuture(null);
             }
 
-            PlayerRef playerRef = player.getPlayerRef();
+            PlayerRef playerRef = com.hypixel.hytale.server.core.universe.Universe.get().getPlayer(player.getUuid());
             if (playerRef == null) {
                 context.sendMessage(Message.raw("Impossible d'obtenir la référence joueur.").color(Color.RED));
                 return CompletableFuture.completedFuture(null);
             }
 
-            FactionManager.Faction faction = factionManager.getFaction(playerRef.getUuid());
+            FactionManager.Faction faction = factionManager.getFaction(playerRef);
             if (faction == null) {
-                context.sendMessage(Message.raw("Rejoignez une faction d'abord! /varyon faction <noyau|fracture>").color(Color.RED));
+                context.sendMessage(Message.raw("Vous n'appartenez à aucune faction (group.fracture ou group.noyau requis).").color(Color.RED));
                 return CompletableFuture.completedFuture(null);
             }
 
