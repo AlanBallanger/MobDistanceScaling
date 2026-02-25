@@ -10,6 +10,7 @@ import com.hypixel.hytale.component.system.EntityEventSystem;
 import com.hypixel.hytale.logger.HytaleLogger;
 import com.hypixel.hytale.server.core.entity.Entity;
 import com.hypixel.hytale.server.core.entity.EntityUtils;
+import com.hypixel.hytale.server.core.entity.entities.Player;
 import com.hypixel.hytale.server.core.modules.entity.damage.event.KillFeedEvent;
 import com.hypixel.hytale.server.core.universe.PlayerRef;
 import com.hypixel.hytale.server.core.universe.world.storage.EntityStore;
@@ -18,6 +19,7 @@ import com.varyon.component.MobScalingComponent;
 import com.varyon.config.ConfigManager;
 import com.varyon.config.DifficultyZone;
 import com.varyon.config.EssenceRewardsConfig;
+import com.varyon.config.ZonePermissionsConfig;
 import com.varyon.util.ZoneCalculator;
 
 import javax.annotation.Nonnull;
@@ -36,19 +38,22 @@ public class EssenceKillSystem extends EntityEventSystem<EntityStore, KillFeedEv
     @Nonnull
     private final ComponentType<EntityStore, PlayerRef> playerRefComponentType = PlayerRef.getComponentType();
 
-    private final EssenceManager essenceManager;
-    private final ConfigManager configManager;
-    private final EssenceRewardsConfig rewardsConfig;
+    private final EssenceManager        essenceManager;
+    private final ConfigManager         configManager;
+    private final EssenceRewardsConfig  rewardsConfig;
+    private final ZonePermissionsConfig zonePermsConfig;
 
     private volatile Method cachedNameMethod;
     private volatile String cachedNameSource;
 
     public EssenceKillSystem(@Nonnull EssenceManager essenceManager, @Nonnull ConfigManager configManager,
-                             @Nonnull EssenceRewardsConfig rewardsConfig) {
+                             @Nonnull EssenceRewardsConfig rewardsConfig,
+                             @Nonnull ZonePermissionsConfig zonePermsConfig) {
         super(KillFeedEvent.KillerMessage.class);
-        this.essenceManager = essenceManager;
-        this.configManager = configManager;
-        this.rewardsConfig = rewardsConfig;
+        this.essenceManager  = essenceManager;
+        this.configManager   = configManager;
+        this.rewardsConfig   = rewardsConfig;
+        this.zonePermsConfig = zonePermsConfig;
     }
 
     @Override
@@ -88,11 +93,18 @@ public class EssenceKillSystem extends EntityEventSystem<EntityStore, KillFeedEv
             }
 
             double essenceGained = baseReward * zoneMultiplier * lootMultiplier;
-            if (essenceGained <= 0) {
-                return;
-            }
+            if (essenceGained <= 0) return;
 
-            essenceManager.addEssence(playerUuid, playerUuid.toString(), essenceGained);
+            Ref<EntityStore> killerRef = archetypeChunk.getReferenceTo(index);
+            Player player = null;
+            try { player = (Player) store.getComponent(killerRef, Player.getComponentType()); } catch (Exception ignored) {}
+            if (player != null) {
+                double current = essenceManager.getEssence(playerUuid);
+                int cap = zonePermsConfig.getEffectiveCap(player, current);
+                essenceManager.addEssenceCapped(playerUuid, playerUuid.toString(), essenceGained, cap);
+            } else {
+                essenceManager.addEssence(playerUuid, playerUuid.toString(), essenceGained);
+            }
 
             LOGGER.at(Level.INFO).log("Kill: mob=" + mobId + " +" + String.format("%.2f", essenceGained) + " essence (base=" + baseReward + " loot=" + String.format("%.2f", lootMultiplier) + " essence=" + String.format("%.2f", zoneMultiplier) + ")");
         } catch (Exception e) {

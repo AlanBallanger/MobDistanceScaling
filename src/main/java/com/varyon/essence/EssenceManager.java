@@ -34,21 +34,27 @@ public class EssenceManager {
     }
 
     public void addEssence(UUID playerUuid, String playerName, double amount) {
-        if (amount == 0) {
-            return;
-        }
-
+        if (amount == 0) return;
         double current = getEssence(playerUuid);
-        double newAmount = current + amount;
-        if (newAmount < 0) {
-            newAmount = 0;
-        }
-
+        double newAmount = Math.max(0, current + amount);
         essenceCache.put(playerUuid, newAmount);
         database.setEssenceUncapped(playerUuid, playerName, newAmount);
-
         LOGGER.at(Level.FINE).log("Player " + playerName + " " + (amount > 0 ? "+" : "") +
             String.format("%.2f", amount) + " essence (total: " + String.format("%.1f", newAmount) + ")");
+    }
+
+    /**
+     * Adds essence but only up to {@code cap}.
+     * If the player is already at or above the cap, nothing is added.
+     * Returns the amount actually added.
+     */
+    public double addEssenceCapped(UUID playerUuid, String playerName, double amount, int cap) {
+        if (amount <= 0) return 0;
+        double current = getEssence(playerUuid);
+        if (current >= cap) return 0;
+        double actual = Math.min(amount, cap - current);
+        addEssence(playerUuid, playerName, actual);
+        return actual;
     }
 
     public void setEssence(UUID playerUuid, String playerName, double amount) {

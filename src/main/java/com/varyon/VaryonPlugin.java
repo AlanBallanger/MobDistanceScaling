@@ -148,10 +148,10 @@ public class VaryonPlugin extends JavaPlugin {
             this.getEntityStoreRegistry().registerSystem(mobFragmentDropSystem.createTracker());
             this.getEntityStoreRegistry().registerSystem(mobFragmentDropSystem.createDropSystem());
 
-            EssenceKillSystem essenceKillSystem = new EssenceKillSystem(essenceManager, configManager, essenceRewardsConfig);
+            EssenceKillSystem essenceKillSystem = new EssenceKillSystem(essenceManager, configManager, essenceRewardsConfig, configManager.getZonePermissionsConfig());
             this.getEntityStoreRegistry().registerSystem(essenceKillSystem);
 
-            EssenceMiningSystem essenceMiningSystem = new EssenceMiningSystem(essenceManager, configManager, essenceRewardsConfig);
+            EssenceMiningSystem essenceMiningSystem = new EssenceMiningSystem(essenceManager, configManager, essenceRewardsConfig, configManager.getZonePermissionsConfig());
             this.getEntityStoreRegistry().registerSystem(essenceMiningSystem);
 
             com.varyon.system.MiningFragmentDropSystem miningFragmentDropSystem = new com.varyon.system.MiningFragmentDropSystem(

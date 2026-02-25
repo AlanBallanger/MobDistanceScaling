@@ -16,6 +16,7 @@ import com.varyon.config.DifficultyZone;
 import com.varyon.config.MessagesConfig;
 import com.varyon.config.ZoneConfig;
 import com.varyon.config.ZonePermissionsConfig;
+import com.varyon.essence.EssenceManager;
 import com.varyon.safezone.SafeZoneManager;
 import com.varyon.util.ZoneCalculator;
 
@@ -95,15 +96,17 @@ public class ZoneHUDManager {
                 boolean inSafe = safeZoneAvailable && szm.isInSafeZone(x, z);
 
                 boolean lootActive = false;
+                int maxEssenceCap = 1000;
                 Player player = playerCache.get(playerId);
-                if (player != null && zone != null) {
-                    lootActive = zonePermsConfig.canAccessZone(player, zone.getZoneId());
+                if (player != null) {
+                    if (zone != null) lootActive = zonePermsConfig.canAccessZone(player, zone.getZoneId());
+                    EssenceManager em = VaryonPlugin.getStaticEssenceManager();
+                    double current = em != null ? em.getEssence(playerId) : 0.0;
+                    maxEssenceCap = zonePermsConfig.getEffectiveCap(player, current);
                 }
 
-                if (switchPage) {
-                    hud.nextPage();
-                }
-                hud.updateZoneInfo(zone, distance, inSafe, quadrantName, timeRemaining, switchPage, lootActive);
+                if (switchPage) hud.nextPage();
+                hud.updateZoneInfo(zone, distance, inSafe, quadrantName, timeRemaining, switchPage, lootActive, maxEssenceCap);
             } catch (Exception e) {
                 LOGGER.at(Level.WARNING).log("Error updating HUD for player " + playerId + ": " + e.getMessage());
             }

@@ -39,6 +39,7 @@ public class ZoneHUD extends CustomUIHud {
     private String safeQuadrantName = "";
     private long safeTimeRemaining;
     private boolean lootSpecialActive = false;
+    private int maxEssenceCap = 1000;
 
     public ZoneHUD(@Nonnull PlayerRef playerRef, @Nonnull ZoneConfig zoneConfig, @Nonnull MessagesConfig messagesConfig) {
         super(playerRef);
@@ -66,7 +67,11 @@ public class ZoneHUD extends CustomUIHud {
         return currentPage;
     }
 
-    public void updateZoneInfo(@Nullable DifficultyZone zone, double distance, boolean inSafe, @Nonnull String quadrantName, long timeRemaining, boolean forceUpdate, boolean lootSpecialActive) {
+    public void updateZoneInfo(@Nullable DifficultyZone zone, double distance, boolean inSafe, @Nonnull String quadrantName, long timeRemaining, boolean forceUpdate, boolean lootSpecialActive, int maxEssenceCap) {
+        if (this.maxEssenceCap != maxEssenceCap) {
+            this.maxEssenceCap = maxEssenceCap;
+            forceUpdate = true;
+        }
         if (this.lootSpecialActive != lootSpecialActive) {
             this.lootSpecialActive = lootSpecialActive;
             forceUpdate = true;
@@ -145,8 +150,8 @@ public class ZoneHUD extends CustomUIHud {
         }
         
         int currentEssence = (int) Math.floor(playerEssence);
-        int maxEssence = currentEssence > 1000 ? ((currentEssence / 1000) + 1) * 1000 : 1000;
-        builder.set("#Essence.Text", "Essence: " + currentEssence + "/" + maxEssence);
+        int displayMax = Math.max(maxEssenceCap, currentEssence);
+        builder.set("#Essence.Text", "Essence: " + currentEssence + "/" + displayMax);
         builder.set("#Essence.Style.TextColor", "#FFFF55");
 
         if (inSafeZone) {
@@ -193,8 +198,8 @@ public class ZoneHUD extends CustomUIHud {
         builder.set("#ZoneName.Style.TextColor", "#FFFFFF");
 
         int currentEssence = (int) Math.floor(playerEssence);
-        int maxEssence = currentEssence > 1000 ? ((currentEssence / 1000) + 1) * 1000 : 1000;
-        builder.set("#Essence.Text", "Essence: " + currentEssence + "/" + maxEssence);
+        int displayMax = Math.max(maxEssenceCap, currentEssence);
+        builder.set("#Essence.Text", "Essence: " + currentEssence + "/" + displayMax);
         builder.set("#Essence.Style.TextColor", "#FFFF55");
 
         if (currentZone != null) {
