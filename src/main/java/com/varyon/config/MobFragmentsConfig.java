@@ -9,21 +9,41 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.*;
+import java.util.LinkedHashMap;
 import java.util.logging.Level;
 
 public class MobFragmentsConfig {
     private static final HytaleLogger LOGGER = HytaleLogger.forEnclosingClass();
-    private static final String FILENAME = "mob_special_rates.toml";
-    private static final String SECTION  = "mob_special_rates";
+    private static final String FILENAME         = "mob_special_rates.toml";
+    private static final String SECTION_MOBS     = "mob_special_rates";
+    private static final String SECTION_MINING   = "mining";
 
     private final Map<String, Integer> fragmentsByMobId;
+    private final Map<String, Integer> miningFragments;
 
-    public MobFragmentsConfig(@Nonnull Map<String, Integer> fragmentsByMobId) {
+    public MobFragmentsConfig(@Nonnull Map<String, Integer> fragmentsByMobId,
+                              @Nonnull Map<String, Integer> miningFragments) {
         this.fragmentsByMobId = new HashMap<>(fragmentsByMobId);
+        this.miningFragments  = new LinkedHashMap<>(miningFragments);
     }
 
     public int getFragments(@Nonnull String roleName) {
         return fragmentsByMobId.getOrDefault(roleName.toLowerCase(Locale.ROOT), -1);
+    }
+
+    /**
+     * Returns mining fragment count for a block ID.
+     * Tries exact match first, then prefix match for biome variants
+     * (e.g. "ore_adamantite_magma" → "ore_adamantite").
+     */
+    public int getMiningFragments(@Nonnull String blockId) {
+        String id = blockId.toLowerCase();
+        Integer exact = miningFragments.get(id);
+        if (exact != null) return exact;
+        for (Map.Entry<String, Integer> entry : miningFragments.entrySet()) {
+            if (id.startsWith(entry.getKey())) return entry.getValue();
+        }
+        return 0;
     }
 
     @Nonnull
@@ -36,19 +56,29 @@ public class MobFragmentsConfig {
         }
         try {
             Toml toml = new Toml().read(file);
-            Map<String, Integer> map = new HashMap<>();
-            Toml section = toml.getTable(SECTION);
-            if (section != null) {
-                Map<String, Object> raw = section.toMap();
-                for (Map.Entry<String, Object> entry : raw.entrySet()) {
-                    if (entry.getValue() instanceof Number) {
-                        map.put(entry.getKey().toLowerCase(Locale.ROOT),
-                                ((Number) entry.getValue()).intValue());
-                    }
+
+            // Mobs
+            Map<String, Integer> mobs = new HashMap<>();
+            Toml mobSection = toml.getTable(SECTION_MOBS);
+            if (mobSection != null) {
+                for (Map.Entry<String, Object> e : mobSection.toMap().entrySet()) {
+                    if (e.getValue() instanceof Number n)
+                        mobs.put(e.getKey().toLowerCase(Locale.ROOT), n.intValue());
                 }
             }
-            LOGGER.at(Level.INFO).log("Loaded {0} with {1} entries", FILENAME, map.size());
-            return new MobFragmentsConfig(map);
+
+            // Mining
+            Map<String, Integer> mining = new LinkedHashMap<>();
+            Toml mineSection = toml.getTable(SECTION_MINING);
+            if (mineSection != null) {
+                for (Map.Entry<String, Object> e : mineSection.toMap().entrySet()) {
+                    if (e.getValue() instanceof Number n)
+                        mining.put(e.getKey().toLowerCase(Locale.ROOT), n.intValue());
+                }
+            }
+
+            LOGGER.at(Level.INFO).log("Loaded {0}: {1} mobs, {2} mining entries", FILENAME, mobs.size(), mining.size());
+            return new MobFragmentsConfig(mobs, mining);
         } catch (Exception e) {
             LOGGER.at(Level.SEVERE).log("Failed to load " + FILENAME + ", using defaults", e);
             return createDefault();
@@ -74,7 +104,7 @@ public class MobFragmentsConfig {
         sb.append("# Mob Key Fragment Drops\n");
         sb.append("# MobId = fragments_count\n");
         sb.append("# 0 = no drop  |  1 = basic hostile  |  10 = légendaire\n\n");
-        sb.append("[").append(SECTION).append("]\n\n");
+        sb.append("[").append(SECTION_MOBS).append("]\n\n");
 
         sb.append("# --- 0 fragments : trivial aggressors (fish, jellyfish, Bat_Ice...) ---\n");
         appendGroup(sb, TRIVIAL, 0);
@@ -106,6 +136,34 @@ public class MobFragmentsConfig {
         sb.append("\n# --- Passifs (0 fragments) ---\n");
         appendGroup(sb, PASSIVE, 0);
 
+        sb.append("\n# ============================================================\n");
+        sb.append("# Mining fragments : block_id = fragments\n");
+        sb.append("# Prefix matching : ore_adamantite_magma → ore_adamantite\n");
+        sb.append("# ============================================================\n");
+        sb.append("[").append(SECTION_MINING).append("]\n\n");
+        sb.append("# --- Tier 1 (1 fragment) ---\n");
+        sb.append("ore_copper = 1\n");
+        sb.append("ore_iron   = 1\n");
+        sb.append("\n# --- Tier 2 (2 fragments) ---\n");
+        sb.append("ore_silver  = 2\n");
+        sb.append("ore_gold    = 2\n");
+        sb.append("ore_cobalt  = 2\n");
+        sb.append("ore_thorium = 2\n");
+        sb.append("\n# --- Tier 3 (3 fragments) ---\n");
+        sb.append("ore_adamantite = 3\n");
+        sb.append("ore_mithril    = 3\n");
+        sb.append("ore_onyxium    = 3\n");
+        sb.append("ore_prisma     = 3\n");
+        sb.append("rock_crystal   = 3\n");
+        sb.append("\n# --- Gemmes (5 fragments) ---\n");
+        sb.append("rock_gem_diamond   = 5\n");
+        sb.append("rock_gem_emerald   = 5\n");
+        sb.append("rock_gem_ruby      = 5\n");
+        sb.append("rock_gem_sapphire  = 5\n");
+        sb.append("rock_gem_topaz     = 5\n");
+        sb.append("rock_gem_voidstone = 5\n");
+        sb.append("rock_gem_zephyr    = 5\n");
+
         return sb.toString();
     }
 
@@ -117,18 +175,39 @@ public class MobFragmentsConfig {
 
     @Nonnull
     public static MobFragmentsConfig createDefault() {
-        Map<String, Integer> map = new HashMap<>();
-        for (String id : TRIVIAL) { map.put(id.toLowerCase(Locale.ROOT), 0); }
-        for (String id : TIER1)   { map.put(id.toLowerCase(Locale.ROOT), 1); }
-        for (String id : TIER2)   { map.put(id.toLowerCase(Locale.ROOT), 2); }
-        for (String id : TIER3)   { map.put(id.toLowerCase(Locale.ROOT), 3); }
-        for (String id : TIER4)   { map.put(id.toLowerCase(Locale.ROOT), 4); }
-        for (String id : TIER5)   { map.put(id.toLowerCase(Locale.ROOT), 5); }
-        for (String id : TIER6)   { map.put(id.toLowerCase(Locale.ROOT), 6); }
-        for (String id : TIER8)   { map.put(id.toLowerCase(Locale.ROOT), 8); }
-        for (String id : TIER10)  { map.put(id.toLowerCase(Locale.ROOT), 10); }
-        for (String id : PASSIVE) { map.put(id.toLowerCase(Locale.ROOT), 0); }
-        return new MobFragmentsConfig(map);
+        Map<String, Integer> mobs = new HashMap<>();
+        for (String id : TRIVIAL) { mobs.put(id.toLowerCase(Locale.ROOT), 0); }
+        for (String id : TIER1)   { mobs.put(id.toLowerCase(Locale.ROOT), 1); }
+        for (String id : TIER2)   { mobs.put(id.toLowerCase(Locale.ROOT), 2); }
+        for (String id : TIER3)   { mobs.put(id.toLowerCase(Locale.ROOT), 3); }
+        for (String id : TIER4)   { mobs.put(id.toLowerCase(Locale.ROOT), 4); }
+        for (String id : TIER5)   { mobs.put(id.toLowerCase(Locale.ROOT), 5); }
+        for (String id : TIER6)   { mobs.put(id.toLowerCase(Locale.ROOT), 6); }
+        for (String id : TIER8)   { mobs.put(id.toLowerCase(Locale.ROOT), 8); }
+        for (String id : TIER10)  { mobs.put(id.toLowerCase(Locale.ROOT), 10); }
+        for (String id : PASSIVE) { mobs.put(id.toLowerCase(Locale.ROOT), 0); }
+
+        Map<String, Integer> mining = new LinkedHashMap<>();
+        mining.put("ore_copper",         1);
+        mining.put("ore_iron",           1);
+        mining.put("ore_silver",         2);
+        mining.put("ore_gold",           2);
+        mining.put("ore_cobalt",         2);
+        mining.put("ore_thorium",        2);
+        mining.put("ore_adamantite",     3);
+        mining.put("ore_mithril",        3);
+        mining.put("ore_onyxium",        3);
+        mining.put("ore_prisma",         3);
+        mining.put("rock_crystal",       3);
+        mining.put("rock_gem_diamond",   5);
+        mining.put("rock_gem_emerald",   5);
+        mining.put("rock_gem_ruby",      5);
+        mining.put("rock_gem_sapphire",  5);
+        mining.put("rock_gem_topaz",     5);
+        mining.put("rock_gem_voidstone", 5);
+        mining.put("rock_gem_zephyr",    5);
+
+        return new MobFragmentsConfig(mobs, mining);
     }
 
     // -------------------------------------------------------------------------

@@ -1,0 +1,111 @@
+package com.varyon.system;
+
+import com.hypixel.hytale.component.AddReason;
+import com.hypixel.hytale.component.ArchetypeChunk;
+import com.hypixel.hytale.component.CommandBuffer;
+import com.hypixel.hytale.component.Holder;
+import com.hypixel.hytale.component.Ref;
+import com.hypixel.hytale.component.Store;
+import com.hypixel.hytale.component.query.Query;
+import com.hypixel.hytale.component.system.EntityEventSystem;
+import com.hypixel.hytale.logger.HytaleLogger;
+import com.hypixel.hytale.math.vector.Vector3d;
+import com.hypixel.hytale.math.vector.Vector3f;
+import com.hypixel.hytale.server.core.entity.entities.Player;
+import com.hypixel.hytale.server.core.event.events.ecs.BreakBlockEvent;
+import com.hypixel.hytale.server.core.inventory.ItemStack;
+import com.hypixel.hytale.server.core.modules.entity.component.HeadRotation;
+import com.hypixel.hytale.server.core.modules.entity.component.TransformComponent;
+import com.hypixel.hytale.server.core.modules.entity.item.ItemComponent;
+import com.hypixel.hytale.server.core.universe.PlayerRef;
+import com.hypixel.hytale.server.core.universe.world.storage.EntityStore;
+import com.varyon.config.ConfigManager;
+import com.varyon.config.DifficultyZone;
+import com.varyon.config.MobFragmentsConfig;
+import com.varyon.config.ZoneLootConfig;
+import com.varyon.config.ZonePermissionsConfig;
+import com.varyon.util.ZoneCalculator;
+
+import javax.annotation.Nonnull;
+import java.util.List;
+import java.util.logging.Level;
+
+public class MiningFragmentDropSystem extends EntityEventSystem<EntityStore, BreakBlockEvent> {
+    private static final HytaleLogger LOGGER = HytaleLogger.forEnclosingClass();
+
+    private final MobFragmentsConfig    mobFragmentsConfig;
+    private final ZoneLootConfig        zoneConfig;
+    private final ZonePermissionsConfig zonePermsConfig;
+    private final ConfigManager         configManager;
+
+    public MiningFragmentDropSystem(@Nonnull MobFragmentsConfig mobFragmentsConfig,
+                                    @Nonnull ZoneLootConfig zoneConfig,
+                                    @Nonnull ZonePermissionsConfig zonePermsConfig,
+                                    @Nonnull ConfigManager configManager) {
+        super(BreakBlockEvent.class);
+        this.mobFragmentsConfig = mobFragmentsConfig;
+        this.zoneConfig         = zoneConfig;
+        this.zonePermsConfig    = zonePermsConfig;
+        this.configManager      = configManager;
+    }
+
+    @Nonnull
+    @Override
+    public Query<EntityStore> getQuery() {
+        return PlayerRef.getComponentType();
+    }
+
+    @Override
+    @SuppressWarnings({"rawtypes", "unchecked"})
+    public void handle(int index,
+                       @Nonnull ArchetypeChunk<EntityStore> archetypeChunk,
+                       @Nonnull Store<EntityStore> store,
+                       @Nonnull CommandBuffer<EntityStore> commandBuffer,
+                       @Nonnull BreakBlockEvent event) {
+        try {
+            PlayerRef playerRef = archetypeChunk.getComponent(index, PlayerRef.getComponentType());
+            if (playerRef == null) return;
+
+            String blockId = event.getBlockType().getId().toLowerCase();
+            int fragments = mobFragmentsConfig.getMiningFragments(blockId);
+            if (fragments <= 0) return;
+
+            Ref ref = archetypeChunk.getReferenceTo(index);
+
+            // Zone the player is currently in
+            DifficultyZone zone = ZoneCalculator.getCurrentZone(store, ref, configManager.getZoneConfig());
+            int zoneId = zone != null ? zone.getZoneId() : 1;
+
+            // Permission check
+            Player player = (Player) store.getComponent(ref, Player.getComponentType());
+            if (player != null && !zonePermsConfig.canAccessZone(player, zoneId)) {
+                LOGGER.at(Level.FINE).log("Mining drop skipped: no zone " + zoneId + " permission for " + playerRef.getUsername());
+                return;
+            }
+
+            // Item ID — use player's max accessible zone if possible, else current zone
+            int maxZone = player != null ? zonePermsConfig.getMaxAccessibleZone(player) : zoneId;
+            String itemId = zoneConfig.getItemForZone(maxZone);
+            if (itemId == null || itemId.isBlank()) {
+                itemId = "Key_Fragment" + maxZone;
+            }
+
+            // Drop at player's position (same pattern as MobFragmentDropSystem)
+            TransformComponent transform = (TransformComponent) store.getComponent(ref, TransformComponent.getComponentType());
+            if (transform == null) return;
+
+            Vector3d pos = transform.getPosition().clone().add(0.0, 1.0, 0.0);
+            HeadRotation headRotation = (HeadRotation) store.getComponent(ref, HeadRotation.getComponentType());
+            Vector3f rot = headRotation != null ? headRotation.getRotation().clone() : new Vector3f(0f, 0f, 0f);
+
+            Holder[] drops = ItemComponent.generateItemDrops(store, List.of(new ItemStack(itemId, fragments)), pos, rot);
+            commandBuffer.addEntities(drops, AddReason.SPAWN);
+
+            LOGGER.at(Level.FINE).log("Mining: " + playerRef.getUsername() + " mined " + blockId
+                + " → +" + fragments + "x " + itemId + " (zone " + zoneId + ")");
+
+        } catch (Exception e) {
+            LOGGER.at(Level.WARNING).log("Error in MiningFragmentDropSystem: " + e.getMessage());
+        }
+    }
+}

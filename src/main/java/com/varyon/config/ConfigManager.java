@@ -275,7 +275,7 @@ public class ConfigManager {
     @Nonnull public ReturnConfig getReturnConfig()                { return returnConfig != null ? returnConfig : ReturnConfig.createDefault(); }
     @Nonnull public MessagesConfig getMessagesConfig()            { return messagesConfig != null ? messagesConfig : MessagesConfig.createDefault(); }
     @Nonnull public ZoneLootConfig getZoneLootConfig()            { return zoneLootConfig != null ? zoneLootConfig : ZoneLootConfig.createDefault(); }
-    @Nonnull public MobFragmentsConfig getMobFragmentsConfig()    { return mobFragmentsConfig != null ? mobFragmentsConfig : MobFragmentsConfig.createDefault(); }
+    @Nonnull public MobFragmentsConfig getMobFragmentsConfig()       { return mobFragmentsConfig != null ? mobFragmentsConfig : MobFragmentsConfig.createDefault(); }
     @Nonnull public ZonePermissionsConfig getZonePermissionsConfig() { return zonePermissionsConfig != null ? zonePermissionsConfig : ZonePermissionsConfig.createDefault(); }
 
     public void reload() { load(); }

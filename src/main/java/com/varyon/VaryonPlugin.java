@@ -153,6 +153,13 @@ public class VaryonPlugin extends JavaPlugin {
 
             EssenceMiningSystem essenceMiningSystem = new EssenceMiningSystem(essenceManager, configManager, essenceRewardsConfig);
             this.getEntityStoreRegistry().registerSystem(essenceMiningSystem);
+
+            com.varyon.system.MiningFragmentDropSystem miningFragmentDropSystem = new com.varyon.system.MiningFragmentDropSystem(
+                configManager.getMobFragmentsConfig(),
+                configManager.getZoneLootConfig(),
+                configManager.getZonePermissionsConfig(),
+                configManager);
+            this.getEntityStoreRegistry().registerSystem(miningFragmentDropSystem);
             LOGGER.at(Level.INFO).log("Essence reward systems registered");
 
             // Initialiser le système de dépôt d'essence

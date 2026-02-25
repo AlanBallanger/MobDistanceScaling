@@ -14,9 +14,9 @@ import java.util.Map;
 import java.util.logging.Level;
 
 public class ZoneLootConfig {
-    private static final HytaleLogger LOGGER = HytaleLogger.forEnclosingClass();
-    private static final String FILENAME = "zone_loot.toml";
-    private static final String SECTION  = "zone_loot";
+    private static final HytaleLogger LOGGER  = HytaleLogger.forEnclosingClass();
+    private static final String       FILENAME = "zone_loot.toml";
+    private static final String       SECTION  = "zone_loot";
 
     private final Map<Integer, String> itemByZone;
 
@@ -39,21 +39,18 @@ public class ZoneLootConfig {
         }
         try {
             Toml toml = new Toml().read(file);
-            Map<Integer, String> map = new HashMap<>();
+            Map<Integer, String> zones = new HashMap<>();
             Toml section = toml.getTable(SECTION);
             if (section != null) {
-                Map<String, Object> raw = section.toMap();
-                for (Map.Entry<String, Object> entry : raw.entrySet()) {
+                for (Map.Entry<String, Object> e : section.entrySet()) {
                     try {
-                        int zoneId = Integer.parseInt(entry.getKey());
-                        if (entry.getValue() instanceof String itemId && !itemId.isBlank()) {
-                            map.put(zoneId, itemId);
-                        }
+                        int zoneId = Integer.parseInt(e.getKey());
+                        if (e.getValue() instanceof String s && !s.isBlank()) zones.put(zoneId, s);
                     } catch (NumberFormatException ignored) {}
                 }
             }
-            LOGGER.at(Level.INFO).log("Loaded {0} with {1} zones", FILENAME, map.size());
-            return new ZoneLootConfig(map);
+            LOGGER.at(Level.INFO).log("Loaded zone_loot.toml: {0} zones", zones.size());
+            return new ZoneLootConfig(zones);
         } catch (Exception e) {
             LOGGER.at(Level.SEVERE).log("Failed to load " + FILENAME + ", using defaults", e);
             return createDefault();
@@ -63,9 +60,7 @@ public class ZoneLootConfig {
     public void save(@Nonnull Path dataFolder) {
         File file = dataFolder.resolve(FILENAME).toFile();
         File parent = file.getParentFile();
-        if (parent != null && !parent.exists()) {
-            parent.mkdirs();
-        }
+        if (parent != null && !parent.exists()) parent.mkdirs();
         try (FileWriter writer = new FileWriter(file)) {
             writer.write(generateToml());
         } catch (IOException e) {
@@ -76,12 +71,9 @@ public class ZoneLootConfig {
     @Nonnull
     private String generateToml() {
         StringBuilder sb = new StringBuilder();
-        sb.append("# Zone Loot — item de fragment droppé par zone\n");
-        sb.append("# La quantité vient de mob_special_rates.toml\n");
-        sb.append("# zoneId = \"itemId\"\n\n");
         sb.append("[").append(SECTION).append("]\n");
         for (int z = 1; z <= 10; z++) {
-            String item = itemByZone.getOrDefault(z, "Key_Fragment_" + z);
+            String item = itemByZone.getOrDefault(z, "Key_Fragment" + z);
             sb.append(z).append(" = \"").append(item).append("\"\n");
         }
         return sb.toString();
@@ -89,10 +81,8 @@ public class ZoneLootConfig {
 
     @Nonnull
     public static ZoneLootConfig createDefault() {
-        Map<Integer, String> map = new HashMap<>();
-        for (int z = 1; z <= 10; z++) {
-            map.put(z, "Key_Fragment" + z);
-        }
-        return new ZoneLootConfig(map);
+        Map<Integer, String> zones = new HashMap<>();
+        for (int z = 1; z <= 10; z++) zones.put(z, "Key_Fragment" + z);
+        return new ZoneLootConfig(zones);
     }
 }
