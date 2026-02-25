@@ -13,6 +13,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 
+
 public class ConfigManager {
     private static final HytaleLogger LOGGER = HytaleLogger.forEnclosingClass();
     private static final String CONFIG_FILENAME = "config.toml";
@@ -22,7 +23,7 @@ public class ConfigManager {
     private ZoneConfig zoneConfig;
     private SafeZoneConfig safeZoneConfig;
     private ExtractionConfig extractionConfig;
-    private GlobalRewardsConfig globalRewardsConfig;
+    private FactionRewardsConfig factionRewardsConfig;
     private ReturnConfig returnConfig;
     private MessagesConfig messagesConfig;
     private ZoneLootConfig zoneLootConfig;
@@ -42,7 +43,8 @@ public class ConfigManager {
             zoneConfig = ZoneConfig.createDefault();
             safeZoneConfig = new SafeZoneConfig();
             extractionConfig = new ExtractionConfig();
-            globalRewardsConfig = GlobalRewardsConfig.createDefault();
+            factionRewardsConfig = FactionRewardsConfig.createDefault();
+            factionRewardsConfig.save(pluginDataFolder);
             returnConfig = ReturnConfig.createDefault();
             messagesConfig = MessagesConfig.createDefault();
             messagesConfig.save(pluginDataFolder);
@@ -61,19 +63,20 @@ public class ConfigManager {
             zoneConfig = parseZoneConfig(toml);
             safeZoneConfig = parseSafeZoneConfig(toml);
             extractionConfig = parseExtractionConfig(toml);
-            globalRewardsConfig = parseGlobalRewardsConfig(toml);
+            factionRewardsConfig = FactionRewardsConfig.load(pluginDataFolder);
             returnConfig = parseReturnConfig(toml);
             messagesConfig = MessagesConfig.load(pluginDataFolder);
             zoneLootConfig = ZoneLootConfig.load(pluginDataFolder);
             mobFragmentsConfig = MobFragmentsConfig.load(pluginDataFolder);
             zonePermissionsConfig = ZonePermissionsConfig.load(pluginDataFolder);
             LOGGER.at(Level.INFO).log("Loaded configuration with {0} zones", zoneConfig.getZones().size());
+            save();
         } catch (Exception e) {
             LOGGER.at(Level.SEVERE).log("Failed to load config, using default configuration", e);
             zoneConfig = ZoneConfig.createDefault();
             safeZoneConfig = new SafeZoneConfig();
             extractionConfig = new ExtractionConfig();
-            globalRewardsConfig = GlobalRewardsConfig.createDefault();
+            factionRewardsConfig = FactionRewardsConfig.createDefault();
             returnConfig = ReturnConfig.createDefault();
             messagesConfig = MessagesConfig.createDefault();
             zoneLootConfig = ZoneLootConfig.createDefault();
@@ -88,9 +91,6 @@ public class ConfigManager {
             File parentDir = configFile.getParentFile();
             if (parentDir != null && !parentDir.exists()) {
                 parentDir.mkdirs();
-            }
-            if (globalRewardsConfig == null) {
-                globalRewardsConfig = GlobalRewardsConfig.createDefault();
             }
             try (FileWriter writer = new FileWriter(configFile)) {
                 writer.write(generateToml());
@@ -149,28 +149,6 @@ public class ConfigManager {
         sb.append("minDistance = ").append(returnConfig != null ? returnConfig.getMinDistance() : 100).append("\n");
         sb.append("maxDistance = ").append(returnConfig != null ? returnConfig.getMaxDistance() : 200).append("\n");
         sb.append("expirationMinutes = ").append(returnConfig != null ? returnConfig.getExpirationMinutes() : 30).append("\n\n");
-
-        sb.append("[global_rewards]\n");
-        sb.append("cooldownMinutes = ").append(globalRewardsConfig.getRewardCooldownMinutes()).append("\n\n");
-        for (int i = 0; i < globalRewardsConfig.getTiers().size(); i++) {
-            GlobalRewardsConfig.RewardTier tier = globalRewardsConfig.getTiers().get(i);
-            sb.append("[[global_rewards.tiers]]\n");
-            sb.append("threshold = ").append(tier.getThreshold()).append("\n");
-            for (GlobalRewardsConfig.RewardItem item : tier.getItems()) {
-                sb.append("\n[[global_rewards.tiers.items]]\n");
-                sb.append("itemId = \"").append(item.getItemId()).append("\"\n");
-                sb.append("amount = ").append(item.getAmount()).append("\n");
-            }
-            if (!tier.getCommands().isEmpty()) {
-                sb.append("\ncommands = [");
-                for (int j = 0; j < tier.getCommands().size(); j++) {
-                    sb.append("\"").append(tier.getCommands().get(j)).append("\"");
-                    if (j < tier.getCommands().size() - 1) sb.append(", ");
-                }
-                sb.append("]\n");
-            }
-            sb.append("\n");
-        }
 
         for (DifficultyZone zone : zoneConfig.getZones()) {
             sb.append("[[zones]]\n");
@@ -290,41 +268,10 @@ public class ConfigManager {
         );
     }
 
-    @Nonnull
-    private GlobalRewardsConfig parseGlobalRewardsConfig(@Nonnull Toml toml) {
-        Toml rewardsToml = toml.getTable("global_rewards");
-        if (rewardsToml == null) return GlobalRewardsConfig.createDefault();
-
-        GlobalRewardsConfig config = new GlobalRewardsConfig();
-        config.setRewardCooldownMinutes(rewardsToml.getLong("cooldownMinutes", 30L).intValue());
-
-        List<Toml> tiersList = rewardsToml.getTables("tiers");
-        if (tiersList != null && !tiersList.isEmpty()) {
-            for (Toml tierToml : tiersList) {
-                int threshold = tierToml.getLong("threshold", 3300L).intValue();
-                List<GlobalRewardsConfig.RewardItem> items = new ArrayList<>();
-                List<Toml> itemsList = tierToml.getTables("items");
-                if (itemsList != null) {
-                    for (Toml itemToml : itemsList) {
-                        String itemId = itemToml.getString("itemId", "soil_grass");
-                        int amount = itemToml.getLong("amount", 1L).intValue();
-                        items.add(new GlobalRewardsConfig.RewardItem(itemId, amount));
-                    }
-                }
-                List<String> commands = tierToml.getList("commands");
-                if (commands == null) commands = new ArrayList<>();
-                config.addTier(new GlobalRewardsConfig.RewardTier(threshold, items, commands));
-            }
-        } else {
-            return GlobalRewardsConfig.createDefault();
-        }
-        return config;
-    }
-
     @Nonnull public ZoneConfig getZoneConfig()                    { return zoneConfig; }
     @Nonnull public SafeZoneConfig getSafeZoneConfig()            { return safeZoneConfig; }
     @Nonnull public ExtractionConfig getExtractionConfig()        { return extractionConfig; }
-    @Nonnull public GlobalRewardsConfig getGlobalRewardsConfig()  { return globalRewardsConfig; }
+    @Nonnull public FactionRewardsConfig getFactionRewardsConfig(){ return factionRewardsConfig != null ? factionRewardsConfig : FactionRewardsConfig.createDefault(); }
     @Nonnull public ReturnConfig getReturnConfig()                { return returnConfig != null ? returnConfig : ReturnConfig.createDefault(); }
     @Nonnull public MessagesConfig getMessagesConfig()            { return messagesConfig != null ? messagesConfig : MessagesConfig.createDefault(); }
     @Nonnull public ZoneLootConfig getZoneLootConfig()            { return zoneLootConfig != null ? zoneLootConfig : ZoneLootConfig.createDefault(); }

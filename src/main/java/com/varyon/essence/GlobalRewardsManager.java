@@ -1,117 +1,233 @@
 package com.varyon.essence;
 
+import com.hypixel.hytale.component.Ref;
+import com.hypixel.hytale.component.Store;
 import com.hypixel.hytale.logger.HytaleLogger;
 import com.hypixel.hytale.server.core.Message;
+import com.hypixel.hytale.server.core.entity.entities.Player;
 import com.hypixel.hytale.server.core.inventory.ItemStack;
+import com.hypixel.hytale.server.core.inventory.transaction.ItemStackTransaction;
 import com.hypixel.hytale.server.core.universe.PlayerRef;
 import com.hypixel.hytale.server.core.universe.Universe;
-import com.varyon.config.GlobalRewardsConfig;
+import com.hypixel.hytale.server.core.universe.world.World;
+import com.hypixel.hytale.server.core.universe.world.storage.EntityStore;
+import com.varyon.config.FactionRewardsConfig;
+import com.varyon.config.ZonePermissionsConfig;
 import com.varyon.faction.FactionManager;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.awt.Color;
-import java.util.ArrayList;
-import java.util.Collection;
+import java.nio.file.Path;
 import java.util.Map;
+import java.util.Set;
+import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 
 public class GlobalRewardsManager {
     private static final HytaleLogger LOGGER = HytaleLogger.forEnclosingClass();
-    
-    private final GlobalRewardsConfig config;
+
+    private final FactionRewardsConfig config;
     private final EssenceManager essenceManager;
     private final FactionManager factionManager;
-    
-    private final Map<Integer, TierState> tierStates = new ConcurrentHashMap<>();
-    
+    private final ZonePermissionsConfig zonePermsConfig;
+    private final PendingRewardsStore pendingStore;
+
+    /**
+     * Participation tracking per faction since last tier trigger.
+     * Key = player UUID, Value = essence deposited this cycle.
+     */
+    private final Map<UUID, Double> fractureParticipation = new ConcurrentHashMap<>();
+    private final Map<UUID, Double> noyauParticipation    = new ConcurrentHashMap<>();
+
     private static class TierState {
-        private boolean positiveReached = false;
-        private boolean negativeReached = false;
+        private boolean positiveRewarded = false;
+        private boolean negativeRewarded = false;
         private long positiveLastRewardTime = 0;
         private long negativeLastRewardTime = 0;
-        
-        public boolean canRewardPositive(long cooldownMillis) {
-            return !positiveReached || (System.currentTimeMillis() - positiveLastRewardTime >= cooldownMillis);
+
+        boolean canRewardPositive(long cooldownMs) {
+            return !positiveRewarded || (System.currentTimeMillis() - positiveLastRewardTime >= cooldownMs);
         }
-        
-        public boolean canRewardNegative(long cooldownMillis) {
-            return !negativeReached || (System.currentTimeMillis() - negativeLastRewardTime >= cooldownMillis);
+
+        boolean canRewardNegative(long cooldownMs) {
+            return !negativeRewarded || (System.currentTimeMillis() - negativeLastRewardTime >= cooldownMs);
         }
-        
-        public void markPositiveRewarded() {
-            positiveReached = true;
-            positiveLastRewardTime = System.currentTimeMillis();
-        }
-        
-        public void markNegativeRewarded() {
-            negativeReached = true;
-            negativeLastRewardTime = System.currentTimeMillis();
-        }
-        
-        public void resetPositive() {
-            positiveReached = false;
-        }
-        
-        public void resetNegative() {
-            negativeReached = false;
-        }
+
+        void markPositiveRewarded() { positiveRewarded = true; positiveLastRewardTime = System.currentTimeMillis(); }
+        void markNegativeRewarded() { negativeRewarded = true; negativeLastRewardTime = System.currentTimeMillis(); }
+        void resetPositive()        { positiveRewarded = false; }
+        void resetNegative()        { negativeRewarded = false; }
     }
-    
-    public GlobalRewardsManager(@Nonnull GlobalRewardsConfig config, @Nonnull EssenceManager essenceManager, @Nonnull FactionManager factionManager) {
+
+    private final Map<Integer, TierState> tierStates = new ConcurrentHashMap<>();
+
+    public GlobalRewardsManager(@Nonnull FactionRewardsConfig config,
+                                @Nonnull EssenceManager essenceManager,
+                                @Nonnull FactionManager factionManager,
+                                @Nonnull ZonePermissionsConfig zonePermsConfig,
+                                @Nonnull Path dataFolder) {
         this.config = config;
         this.essenceManager = essenceManager;
         this.factionManager = factionManager;
-        
+        this.zonePermsConfig = zonePermsConfig;
+        this.pendingStore = new PendingRewardsStore(dataFolder);
+
         for (int i = 0; i < config.getTiers().size(); i++) {
             tierStates.put(i, new TierState());
         }
     }
-    
+
+    /**
+     * Called when a player deposits essence for their faction.
+     */
+    public void recordDeposit(@Nonnull UUID uuid, @Nonnull FactionManager.Faction faction, double amount) {
+        Map<UUID, Double> map = faction == FactionManager.Faction.FRACTURE ? fractureParticipation : noyauParticipation;
+        map.merge(uuid, amount, Double::sum);
+    }
+
     public void checkAndDistributeRewards() {
         int globalBalance = essenceManager.getGlobalBalance();
-        long cooldownMillis = config.getRewardCooldownMinutes() * 60 * 1000L;
-        
-        LOGGER.at(Level.INFO).log("Checking rewards for global balance: " + globalBalance + " (cooldown: " + config.getRewardCooldownMinutes() + " minutes)");
-        
-        java.util.List<GlobalRewardsConfig.RewardTier> tiers = config.getTiers();
-        
-        for (int i = 0; i < tiers.size(); i++) {
-            GlobalRewardsConfig.RewardTier tier = tiers.get(i);
+        long cooldownMs = config.getCooldownMinutes() * 60_000L;
+
+        for (int i = 0; i < config.getTiers().size(); i++) {
+            FactionRewardsConfig.RewardTier tier = config.getTiers().get(i);
             TierState state = tierStates.get(i);
-            
-            LOGGER.at(Level.INFO).log("Tier " + (i + 1) + " - Threshold: " + tier.getThreshold() + ", Positive reached: " + state.positiveReached + ", Negative reached: " + state.negativeReached);
-            
-            if (globalBalance >= tier.getThreshold()) {
-                LOGGER.at(Level.INFO).log("Balance >= threshold, checking positive cooldown...");
-                if (state.canRewardPositive(cooldownMillis)) {
-                    LOGGER.at(Level.INFO).log("Global balance " + globalBalance + " reached tier " + (i + 1) + " (threshold: " + tier.getThreshold() + ") - Rewarding Fracture faction");
-                    distributeFactionReward(FactionManager.Faction.FRACTURE, tier, i + 1);
-                    state.markPositiveRewarded();
-                } else {
-                    long timeLeft = (cooldownMillis - (System.currentTimeMillis() - state.positiveLastRewardTime)) / 1000;
-                    LOGGER.at(Level.INFO).log("Tier " + (i + 1) + " positive still on cooldown (" + timeLeft + "s remaining)");
-                }
-            } else if (globalBalance > 0 && globalBalance < tier.getThreshold()) {
-                state.resetPositive();
+
+            if (globalBalance >= tier.getThreshold() && state.canRewardPositive(cooldownMs)) {
+                LOGGER.at(Level.INFO).log("Tier " + (i + 1) + " reached (+" + tier.getThreshold() + ") — rewarding Fracture");
+                distributeFactionReward(FactionManager.Faction.FRACTURE, tier, i + 1);
+                state.markPositiveRewarded();
             }
-            
-            if (globalBalance <= -tier.getThreshold()) {
-                LOGGER.at(Level.INFO).log("Balance <= -threshold, checking negative cooldown...");
-                if (state.canRewardNegative(cooldownMillis)) {
-                    LOGGER.at(Level.INFO).log("Global balance " + globalBalance + " reached tier -" + (i + 1) + " (threshold: -" + tier.getThreshold() + ") - Rewarding Noyau faction");
-                    distributeFactionReward(FactionManager.Faction.NOYAU, tier, i + 1);
-                    state.markNegativeRewarded();
-                } else {
-                    long timeLeft = (cooldownMillis - (System.currentTimeMillis() - state.negativeLastRewardTime)) / 1000;
-                    LOGGER.at(Level.INFO).log("Tier " + (i + 1) + " negative still on cooldown (" + timeLeft + "s remaining)");
-                }
-            } else if (globalBalance < 0 && globalBalance > -tier.getThreshold()) {
-                state.resetNegative();
+
+            if (globalBalance <= -tier.getThreshold() && state.canRewardNegative(cooldownMs)) {
+                LOGGER.at(Level.INFO).log("Tier " + (i + 1) + " reached (-" + tier.getThreshold() + ") — rewarding Noyau");
+                distributeFactionReward(FactionManager.Faction.NOYAU, tier, i + 1);
+                state.markNegativeRewarded();
             }
         }
     }
-    
+
+    private void distributeFactionReward(@Nonnull FactionManager.Faction faction,
+                                         @Nonnull FactionRewardsConfig.RewardTier tier,
+                                         int tierNumber) {
+        Map<UUID, Double> participation = faction == FactionManager.Faction.FRACTURE
+            ? fractureParticipation : noyauParticipation;
+        double minPart   = config.getMinParticipationEssence();
+        double passRate  = config.getPassiveRewardRate();
+        int    fullAmt   = tier.getFragmentAmount();
+
+        Set<UUID> onlineUuids = new java.util.HashSet<>();
+
+        for (PlayerRef playerRef : Universe.get().getPlayers()) {
+            if (playerRef == null || !playerRef.getReference().isValid()) continue;
+            UUID uuid = playerRef.getUuid();
+            if (factionManager.getFaction(uuid) != faction) continue;
+
+            onlineUuids.add(uuid);
+
+            double deposited = participation.getOrDefault(uuid, 0.0);
+            boolean participated = deposited >= minPart;
+            int fragments = participated ? fullAmt : (int) Math.floor(fullAmt * passRate);
+            if (fragments <= 0) continue;
+
+            try {
+                Ref ref = playerRef.getReference();
+                Store store = ref.getStore();
+                World world = ((EntityStore) store.getExternalData()).getWorld();
+                final int finalFragments = fragments;
+                final boolean finalParticipated = participated;
+                world.execute(() -> giveFragmentsOnline(playerRef, ref, store, finalFragments, finalParticipated, tierNumber, faction));
+            } catch (Exception e) {
+                LOGGER.at(Level.WARNING).log("Failed to schedule reward for " + playerRef.getUsername() + ": " + e.getMessage());
+            }
+        }
+
+        // Offline players who participated → save pending
+        for (Map.Entry<UUID, Double> entry : participation.entrySet()) {
+            UUID uuid = entry.getKey();
+            if (onlineUuids.contains(uuid)) continue;
+            if (entry.getValue() < minPart) continue;
+
+            pendingStore.add(uuid, fullAmt);
+            LOGGER.at(Level.INFO).log("Stored " + fullAmt + " pending fragments for offline player " + uuid + " (tier " + tierNumber + ")");
+        }
+
+        // Reset participation for this faction
+        participation.clear();
+        LOGGER.at(Level.INFO).log("Participation reset for " + faction.getDisplayName() + " after tier " + tierNumber);
+    }
+
+    private void giveFragmentsOnline(@Nonnull PlayerRef playerRef, @Nonnull Ref ref,
+                                     @Nonnull Store store, int fragments,
+                                     boolean participated, int tierNumber,
+                                     @Nonnull FactionManager.Faction faction) {
+        try {
+            Player playerComponent = (Player) store.getComponent(ref, Player.getComponentType());
+            if (playerComponent == null || playerComponent.getInventory() == null) return;
+
+            int maxZone = zonePermsConfig.getMaxAccessibleZone(playerComponent);
+            if (maxZone <= 0) maxZone = 1;
+            String itemId = "Key_Fragment" + maxZone;
+
+            ItemStack stack = new ItemStack(itemId, fragments);
+            ItemStackTransaction tx = playerComponent.getInventory().getCombinedHotbarFirst().addItemStack(stack);
+
+            String factionColor = faction == FactionManager.Faction.NOYAU ? "#5555FF" : "#FF8800";
+            playerRef.sendMessage(Message.raw("[Palier " + tierNumber + "] " + faction.getDisplayName() + " a atteint un seuil!").color(Color.decode(factionColor)));
+
+            if (ItemStack.isEmpty(tx.getRemainder())) {
+                String pct = participated ? "100%" : ((int)(config.getPassiveRewardRate() * 100)) + "%";
+                playerRef.sendMessage(Message.raw("Vous recevez: " + fragments + "x " + itemId + " (" + pct + ")").color(Color.GREEN));
+                LOGGER.at(Level.INFO).log("Gave " + fragments + "x " + itemId + " to " + playerRef.getUsername() + " (" + pct + ", tier " + tierNumber + ")");
+            } else {
+                LOGGER.at(Level.WARNING).log("Inventory full for " + playerRef.getUsername() + " — could not give all fragments");
+            }
+        } catch (Exception e) {
+            LOGGER.at(Level.SEVERE).log("Error giving fragments to " + playerRef.getUsername() + ": " + e.getMessage());
+        }
+    }
+
+    /**
+     * Called when a player connects. Delivers any pending fragments.
+     */
+    public void onPlayerReady(@Nonnull PlayerRef playerRef, @Nonnull Ref ref, @Nonnull Store store) {
+        UUID uuid = playerRef.getUuid();
+        if (!pendingStore.has(uuid)) return;
+
+        int fragments = pendingStore.get(uuid);
+        pendingStore.clear(uuid);
+
+        try {
+            Player playerComponent = (Player) store.getComponent(ref, Player.getComponentType());
+            if (playerComponent == null || playerComponent.getInventory() == null) {
+                // Restore in case delivery failed
+                pendingStore.add(uuid, fragments);
+                return;
+            }
+
+            int maxZone = zonePermsConfig.getMaxAccessibleZone(playerComponent);
+            if (maxZone <= 0) maxZone = 1;
+            String itemId = "Key_Fragment" + maxZone;
+
+            ItemStack stack = new ItemStack(itemId, fragments);
+            ItemStackTransaction tx = playerComponent.getInventory().getCombinedHotbarFirst().addItemStack(stack);
+
+            if (ItemStack.isEmpty(tx.getRemainder())) {
+                playerRef.sendMessage(Message.raw("[Récompense en attente] Vous recevez: " + fragments + "x " + itemId).color(Color.GREEN));
+                LOGGER.at(Level.INFO).log("Delivered " + fragments + "x " + itemId + " (pending) to " + playerRef.getUsername());
+            } else {
+                // Inventory full — restore pending
+                pendingStore.add(uuid, fragments);
+                playerRef.sendMessage(Message.raw("[Récompense en attente] Inventaire plein — réessayez plus tard.").color(Color.YELLOW));
+            }
+        } catch (Exception e) {
+            LOGGER.at(Level.SEVERE).log("Error delivering pending rewards to " + playerRef.getUsername() + ": " + e.getMessage());
+            pendingStore.add(uuid, fragments);
+        }
+    }
+
     public void resetAllCooldowns() {
         for (TierState state : tierStates.values()) {
             state.resetPositive();
@@ -119,117 +235,9 @@ public class GlobalRewardsManager {
         }
         LOGGER.at(Level.INFO).log("All reward tier cooldowns have been reset");
     }
-    
-    private void distributeFactionReward(@Nonnull FactionManager.Faction faction, @Nonnull GlobalRewardsConfig.RewardTier tier, int tierNumber) {
-        Collection<PlayerRef> players = Universe.get().getPlayers();
-        int rewardedCount = 0;
-        
-        for (PlayerRef playerRef : players) {
-            if (playerRef == null || !playerRef.getReference().isValid()) {
-                continue;
-            }
-            
-            FactionManager.Faction playerFaction = factionManager.getFaction(playerRef.getUuid());
-            if (playerFaction == faction) {
-                try {
-                    // Récupérer le monde du joueur
-                    com.hypixel.hytale.component.Ref ref = playerRef.getReference();
-                    com.hypixel.hytale.component.Store store = ref.getStore();
-                    com.hypixel.hytale.server.core.universe.world.World world = 
-                        ((com.hypixel.hytale.server.core.universe.world.storage.EntityStore)store.getExternalData()).getWorld();
-                    
-                    // Exécuter dans le WorldThread
-                    world.execute(() -> {
-                        giveRewardsToPlayer(playerRef, tier, faction, tierNumber);
-                    });
-                    rewardedCount++;
-                } catch (Exception e) {
-                    LOGGER.at(Level.WARNING).log("Failed to schedule reward for " + playerRef.getUsername() + ": " + e.getMessage());
-                }
-            }
-        }
-        
-        LOGGER.at(Level.INFO).log("Distributed tier " + tierNumber + " rewards to " + rewardedCount + " members of " + faction.getDisplayName());
-    }
-    
-    private void giveRewardsToPlayer(@Nonnull PlayerRef playerRef, @Nonnull GlobalRewardsConfig.RewardTier tier, @Nonnull FactionManager.Faction faction, int tierNumber) {
-        LOGGER.at(Level.INFO).log("Starting to give rewards to player: " + playerRef.getUsername());
-        
-        try {
-            StringBuilder rewardMessage = new StringBuilder();
-            
-            LOGGER.at(Level.INFO).log("Number of items to give: " + tier.getItems().size());
-            
-            // Donner les items
-            for (GlobalRewardsConfig.RewardItem rewardItem : tier.getItems()) {
-                LOGGER.at(Level.INFO).log("Attempting to give item: " + rewardItem.getItemId() + " x" + rewardItem.getAmount());
-                
-                try {
-                    ItemStack itemStack = new ItemStack(rewardItem.getItemId(), rewardItem.getAmount());
-                    LOGGER.at(Level.INFO).log("ItemStack created successfully");
-                    
-                    // Accéder à l'inventaire via les composants
-                    com.hypixel.hytale.component.Ref playerComponentRef = playerRef.getReference();
-                    LOGGER.at(Level.INFO).log("PlayerRef reference obtained: " + (playerComponentRef != null));
-                    
-                    if (playerComponentRef != null && playerComponentRef.isValid()) {
-                        LOGGER.at(Level.INFO).log("Reference is valid");
-                        com.hypixel.hytale.component.Store store = playerComponentRef.getStore();
-                        LOGGER.at(Level.INFO).log("Store obtained: " + (store != null));
-                        
-                        com.hypixel.hytale.server.core.entity.entities.Player playerComponent = 
-                            (com.hypixel.hytale.server.core.entity.entities.Player) store.getComponent(
-                                playerComponentRef, 
-                                com.hypixel.hytale.server.core.entity.entities.Player.getComponentType()
-                            );
-                        
-                        LOGGER.at(Level.INFO).log("Player component obtained: " + (playerComponent != null));
-                        
-                        if (playerComponent != null && playerComponent.getInventory() != null) {
-                            LOGGER.at(Level.INFO).log("Inventory is not null, attempting to add item");
-                            
-                            com.hypixel.hytale.server.core.inventory.transaction.ItemStackTransaction transaction =
-                                playerComponent.getInventory().getCombinedHotbarFirst().addItemStack(itemStack);
-                            
-                            LOGGER.at(Level.INFO).log("Transaction completed");
-                            
-                            if (ItemStack.isEmpty(transaction.getRemainder())) {
-                                if (rewardMessage.length() > 0) rewardMessage.append(", ");
-                                rewardMessage.append(rewardItem.getAmount()).append("x ").append(rewardItem.getItemId());
-                                LOGGER.at(Level.INFO).log("Successfully gave " + rewardItem.getAmount() + "x " + rewardItem.getItemId() + " to " + playerRef.getUsername());
-                            } else {
-                                LOGGER.at(Level.WARNING).log("Failed to give full item " + rewardItem.getItemId() + " to player " + playerRef.getUsername() + " (inventory full?)");
-                            }
-                        } else {
-                            LOGGER.at(Level.WARNING).log("Player component or inventory is null for " + playerRef.getUsername());
-                        }
-                    } else {
-                        LOGGER.at(Level.WARNING).log("Player reference is invalid for " + playerRef.getUsername());
-                    }
-                    
-                } catch (Exception e) {
-                    LOGGER.at(Level.WARNING).log("Error giving item " + rewardItem.getItemId() + " to " + playerRef.getUsername() + ": " + e.getMessage());
-                    e.printStackTrace();
-                }
-            }
-            
-            String factionColor = faction == FactionManager.Faction.NOYAU ? "#5555FF" : "#FF8800";
-            playerRef.sendMessage(
-                Message.raw("[Récompense] Palier " + tierNumber + " atteint!").color(Color.decode(factionColor))
-            );
-            
-            if (rewardMessage.length() > 0) {
-                playerRef.sendMessage(
-                    Message.raw("Vous recevez: " + rewardMessage).color(Color.GREEN)
-                );
-                LOGGER.at(Level.INFO).log("Sent reward message to player");
-            } else {
-                LOGGER.at(Level.WARNING).log("No items were successfully given to " + playerRef.getUsername());
-            }
-            
-        } catch (Exception e) {
-            LOGGER.at(Level.SEVERE).log("Error giving rewards to player " + playerRef.getUsername() + ": " + e.getMessage());
-            e.printStackTrace();
-        }
+
+    @Nullable
+    public PendingRewardsStore getPendingStore() {
+        return pendingStore;
     }
 }

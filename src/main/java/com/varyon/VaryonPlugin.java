@@ -27,7 +27,6 @@ import com.varyon.command.ReturnCommand;
 import com.varyon.component.MobScalingComponent;
 import com.varyon.config.ConfigManager;
 import com.varyon.config.EssenceRewardsConfig;
-import com.varyon.config.GlobalRewardsConfig;
 import com.varyon.death.DeathDetectionSystem;
 import com.varyon.death.DeathPointManager;
 import com.varyon.deposit.DepositBlockInteractionSystem;
@@ -71,7 +70,6 @@ public class VaryonPlugin extends JavaPlugin {
     private ZoneHUDManager hudManager;
     private ExtractionPortalManager extractionPortalManager;
     private EssenceRewardsConfig essenceRewardsConfig;
-    private GlobalRewardsConfig globalRewardsConfig;
     private GlobalRewardsManager globalRewardsManager;
     private DepositBlockManager depositBlockManager;
     private DepositUIManager depositUIManager;
@@ -108,9 +106,13 @@ public class VaryonPlugin extends JavaPlugin {
             staticFactionManager = factionManager;
             LOGGER.at(Level.INFO).log("Faction system initialized");
 
-            // Initialiser le système de récompenses globales
-            globalRewardsConfig = configManager.getGlobalRewardsConfig();
-            globalRewardsManager = new GlobalRewardsManager(globalRewardsConfig, essenceManager, factionManager);
+            // Initialiser le système de récompenses de faction
+            globalRewardsManager = new GlobalRewardsManager(
+                configManager.getFactionRewardsConfig(),
+                essenceManager,
+                factionManager,
+                configManager.getZonePermissionsConfig(),
+                this.getDataDirectory());
             staticGlobalRewardsManager = globalRewardsManager;
             
             // Lier le rewards manager à l'essence manager
@@ -234,11 +236,12 @@ public class VaryonPlugin extends JavaPlugin {
                     world.execute(() -> {
                         try {
                             PlayerRef playerRef = (PlayerRef)store.getComponent(ref, PlayerRef.getComponentType());
-                            if (playerRef == null) {
-                                return;
-                            }
+                            if (playerRef == null) return;
                             hudManager.registerPlayer(player, playerRef);
                             LOGGER.at(Level.INFO).log("Registered HUD for player: " + playerRef.getUuid());
+                            if (globalRewardsManager != null) {
+                                globalRewardsManager.onPlayerReady(playerRef, ref, store);
+                            }
                         } catch (Exception e) {
                             LOGGER.at(Level.WARNING).log("Failed to register HUD for player: " + e.getMessage());
                         }

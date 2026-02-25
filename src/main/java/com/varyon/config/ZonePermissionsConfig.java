@@ -42,7 +42,7 @@ public class ZonePermissionsConfig {
                 return z;
             }
         }
-        return 0;
+        return 1;
     }
 
     /**

@@ -9,6 +9,7 @@ import com.hypixel.hytale.server.core.command.system.basecommands.AbstractAsyncC
 import com.hypixel.hytale.server.core.entity.entities.Player;
 import com.hypixel.hytale.server.core.universe.PlayerRef;
 import com.varyon.essence.EssenceManager;
+import com.varyon.essence.GlobalRewardsManager;
 import com.varyon.essence.PlayerEssenceData;
 import com.varyon.faction.FactionManager;
 import com.varyon.hud.ZoneHUDManager;
@@ -223,6 +224,11 @@ public class EssenceCommand extends AbstractAsyncCommand {
             int contribution = amount * faction.getBalanceMultiplier();
             essenceManager.addToGlobalBalance(contribution);
 
+            GlobalRewardsManager rewardsManager = VaryonPlugin.getStaticGlobalRewardsManager();
+            if (rewardsManager != null) {
+                rewardsManager.recordDeposit(playerRef.getUuid(), faction, amount);
+            }
+
             int newBalance = essenceManager.getGlobalBalance();
             context.sendMessage(Message.raw("Déposé " + amount + " essence dans " + faction.getDisplayName()).color(Color.GREEN));
             context.sendMessage(Message.raw("Balance globale: " + newBalance + "/10000").color(Color.YELLOW));
@@ -232,12 +238,6 @@ public class EssenceCommand extends AbstractAsyncCommand {
                 plugin.getHudManager().broadcastBalanceUpdate();
             }
             
-            // Check for rewards
-            com.varyon.essence.GlobalRewardsManager rewardsManager = VaryonPlugin.getStaticGlobalRewardsManager();
-            if (rewardsManager != null) {
-                rewardsManager.checkAndDistributeRewards();
-            }
-
             return CompletableFuture.completedFuture(null);
         }
     }
