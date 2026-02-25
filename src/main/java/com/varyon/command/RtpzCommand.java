@@ -19,7 +19,7 @@ import com.hypixel.hytale.server.core.universe.world.worldgen.IWorldGen;
 import com.hypixel.hytale.server.worldgen.chunk.ChunkGenerator;
 import com.hypixel.hytale.server.worldgen.zone.Zone;
 import com.varyon.VaryonPlugin;
-import com.varyon.config.ZoneConfig;
+import com.varyon.config.MessagesConfig;
 import com.varyon.teleport.RtpService;
 
 import javax.annotation.Nonnull;
@@ -57,11 +57,11 @@ public class RtpzCommand extends AbstractPlayerCommand {
 
     void teleportToRandomZone(CommandContext context, Store<EntityStore> store, 
                               Ref<EntityStore> ref, PlayerRef playerRef, World world, String targetZonePrefix) {
-        ZoneConfig config = VaryonPlugin.getStaticConfigManager().getZoneConfig();
+        MessagesConfig.RtpMessages msg = VaryonPlugin.getStaticConfigManager().getMessagesConfig().getRtp();
         
         IWorldGen worldGen = world.getChunkStore().getGenerator();
         if (!(worldGen instanceof ChunkGenerator)) {
-            context.sendMessage(Message.raw(config.getRtpvMessageWorldNotSupported()).color(Color.RED));
+            context.sendMessage(Message.raw(msg.worldNotSupported).color(Color.RED));
             return;
         }
 
@@ -91,12 +91,12 @@ public class RtpzCommand extends AbstractPlayerCommand {
             }
             
             if (matchingZones.isEmpty()) {
-                StringBuilder availableZones = new StringBuilder(config.getRtpvMessageAvailableZones() + ": ");
+                StringBuilder availableZones = new StringBuilder(msg.availableZones + ": ");
                 for (int i = 0; i < zones.length; i++) {
                     availableZones.append(zones[i].name());
                     if (i < zones.length - 1) availableZones.append(", ");
                 }
-                context.sendMessage(Message.raw(config.getRtpvMessageZoneNotFound()
+                context.sendMessage(Message.raw(msg.zoneNotFound
                     .replace("{zone}", prefix) + " " + availableZones.toString()).color(Color.RED));
                 return;
             }
@@ -141,27 +141,27 @@ public class RtpzCommand extends AbstractPlayerCommand {
         }
 
         final Zone finalTargetZone = targetZone;
-        context.sendMessage(Message.raw(config.getRtpvMessageTeleporting()).color(Color.GREEN));
-        
+        context.sendMessage(Message.raw(msg.teleporting).color(Color.GREEN));
+
         world.execute(() -> {
             try {
                 Vector3d safePosition = rtpService.findSafePosition(world, generator, finalTargetZone, 50);
-                
+
                 if (safePosition != null) {
                     teleportPlayer(store, ref, world, safePosition);
-                    String zoneName = finalTargetZone != null ? extractZoneNumber(finalTargetZone.name()) : config.getRtpvMessageRandomZone();
-                    context.sendMessage(Message.raw(config.getRtpvMessageSuccess()
+                    String zoneName = finalTargetZone != null ? extractZoneNumber(finalTargetZone.name()) : msg.randomZone;
+                    context.sendMessage(Message.raw(msg.success
                         .replace("{zone}", zoneName)
                         .replace("{x}", String.valueOf((int)safePosition.x))
                         .replace("{y}", String.valueOf((int)safePosition.y))
                         .replace("{z}", String.valueOf((int)safePosition.z))).color(Color.GREEN));
                 } else {
-                    context.sendMessage(Message.raw(config.getRtpvMessageNoSafeLocation()
+                    context.sendMessage(Message.raw(msg.noSafeLocation
                         .replace("{attempts}", "50")).color(Color.RED));
                 }
             } catch (Exception e) {
                 LOGGER.at(Level.SEVERE).log("Erreur lors de la téléportation RTP: " + e.getMessage(), e);
-                context.sendMessage(Message.raw(config.getRtpvMessageError()).color(Color.RED));
+                context.sendMessage(Message.raw(msg.error).color(Color.RED));
             }
         });
     }

@@ -38,7 +38,7 @@ public class ZoneTitleTickingSystem extends EntityTickingSystem<EntityStore> {
     public ZoneTitleTickingSystem(ConfigManager configManager, EssenceManager essenceManager) {
         this.configManager = configManager;
         this.essenceManager = essenceManager;
-        this.hudManager = new ZoneHUDManager(configManager.getZoneConfig());
+        this.hudManager = new ZoneHUDManager(configManager.getZoneConfig(), configManager.getMessagesConfig(), configManager.getZonePermissionsConfig());
     }
 
     @Override

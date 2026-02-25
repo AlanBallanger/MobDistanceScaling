@@ -8,6 +8,7 @@ import com.hypixel.hytale.server.core.ui.builder.UICommandBuilder;
 import com.hypixel.hytale.server.core.universe.PlayerRef;
 import com.varyon.VaryonPlugin;
 import com.varyon.config.DifficultyZone;
+import com.varyon.config.MessagesConfig;
 import com.varyon.config.ZoneConfig;
 import com.varyon.essence.EssenceManager;
 import com.varyon.safezone.SafeZoneManager;
@@ -24,6 +25,8 @@ public class ZoneHUD extends CustomUIHud {
 
     @Nonnull
     private final ZoneConfig zoneConfig;
+    @Nonnull
+    private final MessagesConfig messagesConfig;
 
     @Nullable
     private DifficultyZone currentZone;
@@ -35,10 +38,12 @@ public class ZoneHUD extends CustomUIHud {
     private boolean inSafeZone;
     private String safeQuadrantName = "";
     private long safeTimeRemaining;
+    private boolean lootSpecialActive = false;
 
-    public ZoneHUD(@Nonnull PlayerRef playerRef, @Nonnull ZoneConfig zoneConfig) {
+    public ZoneHUD(@Nonnull PlayerRef playerRef, @Nonnull ZoneConfig zoneConfig, @Nonnull MessagesConfig messagesConfig) {
         super(playerRef);
         this.zoneConfig = zoneConfig;
+        this.messagesConfig = messagesConfig;
     }
 
     @Override
@@ -61,7 +66,11 @@ public class ZoneHUD extends CustomUIHud {
         return currentPage;
     }
 
-    public void updateZoneInfo(@Nullable DifficultyZone zone, double distance, boolean inSafe, @Nonnull String quadrantName, long timeRemaining, boolean forceUpdate) {
+    public void updateZoneInfo(@Nullable DifficultyZone zone, double distance, boolean inSafe, @Nonnull String quadrantName, long timeRemaining, boolean forceUpdate, boolean lootSpecialActive) {
+        if (this.lootSpecialActive != lootSpecialActive) {
+            this.lootSpecialActive = lootSpecialActive;
+            forceUpdate = true;
+        }
         if (!built) {
             return;
         }
@@ -149,8 +158,8 @@ public class ZoneHUD extends CustomUIHud {
         }
 
         if (currentZone != null) {
-            builder.set("#DMGMult.Text", zoneConfig.getHudLabelHealth() + ": x" + String.format("%.1f", currentZone.getHealthMultiplier()));
-            builder.set("#LootMult.Text", zoneConfig.getHudLabelDamage() + ": x" + String.format("%.1f", currentZone.getDamageMultiplier()));
+            builder.set("#DMGMult.Text", messagesConfig.getHud().labelHealth + ": x" + String.format("%.1f", currentZone.getHealthMultiplier()));
+            builder.set("#LootMult.Text", messagesConfig.getHud().labelDamage + ": x" + String.format("%.1f", currentZone.getDamageMultiplier()));
         } else {
             builder.set("#DMGMult.Text", "");
             builder.set("#LootMult.Text", "");
@@ -189,15 +198,20 @@ public class ZoneHUD extends CustomUIHud {
         builder.set("#Essence.Style.TextColor", "#FFFF55");
 
         if (currentZone != null) {
-            builder.set("#HPMult.Text", zoneConfig.getHudLabelLoot() + ": x" + String.format("%.1f", currentZone.getLootMultiplier()));
+            builder.set("#HPMult.Text", messagesConfig.getHud().labelLoot + ": x" + String.format("%.1f", currentZone.getLootMultiplier()));
             builder.set("#HPMult.Style.TextColor", "#55FF55");
         } else {
             builder.set("#HPMult.Text", "");
             builder.set("#HPMult.Style.TextColor", "#55FF55");
         }
 
-        builder.set("#DMGMult.Text", "Loot spécial : Actif");
-        builder.set("#DMGMult.Style.TextColor", "#55FF55");
+        if (lootSpecialActive) {
+            builder.set("#DMGMult.Text", "Loot spécial : Actif");
+            builder.set("#DMGMult.Style.TextColor", "#55FF55");
+        } else {
+            builder.set("#DMGMult.Text", "Loot spécial : Inactif");
+            builder.set("#DMGMult.Style.TextColor", "#FF5555");
+        }
         
         // Étendre la largeur de DMGMult pour prendre l'espace de 2 zones + séparateur
         Anchor dmgAnchor = new Anchor();

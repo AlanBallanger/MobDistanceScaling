@@ -13,7 +13,9 @@ import com.hypixel.hytale.server.core.universe.PlayerRef;
 import com.hypixel.hytale.server.core.universe.Universe;
 import com.varyon.VaryonPlugin;
 import com.varyon.config.DifficultyZone;
+import com.varyon.config.MessagesConfig;
 import com.varyon.config.ZoneConfig;
+import com.varyon.config.ZonePermissionsConfig;
 import com.varyon.safezone.SafeZoneManager;
 import com.varyon.util.ZoneCalculator;
 
@@ -35,12 +37,18 @@ public class ZoneHUDManager {
     private static final long MULTIHUD_RETRY_DELAY_MS = 100;
 
     private final Map<UUID, ZoneHUD> playerHuds = new ConcurrentHashMap<>();
+    private final Map<UUID, Player> playerCache = new ConcurrentHashMap<>();
     private final ZoneConfig zoneConfig;
+    private final MessagesConfig messagesConfig;
+    private final ZonePermissionsConfig zonePermsConfig;
     private ScheduledFuture<?> updateTask;
     private int tickCounter = 0;
 
-    public ZoneHUDManager(@Nonnull ZoneConfig zoneConfig) {
+    public ZoneHUDManager(@Nonnull ZoneConfig zoneConfig, @Nonnull MessagesConfig messagesConfig,
+                          @Nonnull ZonePermissionsConfig zonePermsConfig) {
         this.zoneConfig = zoneConfig;
+        this.messagesConfig = messagesConfig;
+        this.zonePermsConfig = zonePermsConfig;
         LOGGER.at(Level.INFO).log("ZoneHUDManager initialized");
         startUpdateTask();
     }
@@ -86,10 +94,16 @@ public class ZoneHUDManager {
 
                 boolean inSafe = safeZoneAvailable && szm.isInSafeZone(x, z);
 
+                boolean lootActive = false;
+                Player player = playerCache.get(playerId);
+                if (player != null && zone != null) {
+                    lootActive = zonePermsConfig.canAccessZone(player, zone.getZoneId());
+                }
+
                 if (switchPage) {
                     hud.nextPage();
                 }
-                hud.updateZoneInfo(zone, distance, inSafe, quadrantName, timeRemaining, switchPage);
+                hud.updateZoneInfo(zone, distance, inSafe, quadrantName, timeRemaining, switchPage, lootActive);
             } catch (Exception e) {
                 LOGGER.at(Level.WARNING).log("Error updating HUD for player " + playerId + ": " + e.getMessage());
             }
@@ -116,8 +130,9 @@ public class ZoneHUDManager {
         ZoneHUD hud = playerHuds.get(playerId);
 
         if (hud == null) {
-            hud = new ZoneHUD(playerRef, zoneConfig);
+            hud = new ZoneHUD(playerRef, zoneConfig, messagesConfig);
             playerHuds.put(playerId, hud);
+            playerCache.put(playerId, player);
             tryRegisterWithMultipleHud(player, playerRef, hud, 0);
         }
     }
@@ -167,6 +182,7 @@ public class ZoneHUDManager {
 
     public void removePlayer(@Nonnull UUID playerId) {
         playerHuds.remove(playerId);
+        playerCache.remove(playerId);
     }
 
     public void broadcastBalanceUpdate() {

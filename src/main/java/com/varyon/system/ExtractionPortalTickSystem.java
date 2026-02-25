@@ -17,7 +17,8 @@ import com.hypixel.hytale.server.core.universe.PlayerRef;
 import com.hypixel.hytale.server.core.universe.world.World;
 import com.hypixel.hytale.server.core.universe.world.spawn.ISpawnProvider;
 import com.hypixel.hytale.server.core.universe.world.storage.EntityStore;
-import com.varyon.config.ExtractionConfig;
+import com.varyon.VaryonPlugin;
+import com.varyon.config.MessagesConfig;
 import com.varyon.extraction.ExtractionPortalManager;
 
 import org.checkerframework.checker.nullness.compatqual.NonNullDecl;
@@ -77,8 +78,8 @@ public class ExtractionPortalTickSystem extends EntityTickingSystem<EntityStore>
                 Long lastDeny = lastDenyMessage.get(playerId);
                 if (lastDeny == null || now - lastDeny > DENY_MESSAGE_COOLDOWN_MS) {
                     lastDenyMessage.put(playerId, now);
-                    ExtractionConfig config = manager.getConfig();
-                    player.sendMessage(Message.raw(config.getMessageNotYourPortal()).color(Color.RED));
+                    MessagesConfig.ExtractionMessages msg = VaryonPlugin.getStaticConfigManager().getMessagesConfig().getExtraction();
+                    player.sendMessage(Message.raw(msg.notYourPortal).color(Color.RED));
                 }
                 return;
             }
@@ -114,8 +115,8 @@ public class ExtractionPortalTickSystem extends EntityTickingSystem<EntityStore>
             Teleport teleport = Teleport.createForPlayer(world, spawnPos, new Vector3f(0, 0, 0));
             commandBuffer.addComponent(ref, Teleport.getComponentType(), teleport);
 
-            ExtractionConfig config = manager.getConfig();
-            player.sendMessage(Message.raw(config.getMessageTeleporting()).color(Color.GREEN));
+            MessagesConfig.ExtractionMessages msg = VaryonPlugin.getStaticConfigManager().getMessagesConfig().getExtraction();
+            player.sendMessage(Message.raw(msg.teleporting).color(Color.GREEN));
 
             manager.consumePortal(ownerId);
 

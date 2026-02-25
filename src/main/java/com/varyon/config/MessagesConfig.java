@@ -10,25 +10,43 @@ import java.util.logging.Level;
 
 public class MessagesConfig {
     private static final HytaleLogger LOGGER = HytaleLogger.forEnclosingClass();
-    
+
+    private HudMessages hud;
     private ExtractionMessages extraction;
     private ReturnMessages returnMessages;
     private SafeZoneMessages safeZone;
     private RtpMessages rtp;
     private EssenceMessages essence;
-    
+
+    public static class HudMessages {
+        public String labelHealth;
+        public String labelDamage;
+        public String labelLoot;
+        public String labelMultipliers;
+
+        public HudMessages(String labelHealth, String labelDamage, String labelLoot, String labelMultipliers) {
+            this.labelHealth = labelHealth;
+            this.labelDamage = labelDamage;
+            this.labelLoot = labelLoot;
+            this.labelMultipliers = labelMultipliers;
+        }
+    }
+
     public static class ExtractionMessages {
         public String portalSpawned;
+        public String portalExpired;
         public String alreadyHasPortal;
         public String cooldown;
         public String noSafeLocation;
         public String teleporting;
         public String notYourPortal;
         public String error;
-        
-        public ExtractionMessages(String portalSpawned, String alreadyHasPortal, String cooldown,
-                                 String noSafeLocation, String teleporting, String notYourPortal, String error) {
+
+        public ExtractionMessages(String portalSpawned, String portalExpired, String alreadyHasPortal,
+                                  String cooldown, String noSafeLocation, String teleporting,
+                                  String notYourPortal, String error) {
             this.portalSpawned = portalSpawned;
+            this.portalExpired = portalExpired;
             this.alreadyHasPortal = alreadyHasPortal;
             this.cooldown = cooldown;
             this.noSafeLocation = noSafeLocation;
@@ -37,7 +55,7 @@ public class MessagesConfig {
             this.error = error;
         }
     }
-    
+
     public static class ReturnMessages {
         public String success;
         public String cooldown;
@@ -48,10 +66,10 @@ public class MessagesConfig {
         public String noSafeLocation;
         public String error;
         public String firstUseWarning;
-        
+
         public ReturnMessages(String success, String cooldown, String noDeathPoint, String expired,
-                            String alreadyUsed, String teleporting, String noSafeLocation,
-                            String error, String firstUseWarning) {
+                              String alreadyUsed, String teleporting, String noSafeLocation,
+                              String error, String firstUseWarning) {
             this.success = success;
             this.cooldown = cooldown;
             this.noDeathPoint = noDeathPoint;
@@ -63,22 +81,27 @@ public class MessagesConfig {
             this.firstUseWarning = firstUseWarning;
         }
     }
-    
+
     public static class SafeZoneMessages {
-        public String enterSafeZoneTitle;
-        public String enterSafeZoneSubtitle;
+        public String enterSafeTitle;
+        public String enterSafeSubtitle;
+        public String enterPvpTitle;
+        public String enterPvpSubtitle;
         public String pvpDisabled;
         public String pvpEnabled;
         public String rotation;
         public String overlapStart;
         public String overlapEnd;
         public String timeRemaining;
-        
-        public SafeZoneMessages(String enterSafeZoneTitle, String enterSafeZoneSubtitle,
-                               String pvpDisabled, String pvpEnabled, String rotation,
-                               String overlapStart, String overlapEnd, String timeRemaining) {
-            this.enterSafeZoneTitle = enterSafeZoneTitle;
-            this.enterSafeZoneSubtitle = enterSafeZoneSubtitle;
+
+        public SafeZoneMessages(String enterSafeTitle, String enterSafeSubtitle,
+                                String enterPvpTitle, String enterPvpSubtitle,
+                                String pvpDisabled, String pvpEnabled, String rotation,
+                                String overlapStart, String overlapEnd, String timeRemaining) {
+            this.enterSafeTitle = enterSafeTitle;
+            this.enterSafeSubtitle = enterSafeSubtitle;
+            this.enterPvpTitle = enterPvpTitle;
+            this.enterPvpSubtitle = enterPvpSubtitle;
             this.pvpDisabled = pvpDisabled;
             this.pvpEnabled = pvpEnabled;
             this.rotation = rotation;
@@ -87,7 +110,7 @@ public class MessagesConfig {
             this.timeRemaining = timeRemaining;
         }
     }
-    
+
     public static class RtpMessages {
         public String teleporting;
         public String success;
@@ -98,10 +121,10 @@ public class MessagesConfig {
         public String randomZone;
         public String error;
         public String noPermission;
-        
+
         public RtpMessages(String teleporting, String success, String noSafeLocation,
-                         String zoneNotFound, String availableZones, String worldNotSupported,
-                         String randomZone, String error, String noPermission) {
+                           String zoneNotFound, String availableZones, String worldNotSupported,
+                           String randomZone, String error, String noPermission) {
             this.teleporting = teleporting;
             this.success = success;
             this.noSafeLocation = noSafeLocation;
@@ -113,7 +136,7 @@ public class MessagesConfig {
             this.noPermission = noPermission;
         }
     }
-    
+
     public static class EssenceMessages {
         public String balanceInfo;
         public String given;
@@ -122,9 +145,9 @@ public class MessagesConfig {
         public String deposited;
         public String noFaction;
         public String notEnough;
-        
+
         public EssenceMessages(String balanceInfo, String given, String taken, String maxSet,
-                             String deposited, String noFaction, String notEnough) {
+                               String deposited, String noFaction, String notEnough) {
             this.balanceInfo = balanceInfo;
             this.given = given;
             this.taken = taken;
@@ -134,32 +157,41 @@ public class MessagesConfig {
             this.notEnough = notEnough;
         }
     }
-    
-    public MessagesConfig(ExtractionMessages extraction, ReturnMessages returnMessages,
-                        SafeZoneMessages safeZone, RtpMessages rtp, EssenceMessages essence) {
+
+    public MessagesConfig(HudMessages hud, ExtractionMessages extraction, ReturnMessages returnMessages,
+                          SafeZoneMessages safeZone, RtpMessages rtp, EssenceMessages essence) {
+        this.hud = hud;
         this.extraction = extraction;
         this.returnMessages = returnMessages;
         this.safeZone = safeZone;
         this.rtp = rtp;
         this.essence = essence;
     }
-    
+
+    @Nonnull
     public static MessagesConfig load(@Nonnull Path configPath) {
         File configFile = configPath.resolve("messages.toml").toFile();
-        
         if (!configFile.exists()) {
             LOGGER.at(Level.INFO).log("messages.toml not found, creating default");
-            MessagesConfig defaultConfig = createDefault();
-            defaultConfig.save(configPath);
-            return defaultConfig;
+            MessagesConfig def = createDefault();
+            def.save(configPath);
+            return def;
         }
-        
         try {
             Toml toml = new Toml().read(configFile);
-            
+
+            Toml hudToml = toml.getTable("hud");
+            HudMessages hud = new HudMessages(
+                hudToml != null ? hudToml.getString("labelHealth", "HP") : "HP",
+                hudToml != null ? hudToml.getString("labelDamage", "DMG") : "DMG",
+                hudToml != null ? hudToml.getString("labelLoot", "Loot") : "Loot",
+                hudToml != null ? hudToml.getString("labelMultipliers", "Multiplicateurs") : "Multiplicateurs"
+            );
+
             Toml extractToml = toml.getTable("extraction");
             ExtractionMessages extraction = new ExtractionMessages(
                 extractToml.getString("portalSpawned", "Portail d'extraction créé à {distance}m ({x}, {y}, {z})! Durée: {duration}s"),
+                extractToml.getString("portalExpired", "Votre portail d'extraction a expiré."),
                 extractToml.getString("alreadyHasPortal", "Vous avez déjà un portail actif"),
                 extractToml.getString("cooldown", "Cooldown actif. Temps restant: {remaining} secondes"),
                 extractToml.getString("noSafeLocation", "Impossible de trouver un emplacement sûr"),
@@ -167,7 +199,7 @@ public class MessagesConfig {
                 extractToml.getString("notYourPortal", "Ce portail ne vous appartient pas"),
                 extractToml.getString("error", "Erreur lors de la création du portail")
             );
-            
+
             Toml returnToml = toml.getTable("return");
             ReturnMessages returnMsg = new ReturnMessages(
                 returnToml.getString("success", "Téléporté près de votre point de mort à {distance}m ({x}, {y}, {z})"),
@@ -180,11 +212,13 @@ public class MessagesConfig {
                 returnToml.getString("error", "Erreur lors de la téléportation"),
                 returnToml.getString("firstUseWarning", "⚠ ATTENTION: Vous ne pourrez utiliser /return qu'UNE SEULE FOIS pour cette mort!")
             );
-            
+
             Toml safeToml = toml.getTable("safezone");
             SafeZoneMessages safeZone = new SafeZoneMessages(
                 safeToml.getString("enterTitle", "Zone non-PvP"),
                 safeToml.getString("enterSubtitle", "Vous êtes en sécurité"),
+                safeToml.getString("enterPvpTitle", "Zone PvP"),
+                safeToml.getString("enterPvpSubtitle", "Attention !"),
                 safeToml.getString("pvpDisabled", "[PvP] Vous êtes dans une zone non-PvP!"),
                 safeToml.getString("pvpEnabled", "[PvP] Vous êtes dans une zone PvP!"),
                 safeToml.getString("rotation", "[PvP] La zone non-PvP est maintenant au {direction}!"),
@@ -192,7 +226,7 @@ public class MessagesConfig {
                 safeToml.getString("overlapEnd", "[PvP] Fin de la double zone non-PvP!"),
                 safeToml.getString("timeRemaining", "[PvP] Rotation dans {minutes} minutes")
             );
-            
+
             Toml rtpToml = toml.getTable("rtp");
             RtpMessages rtp = new RtpMessages(
                 rtpToml.getString("teleporting", "Téléportation en cours..."),
@@ -205,7 +239,7 @@ public class MessagesConfig {
                 rtpToml.getString("error", "Erreur lors de la téléportation"),
                 rtpToml.getString("noPermission", "Vous n'avez pas la permission pour cette zone. Permission requise: {permission}")
             );
-            
+
             Toml essenceToml = toml.getTable("essence");
             EssenceMessages essence = new EssenceMessages(
                 essenceToml.getString("balanceInfo", "Essence: {current}/{max} | Faction: {faction} | Global: {global}"),
@@ -216,33 +250,38 @@ public class MessagesConfig {
                 essenceToml.getString("noFaction", "Vous devez rejoindre une faction d'abord (/varyon faction <nom>)"),
                 essenceToml.getString("notEnough", "Vous n'avez pas assez d'essence")
             );
-            
-            return new MessagesConfig(extraction, returnMsg, safeZone, rtp, essence);
-            
+
+            return new MessagesConfig(hud, extraction, returnMsg, safeZone, rtp, essence);
+
         } catch (Exception e) {
             LOGGER.at(Level.SEVERE).log("Failed to load messages.toml, using defaults: " + e.getMessage());
             return createDefault();
         }
     }
-    
+
     public void save(@Nonnull Path configPath) {
         try {
             File configFile = configPath.resolve("messages.toml").toFile();
             configFile.getParentFile().mkdirs();
-            
+
             StringBuilder sb = new StringBuilder();
-            sb.append("# Varyon Messages Configuration\n");
-            sb.append("# All text messages used by the plugin\n\n");
-            
+
+            sb.append("[hud]\n");
+            sb.append("labelHealth = \"").append(hud.labelHealth).append("\"\n");
+            sb.append("labelDamage = \"").append(hud.labelDamage).append("\"\n");
+            sb.append("labelLoot = \"").append(hud.labelLoot).append("\"\n");
+            sb.append("labelMultipliers = \"").append(hud.labelMultipliers).append("\"\n\n");
+
             sb.append("[extraction]\n");
             sb.append("portalSpawned = \"").append(extraction.portalSpawned).append("\"\n");
+            sb.append("portalExpired = \"").append(extraction.portalExpired).append("\"\n");
             sb.append("alreadyHasPortal = \"").append(extraction.alreadyHasPortal).append("\"\n");
             sb.append("cooldown = \"").append(extraction.cooldown).append("\"\n");
             sb.append("noSafeLocation = \"").append(extraction.noSafeLocation).append("\"\n");
             sb.append("teleporting = \"").append(extraction.teleporting).append("\"\n");
             sb.append("notYourPortal = \"").append(extraction.notYourPortal).append("\"\n");
             sb.append("error = \"").append(extraction.error).append("\"\n\n");
-            
+
             sb.append("[return]\n");
             sb.append("success = \"").append(returnMessages.success).append("\"\n");
             sb.append("cooldown = \"").append(returnMessages.cooldown).append("\"\n");
@@ -253,17 +292,19 @@ public class MessagesConfig {
             sb.append("noSafeLocation = \"").append(returnMessages.noSafeLocation).append("\"\n");
             sb.append("error = \"").append(returnMessages.error).append("\"\n");
             sb.append("firstUseWarning = \"").append(returnMessages.firstUseWarning).append("\"\n\n");
-            
+
             sb.append("[safezone]\n");
-            sb.append("enterTitle = \"").append(safeZone.enterSafeZoneTitle).append("\"\n");
-            sb.append("enterSubtitle = \"").append(safeZone.enterSafeZoneSubtitle).append("\"\n");
+            sb.append("enterTitle = \"").append(safeZone.enterSafeTitle).append("\"\n");
+            sb.append("enterSubtitle = \"").append(safeZone.enterSafeSubtitle).append("\"\n");
+            sb.append("enterPvpTitle = \"").append(safeZone.enterPvpTitle).append("\"\n");
+            sb.append("enterPvpSubtitle = \"").append(safeZone.enterPvpSubtitle).append("\"\n");
             sb.append("pvpDisabled = \"").append(safeZone.pvpDisabled).append("\"\n");
             sb.append("pvpEnabled = \"").append(safeZone.pvpEnabled).append("\"\n");
             sb.append("rotation = \"").append(safeZone.rotation).append("\"\n");
             sb.append("overlapStart = \"").append(safeZone.overlapStart).append("\"\n");
             sb.append("overlapEnd = \"").append(safeZone.overlapEnd).append("\"\n");
             sb.append("timeRemaining = \"").append(safeZone.timeRemaining).append("\"\n\n");
-            
+
             sb.append("[rtp]\n");
             sb.append("teleporting = \"").append(rtp.teleporting).append("\"\n");
             sb.append("success = \"").append(rtp.success).append("\"\n");
@@ -274,7 +315,7 @@ public class MessagesConfig {
             sb.append("randomZone = \"").append(rtp.randomZone).append("\"\n");
             sb.append("error = \"").append(rtp.error).append("\"\n");
             sb.append("noPermission = \"").append(rtp.noPermission).append("\"\n\n");
-            
+
             sb.append("[essence]\n");
             sb.append("balanceInfo = \"").append(essence.balanceInfo).append("\"\n");
             sb.append("given = \"").append(essence.given).append("\"\n");
@@ -283,21 +324,24 @@ public class MessagesConfig {
             sb.append("deposited = \"").append(essence.deposited).append("\"\n");
             sb.append("noFaction = \"").append(essence.noFaction).append("\"\n");
             sb.append("notEnough = \"").append(essence.notEnough).append("\"\n");
-            
+
             try (FileWriter writer = new FileWriter(configFile)) {
                 writer.write(sb.toString());
             }
-            
             LOGGER.at(Level.INFO).log("Messages configuration saved");
-            
+
         } catch (Exception e) {
             LOGGER.at(Level.SEVERE).log("Failed to save messages.toml: " + e.getMessage());
         }
     }
-    
+
+    @Nonnull
     public static MessagesConfig createDefault() {
+        HudMessages hud = new HudMessages("HP", "DMG", "Loot", "Multiplicateurs");
+
         ExtractionMessages extraction = new ExtractionMessages(
             "Portail d'extraction créé à {distance}m ({x}, {y}, {z})! Durée: {duration}s",
+            "Votre portail d'extraction a expiré.",
             "Vous avez déjà un portail actif",
             "Cooldown actif. Temps restant: {remaining} secondes",
             "Impossible de trouver un emplacement sûr",
@@ -305,7 +349,7 @@ public class MessagesConfig {
             "Ce portail ne vous appartient pas",
             "Erreur lors de la création du portail"
         );
-        
+
         ReturnMessages returnMsg = new ReturnMessages(
             "Téléporté près de votre point de mort à {distance}m ({x}, {y}, {z})",
             "Cooldown actif. Temps restant: {remaining} secondes",
@@ -317,10 +361,12 @@ public class MessagesConfig {
             "Erreur lors de la téléportation",
             "⚠ ATTENTION: Vous ne pourrez utiliser /return qu'UNE SEULE FOIS pour cette mort!"
         );
-        
+
         SafeZoneMessages safeZone = new SafeZoneMessages(
             "Zone non-PvP",
             "Vous êtes en sécurité",
+            "Zone PvP",
+            "Attention !",
             "[PvP] Vous êtes dans une zone non-PvP!",
             "[PvP] Vous êtes dans une zone PvP!",
             "[PvP] La zone non-PvP est maintenant au {direction}!",
@@ -328,7 +374,7 @@ public class MessagesConfig {
             "[PvP] Fin de la double zone non-PvP!",
             "[PvP] Rotation dans {minutes} minutes"
         );
-        
+
         RtpMessages rtp = new RtpMessages(
             "Téléportation en cours...",
             "Téléporté en {zone} à ({x}, {y}, {z})",
@@ -340,7 +386,7 @@ public class MessagesConfig {
             "Erreur lors de la téléportation",
             "Vous n'avez pas la permission pour cette zone. Permission requise: {permission}"
         );
-        
+
         EssenceMessages essence = new EssenceMessages(
             "Essence: {current}/{max} | Faction: {faction} | Global: {global}",
             "Donné {amount} essence à {player}",
@@ -350,27 +396,14 @@ public class MessagesConfig {
             "Vous devez rejoindre une faction d'abord (/varyon faction <nom>)",
             "Vous n'avez pas assez d'essence"
         );
-        
-        return new MessagesConfig(extraction, returnMsg, safeZone, rtp, essence);
+
+        return new MessagesConfig(hud, extraction, returnMsg, safeZone, rtp, essence);
     }
-    
-    public ExtractionMessages getExtraction() {
-        return extraction;
-    }
-    
-    public ReturnMessages getReturn() {
-        return returnMessages;
-    }
-    
-    public SafeZoneMessages getSafeZone() {
-        return safeZone;
-    }
-    
-    public RtpMessages getRtp() {
-        return rtp;
-    }
-    
-    public EssenceMessages getEssence() {
-        return essence;
-    }
+
+    @Nonnull public HudMessages getHud()             { return hud; }
+    @Nonnull public ExtractionMessages getExtraction(){ return extraction; }
+    @Nonnull public ReturnMessages getReturn()        { return returnMessages; }
+    @Nonnull public SafeZoneMessages getSafeZone()    { return safeZone; }
+    @Nonnull public RtpMessages getRtp()              { return rtp; }
+    @Nonnull public EssenceMessages getEssence()      { return essence; }
 }

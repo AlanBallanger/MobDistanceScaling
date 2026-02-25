@@ -10,6 +10,7 @@ import com.hypixel.hytale.server.core.command.system.CommandContext;
 import com.hypixel.hytale.server.core.command.system.arguments.system.RequiredArg;
 import com.hypixel.hytale.server.core.command.system.arguments.types.ArgTypes;
 import com.hypixel.hytale.server.core.command.system.basecommands.AbstractPlayerCommand;
+import com.hypixel.hytale.server.core.entity.entities.Player;
 import com.hypixel.hytale.server.core.modules.entity.teleport.Teleport;
 import com.hypixel.hytale.server.core.universe.PlayerRef;
 import com.hypixel.hytale.server.core.universe.world.World;
@@ -19,6 +20,7 @@ import com.hypixel.hytale.server.worldgen.chunk.ChunkGenerator;
 import com.varyon.VaryonPlugin;
 import com.varyon.config.DifficultyZone;
 import com.varyon.config.ZoneConfig;
+import com.varyon.config.ZonePermissionsConfig;
 import com.varyon.teleport.RtpService;
 
 import javax.annotation.Nonnull;
@@ -37,45 +39,36 @@ public class RtpvCommand extends AbstractPlayerCommand {
         super("rtpv", "Random teleport to a mod zone");
         this.requirePermission("varyon.rtp");
         this.rtpService = new RtpService();
-        this.zoneArg = this.withRequiredArg("zone", "Zone number (1-6)", ArgTypes.INTEGER);
+        this.zoneArg = this.withRequiredArg("zone", "Zone number (1-10)", ArgTypes.INTEGER);
     }
 
     @Override
     protected void execute(@Nonnull CommandContext context, @Nonnull Store<EntityStore> store,
                           @Nonnull Ref<EntityStore> ref, @Nonnull PlayerRef playerRef, @Nonnull World world) {
         int zoneNumber = context.get(zoneArg);
-        
+
         ZoneConfig config = VaryonPlugin.getStaticConfigManager().getZoneConfig();
         List<DifficultyZone> zones = config.getZones();
-        
+
         if (zoneNumber < 1 || zoneNumber > zones.size()) {
-            context.sendMessage(Message.raw("Invalid zone number. Valid zones: 1-" + zones.size()).color(Color.RED));
+            context.sendMessage(Message.raw("Zone invalide. Zones disponibles : 1-" + zones.size()).color(Color.RED));
             return;
         }
-        
-        // Vérifier la permission pour cette zone
-        com.hypixel.hytale.server.core.entity.entities.Player player = 
-            (com.hypixel.hytale.server.core.entity.entities.Player) store.getComponent(ref, 
-                com.hypixel.hytale.server.core.entity.entities.Player.getComponentType());
-        
-        if (player != null && !player.hasPermission("varyon.rtp")) {
-            // Pas de permission globale, vérifier les permissions granulaires
-            boolean hasAccess = false;
-            for (int i = zoneNumber; i <= zones.size(); i++) {
-                if (player.hasPermission("varyon.rtp." + i)) {
-                    hasAccess = true;
-                    break;
-                }
-            }
-            
-            if (!hasAccess) {
-                context.sendMessage(Message.raw("Vous n'avez pas la permission pour cette zone. Permission requise: varyon.rtp." + zoneNumber).color(Color.RED));
+
+        Player player = (Player) store.getComponent(ref, Player.getComponentType());
+        if (player != null) {
+            ZonePermissionsConfig zonePerms = VaryonPlugin.getStaticConfigManager().getZonePermissionsConfig();
+            if (!zonePerms.canAccessZone(player, zoneNumber)) {
+                String required = zonePerms.getPermissionForZone(zoneNumber);
+                context.sendMessage(Message.raw(
+                    "Vous n'avez pas accès à la zone " + zoneNumber + ". Permission requise : " + required
+                ).color(Color.RED));
                 return;
             }
         }
-        
+
         DifficultyZone targetZone = zones.get(zoneNumber - 1);
-        
+
         double minDist = targetZone.getRadiusStart();
         double maxDist;
         if (zoneNumber < zones.size()) {
@@ -83,7 +76,7 @@ public class RtpvCommand extends AbstractPlayerCommand {
         } else {
             maxDist = minDist + 5000;
         }
-        
+
         IWorldGen worldGen = world.getChunkStore().getGenerator();
         if (!(worldGen instanceof ChunkGenerator)) {
             context.sendMessage(Message.raw("World generation not supported in this world").color(Color.RED));
@@ -91,29 +84,29 @@ public class RtpvCommand extends AbstractPlayerCommand {
         }
 
         ChunkGenerator generator = (ChunkGenerator) worldGen;
-        
-        context.sendMessage(Message.raw("Teleporting to " + targetZone.getName() + "...").color(Color.GREEN));
-        
+
+        context.sendMessage(Message.raw("Téléportation vers " + targetZone.getName() + "...").color(Color.GREEN));
+
         world.execute(() -> {
             try {
                 double targetDistance = minDist + random.nextDouble() * (maxDist - minDist);
                 double angle = random.nextDouble() * 2 * Math.PI;
-                
+
                 double targetX = Math.cos(angle) * targetDistance;
                 double targetZ = Math.sin(angle) * targetDistance;
-                
+
                 Vector3d safePosition = rtpService.findSafePosition(world, generator, null, 50, targetX, targetZ);
-                
+
                 if (safePosition != null) {
                     teleportPlayer(store, ref, world, safePosition);
-                    context.sendMessage(Message.raw("Teleported to " + targetZone.getName() + 
-                        " at " + (int)safePosition.x + ", " + (int)safePosition.y + ", " + (int)safePosition.z).color(Color.GREEN));
+                    context.sendMessage(Message.raw("Téléporté vers " + targetZone.getName() +
+                        " en " + (int)safePosition.x + ", " + (int)safePosition.y + ", " + (int)safePosition.z).color(Color.GREEN));
                 } else {
-                    context.sendMessage(Message.raw("Could not find safe location in " + targetZone.getName() + " after 50 attempts").color(Color.RED));
+                    context.sendMessage(Message.raw("Impossible de trouver un emplacement sûr dans " + targetZone.getName()).color(Color.RED));
                 }
             } catch (Exception e) {
                 LOGGER.at(Level.SEVERE).log("Error during RTP: " + e.getMessage(), e);
-                context.sendMessage(Message.raw("Teleportation failed").color(Color.RED));
+                context.sendMessage(Message.raw("Échec de la téléportation").color(Color.RED));
             }
         });
     }

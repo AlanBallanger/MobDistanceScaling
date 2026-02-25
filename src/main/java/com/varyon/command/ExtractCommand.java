@@ -17,7 +17,9 @@ import com.hypixel.hytale.server.core.universe.PlayerRef;
 import com.hypixel.hytale.server.core.universe.world.World;
 import com.hypixel.hytale.server.core.universe.world.chunk.WorldChunk;
 import com.hypixel.hytale.server.core.universe.world.storage.EntityStore;
+import com.varyon.VaryonPlugin;
 import com.varyon.config.ExtractionConfig;
+import com.varyon.config.MessagesConfig;
 import com.varyon.extraction.ExtractionPortalManager;
 
 import javax.annotation.Nonnull;
@@ -61,6 +63,7 @@ public class ExtractCommand extends AbstractPlayerCommand {
         }
 
         ExtractionConfig config = manager.getConfig();
+        MessagesConfig.ExtractionMessages msg = VaryonPlugin.getStaticConfigManager().getMessagesConfig().getExtraction();
 
         if (!config.isEnabled()) {
             context.sendMessage(Message.raw("L'extraction est désactivée.").color(Color.RED));
@@ -73,15 +76,15 @@ public class ExtractCommand extends AbstractPlayerCommand {
             if (bypass) {
                 manager.removePlayerPortal(playerId);
             } else {
-                context.sendMessage(Message.raw(config.getMessageAlreadyHasPortal()).color(Color.RED));
+                context.sendMessage(Message.raw(msg.alreadyHasPortal).color(Color.RED));
                 return;
             }
         }
 
         if (!bypass && manager.isOnCooldown(playerId)) {
             long remaining = manager.getCooldownRemainingSeconds(playerId);
-            String msg = config.getMessageCooldown().replace("{remaining}", String.valueOf(remaining));
-            context.sendMessage(Message.raw(msg).color(Color.RED));
+            String cooldownMsg = msg.cooldown.replace("{remaining}", String.valueOf(remaining));
+            context.sendMessage(Message.raw(cooldownMsg).color(Color.RED));
             return;
         }
 
@@ -99,7 +102,7 @@ public class ExtractCommand extends AbstractPlayerCommand {
                 Vector3d portalPos = findPortalPosition(world, playerX, playerZ, minDist, maxDist, 30);
 
                 if (portalPos == null) {
-                    context.sendMessage(Message.raw(config.getMessageNoSafeLocation()).color(Color.RED));
+                    context.sendMessage(Message.raw(msg.noSafeLocation).color(Color.RED));
                     return;
                 }
 
@@ -110,18 +113,18 @@ public class ExtractCommand extends AbstractPlayerCommand {
 
                 manager.placePortal(playerId, world, px, py, pz);
 
-                String msg = config.getMessagePortalSpawned()
+                String spawnMsg = msg.portalSpawned
                     .replace("{distance}", String.valueOf((int) distance))
                     .replace("{x}", String.valueOf(px))
                     .replace("{y}", String.valueOf(py))
                     .replace("{z}", String.valueOf(pz));
-                context.sendMessage(Message.raw(msg).color(Color.GREEN));
+                context.sendMessage(Message.raw(spawnMsg).color(Color.GREEN));
 
                 LOGGER.at(Level.INFO).log("Portal spawned for " + playerId + " at " + px + "," + py + "," + pz + " dist=" + (int) distance);
 
             } catch (Exception e) {
                 LOGGER.at(Level.SEVERE).log("Error spawning extraction portal: " + e.getMessage(), e);
-                context.sendMessage(Message.raw(config.getMessageError()).color(Color.RED));
+                context.sendMessage(Message.raw(msg.error).color(Color.RED));
             }
         });
     }

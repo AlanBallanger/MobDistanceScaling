@@ -9,7 +9,9 @@ import com.hypixel.hytale.server.core.universe.PlayerRef;
 import com.hypixel.hytale.server.core.universe.Universe;
 import com.hypixel.hytale.server.core.universe.world.World;
 import com.hypixel.hytale.server.core.universe.world.chunk.WorldChunk;
+import com.varyon.VaryonPlugin;
 import com.varyon.config.ExtractionConfig;
+import com.varyon.config.MessagesConfig;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -194,7 +196,8 @@ public class ExtractionPortalManager {
         try {
             PlayerRef playerRef = Universe.get().getPlayer(ownerId);
             if (playerRef != null && playerRef.getReference() != null && playerRef.getReference().isValid()) {
-                playerRef.sendMessage(Message.raw(config.getMessagePortalExpired()).color(Color.YELLOW));
+                MessagesConfig.ExtractionMessages msg = VaryonPlugin.getStaticConfigManager().getMessagesConfig().getExtraction();
+                playerRef.sendMessage(Message.raw(msg.portalExpired).color(Color.YELLOW));
             }
         } catch (Exception e) {
             LOGGER.at(Level.WARNING).log("Failed to notify player of portal expiry: " + e.getMessage());

@@ -12,6 +12,7 @@ import com.hypixel.hytale.server.core.entity.entities.Player;
 import com.hypixel.hytale.server.core.util.EventTitleUtil;
 import com.hypixel.hytale.server.core.universe.PlayerRef;
 import com.hypixel.hytale.server.core.universe.world.storage.EntityStore;
+import com.varyon.config.MessagesConfig;
 import com.varyon.config.ZoneConfig;
 
 import javax.annotation.Nonnull;
@@ -28,10 +29,13 @@ public class SafeZoneNotificationSystem extends EntityTickingSystem<EntityStore>
     private final Map<UUID, Boolean> playerInSafeZone = new ConcurrentHashMap<>();
     private final SafeZoneConfig config;
     private final ZoneConfig zoneConfig;
+    private final MessagesConfig messagesConfig;
 
-    public SafeZoneNotificationSystem(@Nonnull SafeZoneConfig config, @Nonnull ZoneConfig zoneConfig) {
+    public SafeZoneNotificationSystem(@Nonnull SafeZoneConfig config, @Nonnull ZoneConfig zoneConfig,
+                                      @Nonnull MessagesConfig messagesConfig) {
         this.config = config;
         this.zoneConfig = zoneConfig;
+        this.messagesConfig = messagesConfig;
     }
 
     public static void setSafeZoneManager(@Nonnull SafeZoneManager manager) {
@@ -82,8 +86,8 @@ public class SafeZoneNotificationSystem extends EntityTickingSystem<EntityStore>
     }
 
     private void showSafeZoneEnterNotification(PlayerRef playerRef) {
-        Message titleMessage = Message.raw(config.getEnterSafeZoneTitle()).color(Color.GREEN);
-        Message topMessage = Message.raw(config.getEnterSafeZoneSubtitle());
+        Message titleMessage = Message.raw(messagesConfig.getSafeZone().enterSafeTitle).color(Color.GREEN);
+        Message topMessage = Message.raw(messagesConfig.getSafeZone().enterSafeSubtitle);
         
         float duration = 2.0f;
         float fadeIn = 0.3f;
@@ -93,8 +97,8 @@ public class SafeZoneNotificationSystem extends EntityTickingSystem<EntityStore>
     }
 
     private void showPvpZoneEnterNotification(PlayerRef playerRef) {
-        Message titleMessage = Message.raw(config.getEnterPvpZoneTitle()).color(Color.RED);
-        Message topMessage = Message.raw(config.getEnterPvpZoneSubtitle());
+        Message titleMessage = Message.raw(messagesConfig.getSafeZone().enterPvpTitle).color(Color.RED);
+        Message topMessage = Message.raw(messagesConfig.getSafeZone().enterPvpSubtitle);
         
         float duration = 2.0f;
         float fadeIn = 0.3f;

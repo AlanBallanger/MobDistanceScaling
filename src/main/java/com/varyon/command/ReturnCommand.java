@@ -19,6 +19,7 @@ import com.hypixel.hytale.server.core.universe.world.World;
 import com.hypixel.hytale.server.core.universe.world.chunk.WorldChunk;
 import com.hypixel.hytale.server.core.universe.world.storage.EntityStore;
 import com.varyon.VaryonPlugin;
+import com.varyon.config.MessagesConfig;
 import com.varyon.config.ReturnConfig;
 import com.varyon.death.DeathPointManager;
 
@@ -54,6 +55,7 @@ public class ReturnCommand extends AbstractPlayerCommand {
         }
         
         ReturnConfig config = VaryonPlugin.getStaticConfigManager().getReturnConfig();
+        MessagesConfig.ReturnMessages msg = VaryonPlugin.getStaticConfigManager().getMessagesConfig().getReturn();
         
         if (!config.isEnabled()) {
             context.sendMessage(Message.raw("Le système de retour est désactivé.").color(Color.RED));
@@ -65,8 +67,8 @@ public class ReturnCommand extends AbstractPlayerCommand {
         // Vérifier le cooldown
         if (!bypass && deathManager.isOnCooldown(playerRef.getUuid())) {
             long remaining = deathManager.getCooldownRemainingSeconds(playerRef.getUuid());
-            String msg = config.getMessageCooldown().replace("{remaining}", String.valueOf(remaining));
-            context.sendMessage(Message.raw(msg).color(Color.RED));
+            String cooldownMsg = msg.cooldown.replace("{remaining}", String.valueOf(remaining));
+            context.sendMessage(Message.raw(cooldownMsg).color(Color.RED));
             return;
         }
         
@@ -74,26 +76,26 @@ public class ReturnCommand extends AbstractPlayerCommand {
         DeathPointManager.DeathPoint deathPoint = deathManager.getDeathPoint(playerRef.getUuid());
         
         if (deathPoint == null) {
-            context.sendMessage(Message.raw(config.getMessageNoDeathPoint()).color(Color.RED));
+            context.sendMessage(Message.raw(msg.noDeathPoint).color(Color.RED));
             return;
         }
         
         // Vérifier si expiré
         if (deathPoint.isExpired(config.getExpirationMinutes())) {
             deathManager.removeDeathPoint(playerRef.getUuid());
-            context.sendMessage(Message.raw(config.getMessageExpired()).color(Color.RED));
+            context.sendMessage(Message.raw(msg.expired).color(Color.RED));
             return;
         }
         
         // Vérifier si déjà utilisé
         if (deathPoint.isUsed()) {
-            context.sendMessage(Message.raw(config.getMessageAlreadyUsed()).color(Color.YELLOW));
+            context.sendMessage(Message.raw(msg.alreadyUsed).color(Color.YELLOW));
             return;
         }
         
         // Avertissement première utilisation
-        context.sendMessage(Message.raw(config.getMessageFirstUseWarning()).color(Color.YELLOW));
-        context.sendMessage(Message.raw(config.getMessageTeleporting()).color(Color.GREEN));
+        context.sendMessage(Message.raw(msg.firstUseWarning).color(Color.YELLOW));
+        context.sendMessage(Message.raw(msg.teleporting).color(Color.GREEN));
         
         world.execute(() -> {
             try {
@@ -101,7 +103,7 @@ public class ReturnCommand extends AbstractPlayerCommand {
                     config.getMinDistance(), config.getMaxDistance(), 30);
                 
                 if (targetPos == null) {
-                    context.sendMessage(Message.raw(config.getMessageNoSafeLocation()
+                    context.sendMessage(Message.raw(msg.noSafeLocation
                         .replace("{attempts}", "30")).color(Color.RED));
                     return;
                 }
@@ -115,12 +117,12 @@ public class ReturnCommand extends AbstractPlayerCommand {
                     Math.pow(targetPos.x - deathPoint.getX(), 2) + 
                     Math.pow(targetPos.z - deathPoint.getZ(), 2));
                 
-                String msg = config.getMessageSuccess()
+                String successMsg = msg.success
                     .replace("{distance}", String.valueOf((int)distance))
                     .replace("{x}", String.valueOf((int)targetPos.x))
                     .replace("{y}", String.valueOf((int)targetPos.y))
                     .replace("{z}", String.valueOf((int)targetPos.z));
-                context.sendMessage(Message.raw(msg).color(Color.GREEN));
+                context.sendMessage(Message.raw(successMsg).color(Color.GREEN));
                 
                 // Marquer comme utilisé et définir le cooldown
                 deathManager.markDeathPointUsed(playerRef.getUuid());
@@ -133,7 +135,7 @@ public class ReturnCommand extends AbstractPlayerCommand {
                 
             } catch (Exception e) {
                 LOGGER.at(Level.SEVERE).log("Error during return teleport: " + e.getMessage(), e);
-                context.sendMessage(Message.raw(config.getMessageError()).color(Color.RED));
+                context.sendMessage(Message.raw(msg.error).color(Color.RED));
             }
         });
     }

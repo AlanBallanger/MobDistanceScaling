@@ -139,8 +139,12 @@ public class VaryonPlugin extends JavaPlugin {
             MobLootScalingSystem mobLootScalingSystem = new MobLootScalingSystem();
             this.getEntityStoreRegistry().registerSystem(mobLootScalingSystem);
 
-            MobFragmentDropSystem mobFragmentDropSystem = new MobFragmentDropSystem(configManager.getMobFragmentsConfig(), configManager.getZoneLootConfig());
-            this.getEntityStoreRegistry().registerSystem(mobFragmentDropSystem);
+            MobFragmentDropSystem mobFragmentDropSystem = new MobFragmentDropSystem(
+                configManager.getMobFragmentsConfig(),
+                configManager.getZoneLootConfig(),
+                configManager.getZonePermissionsConfig());
+            this.getEntityStoreRegistry().registerSystem(mobFragmentDropSystem.createTracker());
+            this.getEntityStoreRegistry().registerSystem(mobFragmentDropSystem.createDropSystem());
 
             EssenceKillSystem essenceKillSystem = new EssenceKillSystem(essenceManager, configManager, essenceRewardsConfig);
             this.getEntityStoreRegistry().registerSystem(essenceKillSystem);
@@ -173,7 +177,7 @@ public class VaryonPlugin extends JavaPlugin {
                 SafeZonePvpSystem.setSafeZoneManager(safeZoneManager);
                 this.getEntityStoreRegistry().registerSystem(safeZonePvpSystem);
                 
-                safeZoneNotificationSystem = new SafeZoneNotificationSystem(configManager.getSafeZoneConfig(), configManager.getZoneConfig());
+                safeZoneNotificationSystem = new SafeZoneNotificationSystem(configManager.getSafeZoneConfig(), configManager.getZoneConfig(), configManager.getMessagesConfig());
                 SafeZoneNotificationSystem.setSafeZoneManager(safeZoneManager);
                 this.getEntityStoreRegistry().registerSystem(safeZoneNotificationSystem);
                 staticSafeZoneNotificationSystem = safeZoneNotificationSystem;
@@ -207,7 +211,7 @@ public class VaryonPlugin extends JavaPlugin {
                 setupMinimapProvider();
             }
 
-            hudManager = new ZoneHUDManager(configManager.getZoneConfig());
+            hudManager = new ZoneHUDManager(configManager.getZoneConfig(), configManager.getMessagesConfig(), configManager.getZonePermissionsConfig());
             if (hudManager.isAvailable()) {
                 LOGGER.at(Level.INFO).log("Zone HUD initialized with Objective system");
                 
