@@ -13,7 +13,8 @@
   "Dependencies": {},
   "OptionalDependencies": {
     "Frotty27:Elite Mobs": "*",
-    "LuckPerms:LuckPerms": "*"
+    "LuckPerms:LuckPerms": "*",
+    "Frotty27:NameplateBuilder": "*"
   },
   "DisabledByDefault": false,
   "IncludesAssetPack": true,

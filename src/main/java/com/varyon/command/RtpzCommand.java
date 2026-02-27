@@ -7,10 +7,10 @@ import com.hypixel.hytale.math.vector.Vector3d;
 import com.hypixel.hytale.math.vector.Vector3f;
 import com.hypixel.hytale.server.core.Message;
 import com.hypixel.hytale.server.core.command.system.CommandContext;
-import com.hypixel.hytale.server.core.command.system.arguments.system.DefaultArg;
 import com.hypixel.hytale.server.core.command.system.arguments.system.RequiredArg;
 import com.hypixel.hytale.server.core.command.system.arguments.types.ArgTypes;
 import com.hypixel.hytale.server.core.command.system.basecommands.AbstractPlayerCommand;
+import com.hypixel.hytale.server.core.command.system.basecommands.CommandBase;
 import com.hypixel.hytale.server.core.modules.entity.teleport.Teleport;
 import com.hypixel.hytale.server.core.universe.PlayerRef;
 import com.hypixel.hytale.server.core.universe.world.World;
@@ -33,19 +33,18 @@ public class RtpzCommand extends AbstractPlayerCommand {
     private static final HytaleLogger LOGGER = HytaleLogger.forEnclosingClass();
     private final RtpService rtpService;
     private final Random random = new Random();
-    private final DefaultArg<String> zoneArg;
+    private final RequiredArg<String> zoneArg;
 
     public RtpzCommand() {
         super("rtpz", "Random teleport to a vanilla zone");
         this.requirePermission("varyon.rtp");
         this.rtpService = new RtpService();
-        this.zoneArg = this.withDefaultArg(
+        this.zoneArg = this.withRequiredArg(
             "zone",
             "Zone to teleport to (zone1, zone2, zone3, zone4)",
-            ArgTypes.STRING,
-            null,
-            "random"
+            ArgTypes.STRING
         );
+        this.addUsageVariant(new NoArgVariant());
     }
 
     @Override
@@ -53,6 +52,25 @@ public class RtpzCommand extends AbstractPlayerCommand {
                           @Nonnull Ref<EntityStore> ref, @Nonnull PlayerRef playerRef, @Nonnull World world) {
         String targetZonePrefix = context.get(zoneArg);
         teleportToRandomZone(context, store, ref, playerRef, world, targetZonePrefix);
+    }
+
+    private class NoArgVariant extends CommandBase {
+        public NoArgVariant() {
+            super("Téléportation aléatoire vers une zone random");
+        }
+
+        @Override
+        protected void executeSync(@Nonnull CommandContext context) {
+            if (!context.isPlayer()) {
+                context.sendMessage(Message.raw("Cette commande doit être exécutée par un joueur.").color(Color.RED));
+                return;
+            }
+            Ref<EntityStore> ref = context.senderAsPlayerRef();
+            if (ref == null) return;
+            Store<EntityStore> store = ref.getStore();
+            World world = ((EntityStore) store.getExternalData()).getWorld();
+            teleportToRandomZone(context, store, ref, null, world, null);
+        }
     }
 
     void teleportToRandomZone(CommandContext context, Store<EntityStore> store, 

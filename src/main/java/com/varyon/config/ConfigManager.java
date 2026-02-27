@@ -29,6 +29,7 @@ public class ConfigManager {
     private ZoneLootConfig zoneLootConfig;
     private MobFragmentsConfig mobFragmentsConfig;
     private ZonePermissionsConfig zonePermissionsConfig;
+    private RtphConfig rtphConfig;
 
     public ConfigManager(@Nonnull Path pluginDataFolder) {
         this.pluginDataFolder = pluginDataFolder;
@@ -54,6 +55,7 @@ public class ConfigManager {
             mobFragmentsConfig.save(pluginDataFolder);
             zonePermissionsConfig = ZonePermissionsConfig.createDefault();
             zonePermissionsConfig.save(pluginDataFolder);
+            rtphConfig = RtphConfig.createDefault();
             save();
             return;
         }
@@ -69,6 +71,7 @@ public class ConfigManager {
             zoneLootConfig = ZoneLootConfig.load(pluginDataFolder);
             mobFragmentsConfig = MobFragmentsConfig.load(pluginDataFolder);
             zonePermissionsConfig = ZonePermissionsConfig.load(pluginDataFolder);
+            rtphConfig = parseRtphConfig(toml);
             LOGGER.at(Level.INFO).log("Loaded configuration with {0} zones", zoneConfig.getZones().size());
             save();
         } catch (Exception e) {
@@ -82,6 +85,7 @@ public class ConfigManager {
             zoneLootConfig = ZoneLootConfig.createDefault();
             mobFragmentsConfig = MobFragmentsConfig.createDefault();
             zonePermissionsConfig = ZonePermissionsConfig.createDefault();
+            rtphConfig = RtphConfig.createDefault();
         }
     }
 
@@ -149,6 +153,11 @@ public class ConfigManager {
         sb.append("minDistance = ").append(returnConfig != null ? returnConfig.getMinDistance() : 100).append("\n");
         sb.append("maxDistance = ").append(returnConfig != null ? returnConfig.getMaxDistance() : 200).append("\n");
         sb.append("expirationMinutes = ").append(returnConfig != null ? returnConfig.getExpirationMinutes() : 30).append("\n\n");
+
+        RtphConfig rtph = rtphConfig != null ? rtphConfig : RtphConfig.createDefault();
+        sb.append("[rtph]\n");
+        sb.append("outerMax = ").append(rtph.getOuterMax()).append("\n");
+        sb.append("innerMax = ").append(rtph.getInnerMax()).append("\n\n");
 
         for (DifficultyZone zone : zoneConfig.getZones()) {
             sb.append("[[zones]]\n");
@@ -256,6 +265,16 @@ public class ConfigManager {
     }
 
     @Nonnull
+    private RtphConfig parseRtphConfig(@Nonnull Toml toml) {
+        Toml rtphToml = toml.getTable("rtph");
+        if (rtphToml == null) return RtphConfig.createDefault();
+        return new RtphConfig(
+            rtphToml.getLong("outerMax", 15000L).intValue(),
+            rtphToml.getLong("innerMax", 10000L).intValue()
+        );
+    }
+
+    @Nonnull
     private ReturnConfig parseReturnConfig(@Nonnull Toml toml) {
         Toml returnToml = toml.getTable("return");
         if (returnToml == null) return ReturnConfig.createDefault();
@@ -277,6 +296,7 @@ public class ConfigManager {
     @Nonnull public ZoneLootConfig getZoneLootConfig()            { return zoneLootConfig != null ? zoneLootConfig : ZoneLootConfig.createDefault(); }
     @Nonnull public MobFragmentsConfig getMobFragmentsConfig()       { return mobFragmentsConfig != null ? mobFragmentsConfig : MobFragmentsConfig.createDefault(); }
     @Nonnull public ZonePermissionsConfig getZonePermissionsConfig() { return zonePermissionsConfig != null ? zonePermissionsConfig : ZonePermissionsConfig.createDefault(); }
+    @Nonnull public RtphConfig getRtphConfig()                       { return rtphConfig != null ? rtphConfig : RtphConfig.createDefault(); }
 
     public void reload() { load(); }
 }

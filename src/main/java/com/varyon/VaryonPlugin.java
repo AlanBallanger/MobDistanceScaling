@@ -23,6 +23,7 @@ import com.varyon.command.ExtractCommand;
 import com.varyon.command.VaryonCommand;
 import com.varyon.command.RtpzCommand;
 import com.varyon.command.RtpvCommand;
+import com.varyon.command.RtphCommand;
 import com.varyon.command.ReturnCommand;
 import com.varyon.component.MobScalingComponent;
 import com.varyon.config.ConfigManager;
@@ -47,6 +48,7 @@ import com.varyon.safezone.SafeZonePvpSystem;
 import com.varyon.system.MobDamageScalingSystem;
 import com.varyon.system.MobLootScalingSystem;
 import com.varyon.system.MobScalingRefSystem;
+import com.varyon.nameplate.ZoneLevelNameplateSystem;
 import com.varyon.system.MobFragmentDropSystem;
 import com.varyon.system.ZoneTitleTickingSystem;
 
@@ -77,11 +79,26 @@ public class VaryonPlugin extends JavaPlugin {
 
     public VaryonPlugin(JavaPluginInit init) {
         super(init);
-        LOGGER.at(Level.INFO).log("Varyon v{0} loaded", this.getManifest().getVersion().toString());
     }
 
     @Override
     protected void setup() {
+        // NameplateBuilder — describe segments before any tick system is registered.
+        // Wrapped in try/catch: if NameplateBuilder is not installed the classes simply
+        // won't be on the classpath and we log a warning instead of crashing.
+        try {
+            com.frotty27.nameplatebuilder.api.NameplateAPI.describe(
+                    this, "monster_level", "Monster Level",
+                    com.frotty27.nameplatebuilder.api.SegmentTarget.NPCS, "Nv.5");
+            com.frotty27.nameplatebuilder.api.NameplateAPI.describeVariants(
+                    this, "monster_level", java.util.List.of(
+                            "Préfixé (ex: Nv.5)",
+                            "Numéro  (ex: 5)"));
+            LOGGER.at(Level.INFO).log("NameplateBuilder integration registered (monster_level)");
+        } catch (Throwable t) {
+            LOGGER.at(Level.INFO).log("NameplateBuilder not available, skipping nameplate integration (" + t.getClass().getSimpleName() + ")");
+        }
+
         try {
             staticInstance = this;
             ComponentType<EntityStore, MobScalingComponent> mobScalingComponentType =
@@ -161,6 +178,18 @@ public class VaryonPlugin extends JavaPlugin {
                 configManager);
             this.getEntityStoreRegistry().registerSystem(miningFragmentDropSystem);
             LOGGER.at(Level.INFO).log("Essence reward systems registered");
+
+            // NameplateBuilder — zone level tick system (optional, skipped if mod absent)
+            try {
+                ZoneLevelNameplateSystem zoneLevelNameplateSystem = new ZoneLevelNameplateSystem(
+                        com.frotty27.nameplatebuilder.api.NameplateAPI.getComponentType(),
+                        configManager.getMobFragmentsConfig(),
+                        configManager);
+                this.getEntityStoreRegistry().registerSystem(zoneLevelNameplateSystem);
+                LOGGER.at(Level.INFO).log("NameplateBuilder zone_level system registered");
+            } catch (Throwable t) {
+                LOGGER.at(Level.INFO).log("NameplateBuilder tick system skipped (" + t.getClass().getSimpleName() + ")");
+            }
 
             // Initialiser le système de dépôt d'essence
             depositBlockManager = new DepositBlockManager(this.getDataDirectory());
@@ -277,6 +306,7 @@ public class VaryonPlugin extends JavaPlugin {
             this.getCommandRegistry().registerCommand(new EssenceCommand(essenceManager, factionManager));
             this.getCommandRegistry().registerCommand(new RtpzCommand());
             this.getCommandRegistry().registerCommand(new RtpvCommand());
+            this.getCommandRegistry().registerCommand(new RtphCommand());
             LOGGER.at(Level.INFO).log("Commands registered");
 
             LOGGER.at(Level.INFO).log("Varyon initialized with {0} zones",
