@@ -193,7 +193,7 @@ public class VaryonPlugin extends JavaPlugin {
 
             // Initialiser le système de dépôt d'essence
             depositBlockManager = new DepositBlockManager(this.getDataDirectory());
-            depositUIManager = new DepositUIManager(essenceManager);
+            depositUIManager = new DepositUIManager(essenceManager, factionManager);
             
             DepositBlockInteractionSystem depositInteractionSystem = new DepositBlockInteractionSystem(depositBlockManager, depositUIManager);
             this.getEntityStoreRegistry().registerSystem(depositInteractionSystem);
