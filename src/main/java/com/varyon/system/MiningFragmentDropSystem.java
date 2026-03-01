@@ -25,6 +25,7 @@ import com.varyon.config.MobFragmentsConfig;
 import com.varyon.config.ZoneLootConfig;
 import com.varyon.config.ZonePermissionsConfig;
 import com.varyon.util.ZoneCalculator;
+import com.varyon.system.PlacedOreTracker;
 
 import javax.annotation.Nonnull;
 import java.util.List;
@@ -37,16 +38,19 @@ public class MiningFragmentDropSystem extends EntityEventSystem<EntityStore, Bre
     private final ZoneLootConfig        zoneConfig;
     private final ZonePermissionsConfig zonePermsConfig;
     private final ConfigManager         configManager;
+    private final PlacedOreTracker      placedOreTracker;
 
     public MiningFragmentDropSystem(@Nonnull MobFragmentsConfig mobFragmentsConfig,
                                     @Nonnull ZoneLootConfig zoneConfig,
                                     @Nonnull ZonePermissionsConfig zonePermsConfig,
-                                    @Nonnull ConfigManager configManager) {
+                                    @Nonnull ConfigManager configManager,
+                                    @Nonnull PlacedOreTracker placedOreTracker) {
         super(BreakBlockEvent.class);
         this.mobFragmentsConfig = mobFragmentsConfig;
         this.zoneConfig         = zoneConfig;
         this.zonePermsConfig    = zonePermsConfig;
         this.configManager      = configManager;
+        this.placedOreTracker   = placedOreTracker;
     }
 
     @Nonnull
@@ -69,6 +73,13 @@ public class MiningFragmentDropSystem extends EntityEventSystem<EntityStore, Bre
             String blockId = event.getBlockType().getId().toLowerCase();
             int fragments = mobFragmentsConfig.getMiningFragments(blockId);
             if (fragments <= 0) return;
+
+            if (event.getTargetBlock() != null) {
+                String world = resolveWorld(store);
+                if (placedOreTracker.isPlayerPlaced(world, event.getTargetBlock())) {
+                    return;
+                }
+            }
 
             Ref ref = archetypeChunk.getReferenceTo(index);
 
@@ -107,5 +118,14 @@ public class MiningFragmentDropSystem extends EntityEventSystem<EntityStore, Bre
         } catch (Exception e) {
             LOGGER.at(Level.WARNING).log("Error in MiningFragmentDropSystem: " + e.getMessage());
         }
+    }
+
+    private String resolveWorld(@Nonnull Store<EntityStore> store) {
+        try {
+            if (store.getExternalData() != null && ((EntityStore) store.getExternalData()).getWorld() != null) {
+                return ((EntityStore) store.getExternalData()).getWorld().getName();
+            }
+        } catch (Exception ignored) {}
+        return "world";
     }
 }

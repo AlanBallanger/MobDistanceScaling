@@ -17,6 +17,7 @@ import com.varyon.config.DifficultyZone;
 import com.varyon.config.EssenceRewardsConfig;
 import com.varyon.config.ZonePermissionsConfig;
 import com.varyon.util.ZoneCalculator;
+import com.varyon.system.PlacedOreTracker;
 
 import javax.annotation.Nonnull;
 import java.util.UUID;
@@ -32,15 +33,18 @@ public class EssenceMiningSystem extends EntityEventSystem<EntityStore, BreakBlo
     private final ConfigManager         configManager;
     private final EssenceRewardsConfig  rewardsConfig;
     private final ZonePermissionsConfig zonePermsConfig;
+    private final PlacedOreTracker      placedOreTracker;
 
     public EssenceMiningSystem(@Nonnull EssenceManager essenceManager, @Nonnull ConfigManager configManager,
                                @Nonnull EssenceRewardsConfig rewardsConfig,
-                               @Nonnull ZonePermissionsConfig zonePermsConfig) {
+                               @Nonnull ZonePermissionsConfig zonePermsConfig,
+                               @Nonnull PlacedOreTracker placedOreTracker) {
         super(BreakBlockEvent.class);
         this.essenceManager  = essenceManager;
         this.configManager   = configManager;
         this.rewardsConfig   = rewardsConfig;
         this.zonePermsConfig = zonePermsConfig;
+        this.placedOreTracker = placedOreTracker;
     }
 
     @Override
@@ -59,6 +63,13 @@ public class EssenceMiningSystem extends EntityEventSystem<EntityStore, BreakBlo
             double baseReward = rewardsConfig.getOreReward(blockId);
             if (baseReward <= 0) {
                 return;
+            }
+
+            if (event.getTargetBlock() != null) {
+                String world = resolveWorld(store);
+                if (placedOreTracker.isPlayerPlaced(world, event.getTargetBlock())) {
+                    return;
+                }
             }
 
             UUID playerUuid = playerRef.getUuid();
@@ -85,6 +96,15 @@ public class EssenceMiningSystem extends EntityEventSystem<EntityStore, BreakBlo
         } catch (Exception e) {
             LOGGER.at(Level.WARNING).log("Error in EssenceMiningSystem: " + e.getMessage());
         }
+    }
+
+    private String resolveWorld(@Nonnull Store<EntityStore> store) {
+        try {
+            if (store.getExternalData() != null && ((EntityStore) store.getExternalData()).getWorld() != null) {
+                return ((EntityStore) store.getExternalData()).getWorld().getName();
+            }
+        } catch (Exception ignored) {}
+        return "world";
     }
 
     @Nonnull

@@ -45,9 +45,12 @@ import com.varyon.map.ZoneWorldMapProvider;
 import com.varyon.safezone.SafeZoneManager;
 import com.varyon.safezone.SafeZoneNotificationSystem;
 import com.varyon.safezone.SafeZonePvpSystem;
+import com.varyon.system.BreakOreCleanupListener;
 import com.varyon.system.MobDamageScalingSystem;
 import com.varyon.system.MobLootScalingSystem;
 import com.varyon.system.MobScalingRefSystem;
+import com.varyon.system.PlaceOreListener;
+import com.varyon.system.PlacedOreTracker;
 import com.varyon.nameplate.ZoneLevelNameplateSystem;
 import com.varyon.system.MobFragmentDropSystem;
 import com.varyon.system.ZoneTitleTickingSystem;
@@ -168,15 +171,25 @@ public class VaryonPlugin extends JavaPlugin {
             EssenceKillSystem essenceKillSystem = new EssenceKillSystem(essenceManager, configManager, essenceRewardsConfig, configManager.getZonePermissionsConfig());
             this.getEntityStoreRegistry().registerSystem(essenceKillSystem);
 
-            EssenceMiningSystem essenceMiningSystem = new EssenceMiningSystem(essenceManager, configManager, essenceRewardsConfig, configManager.getZonePermissionsConfig());
+            PlacedOreTracker placedOreTracker = new PlacedOreTracker(this.getDataDirectory());
+
+            this.getEntityStoreRegistry().registerSystem(new PlaceOreListener(
+                placedOreTracker,
+                configManager.getMobFragmentsConfig(),
+                essenceRewardsConfig));
+
+            EssenceMiningSystem essenceMiningSystem = new EssenceMiningSystem(essenceManager, configManager, essenceRewardsConfig, configManager.getZonePermissionsConfig(), placedOreTracker);
             this.getEntityStoreRegistry().registerSystem(essenceMiningSystem);
 
             com.varyon.system.MiningFragmentDropSystem miningFragmentDropSystem = new com.varyon.system.MiningFragmentDropSystem(
                 configManager.getMobFragmentsConfig(),
                 configManager.getZoneLootConfig(),
                 configManager.getZonePermissionsConfig(),
-                configManager);
+                configManager,
+                placedOreTracker);
             this.getEntityStoreRegistry().registerSystem(miningFragmentDropSystem);
+
+            this.getEntityStoreRegistry().registerSystem(new BreakOreCleanupListener(placedOreTracker));
             LOGGER.at(Level.INFO).log("Essence reward systems registered");
 
             // NameplateBuilder — zone level tick system (optional, skipped if mod absent)
