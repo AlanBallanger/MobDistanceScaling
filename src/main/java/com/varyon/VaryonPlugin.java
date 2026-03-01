@@ -6,6 +6,8 @@ import com.hypixel.hytale.server.core.entity.entities.Player;
 import com.hypixel.hytale.server.core.event.events.ecs.BreakBlockEvent;
 import com.hypixel.hytale.component.Ref;
 import com.hypixel.hytale.component.Store;
+import com.hypixel.hytale.server.core.event.events.player.AddPlayerToWorldEvent;
+import com.hypixel.hytale.server.core.event.events.player.DrainPlayerFromWorldEvent;
 import com.hypixel.hytale.server.core.event.events.player.PlayerConnectEvent;
 import com.hypixel.hytale.server.core.event.events.player.PlayerDisconnectEvent;
 import com.hypixel.hytale.server.core.event.events.player.PlayerReadyEvent;
@@ -295,6 +297,29 @@ public class VaryonPlugin extends JavaPlugin {
                             LOGGER.at(Level.WARNING).log("Failed to register HUD for player: " + e.getMessage());
                         }
                     });
+                });
+
+                this.getEventRegistry().registerGlobal(DrainPlayerFromWorldEvent.class, event -> {
+                    try {
+                        PlayerRef playerRef = event.getHolder().getComponent(PlayerRef.getComponentType());
+                        if (playerRef != null) {
+                            hudManager.removePlayer(playerRef.getUuid());
+                        }
+                    } catch (Exception e) {
+                        LOGGER.at(Level.WARNING).log("Failed to drain HUD on world change: " + e.getMessage());
+                    }
+                });
+
+                this.getEventRegistry().registerGlobal(AddPlayerToWorldEvent.class, event -> {
+                    try {
+                        PlayerRef playerRef = event.getHolder().getComponent(PlayerRef.getComponentType());
+                        Player player = event.getHolder().getComponent(Player.getComponentType());
+                        if (playerRef != null && player != null) {
+                            hudManager.registerPlayer(player, playerRef);
+                        }
+                    } catch (Exception e) {
+                        LOGGER.at(Level.WARNING).log("Failed to register HUD on world join: " + e.getMessage());
+                    }
                 });
 
                 this.getEventRegistry().registerGlobal(PlayerDisconnectEvent.class, event -> {

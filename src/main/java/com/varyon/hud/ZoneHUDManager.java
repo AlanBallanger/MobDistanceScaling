@@ -21,6 +21,7 @@ import com.varyon.safezone.SafeZoneManager;
 import com.varyon.util.ZoneCalculator;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
@@ -125,19 +126,25 @@ public class ZoneHUDManager {
 
     public void registerPlayer(@Nonnull Player player, @Nonnull PlayerRef playerRef) {
         String worldName = player.getWorld().getName();
+        UUID playerId = playerRef.getUuid();
+
+        playerHuds.remove(playerId);
+        Player oldPlayer = playerCache.remove(playerId);
+        removeFromMultipleHud(oldPlayer);
+
         if (!zoneConfig.isWorldEnabled(worldName)) {
             return;
         }
 
-        UUID playerId = playerRef.getUuid();
-        ZoneHUD hud = playerHuds.get(playerId);
+        ZoneHUD hud = new ZoneHUD(playerRef, messagesConfig);
+        playerHuds.put(playerId, hud);
+        playerCache.put(playerId, player);
 
-        if (hud == null) {
-            hud = new ZoneHUD(playerRef, zoneConfig, messagesConfig);
-            playerHuds.put(playerId, hud);
-            playerCache.put(playerId, player);
-            tryRegisterWithMultipleHud(player, playerRef, hud, 0);
-        }
+        HytaleServer.SCHEDULED_EXECUTOR.schedule(() -> {
+            if (playerHuds.get(playerId) == hud) {
+                tryRegisterWithMultipleHud(player, playerRef, hud, 0);
+            }
+        }, 3000L, TimeUnit.MILLISECONDS);
     }
 
     private void tryRegisterWithMultipleHud(@Nonnull Player player, @Nonnull PlayerRef playerRef, @Nonnull ZoneHUD hud, int attempt) {
@@ -185,7 +192,24 @@ public class ZoneHUDManager {
 
     public void removePlayer(@Nonnull UUID playerId) {
         playerHuds.remove(playerId);
-        playerCache.remove(playerId);
+        Player player = playerCache.remove(playerId);
+        removeFromMultipleHud(player);
+    }
+
+    private void removeFromMultipleHud(@Nullable Player player) {
+        if (player == null) return;
+        try {
+            PluginBase pluginBase = PluginManager.get().getPlugin(PluginIdentifier.fromString(MULTIPLE_HUD_PLUGIN_ID));
+            if (pluginBase == null || !pluginBase.isEnabled()) return;
+            CustomUIHud currentHud = player.getHudManager().getCustomHud();
+            if (currentHud != null && MULTIPLE_CUSTOM_UI_HUD_CLASS.equals(currentHud.getClass().getName())) {
+                currentHud.getClass()
+                    .getMethod("remove", String.class)
+                    .invoke(currentHud, "Varyon_Zone");
+            }
+        } catch (Exception e) {
+            LOGGER.at(Level.WARNING).log("Failed to remove Varyon_Zone from MultipleHUD: " + e.getMessage());
+        }
     }
 
     public void broadcastBalanceUpdate() {

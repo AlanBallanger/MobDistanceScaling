@@ -9,9 +9,7 @@ import com.hypixel.hytale.server.core.universe.PlayerRef;
 import com.varyon.VaryonPlugin;
 import com.varyon.config.DifficultyZone;
 import com.varyon.config.MessagesConfig;
-import com.varyon.config.ZoneConfig;
 import com.varyon.essence.EssenceManager;
-import com.varyon.safezone.SafeZoneManager;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -24,8 +22,6 @@ public class ZoneHUD extends CustomUIHud {
     private static final int PAGE_PVP = 1;
 
     @Nonnull
-    private final ZoneConfig zoneConfig;
-    @Nonnull
     private final MessagesConfig messagesConfig;
 
     @Nullable
@@ -34,6 +30,8 @@ public class ZoneHUD extends CustomUIHud {
     private int globalBalance;
     private double playerEssence;
     private boolean built;
+    private long builtAt = 0;
+    private static final long BUILD_GRACE_MS = 2000;
     private int currentPage = PAGE_ZONE;
     private boolean inSafeZone;
     private String safeQuadrantName = "";
@@ -41,9 +39,8 @@ public class ZoneHUD extends CustomUIHud {
     private boolean lootSpecialActive = false;
     private int maxEssenceCap = 1000;
 
-    public ZoneHUD(@Nonnull PlayerRef playerRef, @Nonnull ZoneConfig zoneConfig, @Nonnull MessagesConfig messagesConfig) {
+    public ZoneHUD(@Nonnull PlayerRef playerRef, @Nonnull MessagesConfig messagesConfig) {
         super(playerRef);
-        this.zoneConfig = zoneConfig;
         this.messagesConfig = messagesConfig;
     }
 
@@ -51,12 +48,12 @@ public class ZoneHUD extends CustomUIHud {
     protected void build(@Nonnull UICommandBuilder builder) {
         try {
             builder.append("HUD/ZoneHUD.ui");
-            applyZonePage(builder);
         } catch (Exception e) {
             LOGGER.at(Level.WARNING).log("Failed to build zone HUD: " + e.getMessage());
             return;
         }
         built = true;
+        builtAt = System.currentTimeMillis();
     }
 
     public void nextPage() {
@@ -76,7 +73,7 @@ public class ZoneHUD extends CustomUIHud {
             this.lootSpecialActive = lootSpecialActive;
             forceUpdate = true;
         }
-        if (!built) {
+        if (!built || System.currentTimeMillis() - builtAt < BUILD_GRACE_MS) {
             return;
         }
 
