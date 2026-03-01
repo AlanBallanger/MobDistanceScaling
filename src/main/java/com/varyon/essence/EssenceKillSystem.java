@@ -10,16 +10,19 @@ import com.hypixel.hytale.component.system.EntityEventSystem;
 import com.hypixel.hytale.logger.HytaleLogger;
 import com.hypixel.hytale.server.core.entity.Entity;
 import com.hypixel.hytale.server.core.entity.EntityUtils;
+import com.hypixel.hytale.server.core.modules.entity.component.TransformComponent;
 import com.hypixel.hytale.server.core.entity.entities.Player;
 import com.hypixel.hytale.server.core.modules.entity.damage.event.KillFeedEvent;
 import com.hypixel.hytale.server.core.universe.PlayerRef;
 import com.hypixel.hytale.server.core.universe.world.storage.EntityStore;
 import com.hypixel.hytale.server.npc.entities.NPCEntity;
+import com.varyon.VaryonPlugin;
 import com.varyon.component.MobScalingComponent;
 import com.varyon.config.ConfigManager;
 import com.varyon.config.DifficultyZone;
 import com.varyon.config.EssenceRewardsConfig;
 import com.varyon.config.ZonePermissionsConfig;
+import com.varyon.safezone.SafeZoneManager;
 import com.varyon.util.ZoneCalculator;
 
 import javax.annotation.Nonnull;
@@ -92,10 +95,19 @@ public class EssenceKillSystem extends EntityEventSystem<EntityStore, KillFeedEv
                 }
             }
 
-            double essenceGained = baseReward * zoneMultiplier * lootMultiplier;
-            if (essenceGained <= 0) return;
-
             Ref<EntityStore> killerRef = archetypeChunk.getReferenceTo(index);
+
+            double pvpMultiplier = 1.0;
+            SafeZoneManager szm = VaryonPlugin.getStaticSafeZoneManager();
+            if (szm != null) {
+                TransformComponent transform = store.getComponent(killerRef, TransformComponent.getComponentType());
+                if (transform != null && !szm.isInSafeZone(transform.getPosition().getX(), transform.getPosition().getZ())) {
+                    pvpMultiplier = rewardsConfig.getPvpEssenceMultiplier();
+                }
+            }
+
+            double essenceGained = baseReward * zoneMultiplier * lootMultiplier * pvpMultiplier;
+            if (essenceGained <= 0) return;
             Player player = null;
             try { player = (Player) store.getComponent(killerRef, Player.getComponentType()); } catch (Exception ignored) {}
             if (player != null) {
@@ -106,7 +118,7 @@ public class EssenceKillSystem extends EntityEventSystem<EntityStore, KillFeedEv
                 essenceManager.addEssence(playerUuid, playerUuid.toString(), essenceGained);
             }
 
-            LOGGER.at(Level.INFO).log("Kill: mob=" + mobId + " +" + String.format("%.2f", essenceGained) + " essence (base=" + baseReward + " loot=" + String.format("%.2f", lootMultiplier) + " essence=" + String.format("%.2f", zoneMultiplier) + ")");
+            LOGGER.at(Level.INFO).log("Kill: mob=" + mobId + " +" + String.format("%.2f", essenceGained) + " essence (base=" + baseReward + " loot=" + String.format("%.2f", lootMultiplier) + " essence=" + String.format("%.2f", zoneMultiplier) + " pvp=" + pvpMultiplier + ")");
         } catch (Exception e) {
             LOGGER.at(Level.WARNING).log("Error in EssenceKillSystem: " + e.getMessage());
         }

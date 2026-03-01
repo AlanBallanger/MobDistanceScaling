@@ -18,6 +18,7 @@ public class EssenceRewardsConfig {
     private final Map<String, Double> oreRewards = new ConcurrentHashMap<>();
     private final Map<String, Double> mobRewards = new ConcurrentHashMap<>();
     private double globalMultiplier = 0.1;
+    private double pvpEssenceMultiplier = 2.0;
     private double defaultMobReward = 3.0;
     private double defaultOreReward = 0.0;
 
@@ -35,6 +36,7 @@ public class EssenceRewardsConfig {
             Toml general = toml.getTable("general");
             if (general != null) {
                 globalMultiplier = general.getDouble("globalMultiplier", globalMultiplier);
+                pvpEssenceMultiplier = general.getDouble("pvpEssenceMultiplier", pvpEssenceMultiplier);
                 defaultMobReward = general.getDouble("defaultMobReward", defaultMobReward);
                 defaultOreReward = general.getDouble("defaultOreReward", defaultOreReward);
             }
@@ -61,6 +63,10 @@ public class EssenceRewardsConfig {
         } catch (Exception e) {
             LOGGER.at(Level.WARNING).log("Failed to load essence_rewards.toml: " + e.getMessage());
         }
+    }
+
+    public double getPvpEssenceMultiplier() {
+        return pvpEssenceMultiplier;
     }
 
     public double getOreReward(@Nonnull String blockId) {
@@ -104,6 +110,7 @@ public class EssenceRewardsConfig {
         mobRewards.clear();
 
         globalMultiplier = 0.1;
+        pvpEssenceMultiplier = 2.0;
         defaultMobReward = 0.0;
         defaultOreReward = 0.0;
 
@@ -262,6 +269,7 @@ public class EssenceRewardsConfig {
 
             writer.write("[general]\n");
             writer.write("globalMultiplier = " + globalMultiplier + "\n");
+            writer.write("pvpEssenceMultiplier = " + formatVal(pvpEssenceMultiplier) + "\n");
             writer.write("defaultMobReward = " + formatVal(defaultMobReward) + "\n");
             writer.write("defaultOreReward = " + formatVal(defaultOreReward) + "\n\n");
 

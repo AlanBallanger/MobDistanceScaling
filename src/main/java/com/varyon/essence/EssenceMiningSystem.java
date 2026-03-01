@@ -12,10 +12,13 @@ import com.hypixel.hytale.server.core.entity.entities.Player;
 import com.hypixel.hytale.server.core.event.events.ecs.BreakBlockEvent;
 import com.hypixel.hytale.server.core.universe.PlayerRef;
 import com.hypixel.hytale.server.core.universe.world.storage.EntityStore;
+import com.hypixel.hytale.server.core.modules.entity.component.TransformComponent;
+import com.varyon.VaryonPlugin;
 import com.varyon.config.ConfigManager;
 import com.varyon.config.DifficultyZone;
 import com.varyon.config.EssenceRewardsConfig;
 import com.varyon.config.ZonePermissionsConfig;
+import com.varyon.safezone.SafeZoneManager;
 import com.varyon.util.ZoneCalculator;
 import com.varyon.system.PlacedOreTracker;
 
@@ -74,14 +77,23 @@ public class EssenceMiningSystem extends EntityEventSystem<EntityStore, BreakBlo
 
             UUID playerUuid = playerRef.getUuid();
 
-            DifficultyZone zone = ZoneCalculator.getCurrentZone(store, archetypeChunk.getReferenceTo(index), configManager.getZoneConfig());
+            Ref<EntityStore> minerRef = archetypeChunk.getReferenceTo(index);
+            DifficultyZone zone = ZoneCalculator.getCurrentZone(store, minerRef, configManager.getZoneConfig());
             double zoneMultiplier = zone != null ? zone.getEssenceMultiplier() : 1.0;
             double lootMultiplier = zone != null ? zone.getLootMultiplier() : 1.0;
 
-            double essenceGained = baseReward * zoneMultiplier * lootMultiplier;
+            double pvpMultiplier = 1.0;
+            SafeZoneManager szm = VaryonPlugin.getStaticSafeZoneManager();
+            if (szm != null) {
+                TransformComponent transform = store.getComponent(minerRef, TransformComponent.getComponentType());
+                if (transform != null && !szm.isInSafeZone(transform.getPosition().getX(), transform.getPosition().getZ())) {
+                    pvpMultiplier = rewardsConfig.getPvpEssenceMultiplier();
+                }
+            }
+
+            double essenceGained = baseReward * zoneMultiplier * lootMultiplier * pvpMultiplier;
             if (essenceGained <= 0) return;
 
-            Ref<EntityStore> minerRef = archetypeChunk.getReferenceTo(index);
             Player player = null;
             try { player = (Player) store.getComponent(minerRef, Player.getComponentType()); } catch (Exception ignored) {}
             if (player != null) {
@@ -92,7 +104,7 @@ public class EssenceMiningSystem extends EntityEventSystem<EntityStore, BreakBlo
                 essenceManager.addEssence(playerUuid, playerUuid.toString(), essenceGained);
             }
 
-            LOGGER.at(Level.INFO).log("Mine: block=" + blockId + " +" + String.format("%.2f", essenceGained) + " essence (base=" + baseReward + " zone=" + zoneMultiplier + " loot=" + String.format("%.2f", lootMultiplier) + ")");
+            LOGGER.at(Level.INFO).log("Mine: block=" + blockId + " +" + String.format("%.2f", essenceGained) + " essence (base=" + baseReward + " zone=" + zoneMultiplier + " loot=" + String.format("%.2f", lootMultiplier) + " pvp=" + pvpMultiplier + ")");
         } catch (Exception e) {
             LOGGER.at(Level.WARNING).log("Error in EssenceMiningSystem: " + e.getMessage());
         }
