@@ -10,6 +10,7 @@ import com.hypixel.hytale.server.core.command.system.CommandContext;
 import com.hypixel.hytale.server.core.command.system.arguments.system.RequiredArg;
 import com.hypixel.hytale.server.core.command.system.arguments.types.ArgTypes;
 import com.hypixel.hytale.server.core.command.system.basecommands.AbstractPlayerCommand;
+import com.hypixel.hytale.server.core.command.system.basecommands.CommandBase;
 import com.hypixel.hytale.server.core.entity.entities.Player;
 import com.hypixel.hytale.server.core.modules.entity.teleport.Teleport;
 import com.hypixel.hytale.server.core.universe.PlayerRef;
@@ -21,10 +22,14 @@ import com.varyon.VaryonPlugin;
 import com.varyon.config.DifficultyZone;
 import com.varyon.config.ZoneConfig;
 import com.varyon.config.ZonePermissionsConfig;
+import com.varyon.safezone.SafeZoneManager;
+import com.varyon.safezone.SafeZoneQuadrant;
 import com.varyon.teleport.RtpService;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.awt.Color;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 import java.util.logging.Level;
@@ -40,13 +45,61 @@ public class RtpvCommand extends AbstractPlayerCommand {
         this.requirePermission("varyon.rtp");
         this.rtpService = new RtpService();
         this.zoneArg = this.withRequiredArg("zone", "Zone number (1-10)", ArgTypes.INTEGER);
+        this.addUsageVariant(new PvpVariant());
     }
 
     @Override
     protected void execute(@Nonnull CommandContext context, @Nonnull Store<EntityStore> store,
-                          @Nonnull Ref<EntityStore> ref, @Nonnull PlayerRef playerRef, @Nonnull World world) {
+                           @Nonnull Ref<EntityStore> ref, @Nonnull PlayerRef playerRef, @Nonnull World world) {
         int zoneNumber = context.get(zoneArg);
+        executeRtp(context, store, ref, playerRef, world, zoneNumber, null);
+    }
 
+    private class PvpVariant extends CommandBase {
+        private final RequiredArg<Integer> zoneArg;
+        private final RequiredArg<String> pvpArg;
+
+        PvpVariant() {
+            super("Téléportation vers une zone mod avec filtre PvP");
+            this.zoneArg = this.withRequiredArg("zone", "Zone number (1-10)", ArgTypes.INTEGER);
+            this.pvpArg = this.withRequiredArg("pvp", "true/false - téléporter en zone PvP ou hors PvP", ArgTypes.STRING);
+        }
+
+        @Override
+        protected void executeSync(@Nonnull CommandContext context) {
+            if (!context.isPlayer()) {
+                context.sendMessage(Message.raw("Cette commande doit être exécutée par un joueur.").color(Color.RED));
+                return;
+            }
+            Ref<EntityStore> ref = context.senderAsPlayerRef();
+            if (ref == null) return;
+            Store<EntityStore> store = ref.getStore();
+            World world = ((EntityStore) store.getExternalData()).getWorld();
+
+            int zoneNumber = context.get(zoneArg);
+            String pvpRaw = context.get(pvpArg).toLowerCase().trim();
+            Boolean pvpFilter;
+            if (pvpRaw.equals("true") || pvpRaw.equals("on") || pvpRaw.equals("pvp")) {
+                pvpFilter = true;
+            } else if (pvpRaw.equals("false") || pvpRaw.equals("off") || pvpRaw.equals("safe")) {
+                pvpFilter = false;
+            } else {
+                context.sendMessage(Message.raw("Valeur pvp invalide. Utilisez : true, false, on, off").color(Color.RED));
+                return;
+            }
+
+            final Boolean finalPvpFilter = pvpFilter;
+            world.execute(() -> {
+                PlayerRef playerRef = (PlayerRef) store.getComponent(ref, PlayerRef.getComponentType());
+                if (playerRef == null) return;
+                executeRtp(context, store, ref, playerRef, world, zoneNumber, finalPvpFilter);
+            });
+        }
+    }
+
+    void executeRtp(@Nonnull CommandContext context, @Nonnull Store<EntityStore> store,
+                    @Nonnull Ref<EntityStore> ref, @Nonnull PlayerRef playerRef, @Nonnull World world,
+                    int zoneNumber, @Nullable Boolean pvpFilter) {
         ZoneConfig config = VaryonPlugin.getStaticConfigManager().getZoneConfig();
         List<DifficultyZone> zones = config.getZones();
 
@@ -70,27 +123,22 @@ public class RtpvCommand extends AbstractPlayerCommand {
         DifficultyZone targetZone = zones.get(zoneNumber - 1);
 
         double minDist = targetZone.getRadiusStart();
-        double maxDist;
-        if (zoneNumber < zones.size()) {
-            maxDist = zones.get(zoneNumber).getRadiusStart();
-        } else {
-            maxDist = minDist + 5000;
-        }
+        double maxDist = (zoneNumber < zones.size()) ? zones.get(zoneNumber).getRadiusStart() : minDist + 5000;
 
         IWorldGen worldGen = world.getChunkStore().getGenerator();
         if (!(worldGen instanceof ChunkGenerator)) {
             context.sendMessage(Message.raw("World generation not supported in this world").color(Color.RED));
             return;
         }
-
         ChunkGenerator generator = (ChunkGenerator) worldGen;
 
-        context.sendMessage(Message.raw("Téléportation vers " + targetZone.getName() + "...").color(Color.GREEN));
+        String pvpLabel = pvpFilter == null ? "" : (pvpFilter ? " (PvP)" : " (Hors PvP)");
+        context.sendMessage(Message.raw("Téléportation vers " + targetZone.getName() + pvpLabel + "...").color(Color.GREEN));
 
         world.execute(() -> {
             try {
                 double targetDistance = minDist + random.nextDouble() * (maxDist - minDist);
-                double angle = random.nextDouble() * 2 * Math.PI;
+                double angle = pickAngle(pvpFilter);
 
                 double targetX = Math.cos(angle) * targetDistance;
                 double targetZ = Math.sin(angle) * targetDistance;
@@ -99,8 +147,8 @@ public class RtpvCommand extends AbstractPlayerCommand {
 
                 if (safePosition != null) {
                     teleportPlayer(store, ref, world, safePosition);
-                    context.sendMessage(Message.raw("Téléporté vers " + targetZone.getName() +
-                        " en " + (int)safePosition.x + ", " + (int)safePosition.y + ", " + (int)safePosition.z).color(Color.GREEN));
+                    context.sendMessage(Message.raw("Téléporté vers " + targetZone.getName() + pvpLabel +
+                        " en " + (int) safePosition.x + ", " + (int) safePosition.y + ", " + (int) safePosition.z).color(Color.GREEN));
                 } else {
                     context.sendMessage(Message.raw("Impossible de trouver un emplacement sûr dans " + targetZone.getName()).color(Color.RED));
                 }
@@ -111,12 +159,40 @@ public class RtpvCommand extends AbstractPlayerCommand {
         });
     }
 
+    private double pickAngle(@Nullable Boolean pvpFilter) {
+        if (pvpFilter == null) {
+            return random.nextDouble() * 2 * Math.PI;
+        }
+
+        SafeZoneManager szm = VaryonPlugin.getStaticSafeZoneManager();
+        if (szm == null) {
+            return random.nextDouble() * 2 * Math.PI;
+        }
+
+        SafeZoneQuadrant current = szm.getCurrentQuadrant();
+        SafeZoneQuadrant next = szm.getNextQuadrant();
+        boolean overlap = szm.isOverlapActive();
+
+        List<SafeZoneQuadrant> candidates = new ArrayList<>();
+        for (SafeZoneQuadrant q : SafeZoneQuadrant.values()) {
+            boolean isSafe = q == current || (overlap && q == next);
+            if (pvpFilter ? !isSafe : isSafe) {
+                candidates.add(q);
+            }
+        }
+
+        if (candidates.isEmpty()) {
+            return random.nextDouble() * 2 * Math.PI;
+        }
+
+        SafeZoneQuadrant chosen = candidates.get(random.nextInt(candidates.size()));
+        double startRad = Math.toRadians(chosen.getStartAngle());
+        double endRad = Math.toRadians(chosen.getEndAngle());
+        return startRad + random.nextDouble() * (endRad - startRad);
+    }
+
     private void teleportPlayer(Store<EntityStore> store, Ref<EntityStore> ref, World world, Vector3d position) {
-        Teleport teleport = Teleport.createForPlayer(
-            world,
-            position,
-            new Vector3f(0, 0, 0)
-        );
+        Teleport teleport = Teleport.createForPlayer(world, position, new Vector3f(0, 0, 0));
         store.addComponent(ref, Teleport.getComponentType(), teleport);
     }
 }
