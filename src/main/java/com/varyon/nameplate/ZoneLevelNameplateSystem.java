@@ -11,14 +11,13 @@ import com.hypixel.hytale.component.system.tick.EntityTickingSystem;
 import com.hypixel.hytale.logger.HytaleLogger;
 import com.hypixel.hytale.server.core.universe.world.storage.EntityStore;
 import com.hypixel.hytale.server.npc.entities.NPCEntity;
+import com.varyon.component.MobScalingComponent;
 import com.varyon.config.ConfigManager;
 import com.varyon.config.DifficultyZone;
 import com.varyon.config.MobFragmentsConfig;
 import com.varyon.util.ZoneCalculator;
 
 import javax.annotation.Nonnull;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 
 /**
@@ -39,9 +38,6 @@ public class ZoneLevelNameplateSystem extends EntityTickingSystem<EntityStore> {
     private final ComponentType<EntityStore, NameplateData> nameplateDataType;
     private final MobFragmentsConfig                        mobFragmentsConfig;
     private final ConfigManager                             configManager;
-
-    /** Role names logged once to avoid flooding the console. */
-    private final Set<String> loggedUnknown = ConcurrentHashMap.newKeySet();
 
     public ZoneLevelNameplateSystem(
             @Nonnull ComponentType<EntityStore, NameplateData> nameplateDataType,
@@ -70,14 +66,11 @@ public class ZoneLevelNameplateSystem extends EntityTickingSystem<EntityStore> {
 
             Ref<EntityStore> ref = chunk.getReferenceTo(index);
 
-            // --- 1. Try tier from mob config ---
+            // --- 1. Try level from MobScalingComponent (assigned at spawn) ---
             int tier = -1;
-            String roleName = npc.getRoleName();
-            if (roleName != null && !roleName.isBlank()) {
-                tier = mobFragmentsConfig.getFragments(roleName);
-                if (tier < 0 && loggedUnknown.add(roleName)) {
-                    LOGGER.at(Level.INFO).log("[MonsterLevel] Mob not in config: \"" + roleName + "\" → fallback to zone");
-                }
+            MobScalingComponent scaling = store.getComponent(ref, MobScalingComponent.getComponentType());
+            if (scaling != null) {
+                tier = scaling.getMobLevel();
             }
 
             // --- 2. Fallback: zone ID ---
