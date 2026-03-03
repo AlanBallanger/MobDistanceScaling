@@ -70,12 +70,14 @@ public class MiningFragmentDropSystem extends EntityEventSystem<EntityStore, Bre
             PlayerRef playerRef = archetypeChunk.getComponent(index, PlayerRef.getComponentType());
             if (playerRef == null) return;
 
+            String world = resolveWorld(store);
+            if (!configManager.getZoneConfig().isWorldEnabled(world)) return;
+
             String blockId = event.getBlockType().getId().toLowerCase();
             int fragments = mobFragmentsConfig.getMiningFragments(blockId);
             if (fragments <= 0) return;
 
             if (event.getTargetBlock() != null) {
-                String world = resolveWorld(store);
                 if (placedOreTracker.isPlayerPlaced(world, event.getTargetBlock())) {
                     return;
                 }

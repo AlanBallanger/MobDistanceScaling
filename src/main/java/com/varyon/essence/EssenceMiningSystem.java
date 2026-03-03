@@ -61,6 +61,9 @@ public class EssenceMiningSystem extends EntityEventSystem<EntityStore, BreakBlo
                 return;
             }
 
+            String world = resolveWorld(store);
+            if (!configManager.getZoneConfig().isWorldEnabled(world)) return;
+
             String blockId = event.getBlockType().getId().toLowerCase();
 
             double baseReward = rewardsConfig.getOreReward(blockId);
@@ -69,7 +72,6 @@ public class EssenceMiningSystem extends EntityEventSystem<EntityStore, BreakBlo
             }
 
             if (event.getTargetBlock() != null) {
-                String world = resolveWorld(store);
                 if (placedOreTracker.isPlayerPlaced(world, event.getTargetBlock())) {
                     return;
                 }
