@@ -94,11 +94,9 @@ public class MiningFragmentDropSystem extends EntityEventSystem<EntityStore, Bre
                 return;
             }
 
-            // Item ID — use player's max accessible zone if possible, else current zone
-            int maxZone = player != null ? zonePermsConfig.getMaxAccessibleZone(player) : zoneId;
-            String itemId = zoneConfig.getItemForZone(maxZone);
+            String itemId = zoneConfig.getItemForZone(zoneId);
             if (itemId == null || itemId.isBlank()) {
-                itemId = "Key_Fragment" + maxZone;
+                itemId = "Key_Fragment" + zoneId;
             }
 
             // Drop at player's position (same pattern as MobFragmentDropSystem)
