@@ -30,6 +30,7 @@ public class ConfigManager {
     private MobFragmentsConfig mobFragmentsConfig;
     private ZonePermissionsConfig zonePermissionsConfig;
     private RtphConfig rtphConfig;
+    private RtpvConfig rtpvConfig;
 
     public ConfigManager(@Nonnull Path pluginDataFolder) {
         this.pluginDataFolder = pluginDataFolder;
@@ -56,6 +57,7 @@ public class ConfigManager {
             zonePermissionsConfig = ZonePermissionsConfig.createDefault();
             zonePermissionsConfig.save(pluginDataFolder);
             rtphConfig = RtphConfig.createDefault();
+            rtpvConfig = RtpvConfig.createDefault();
             save();
             return;
         }
@@ -72,6 +74,7 @@ public class ConfigManager {
             mobFragmentsConfig = MobFragmentsConfig.load(pluginDataFolder);
             zonePermissionsConfig = ZonePermissionsConfig.load(pluginDataFolder);
             rtphConfig = parseRtphConfig(toml);
+            rtpvConfig = parseRtpvConfig(toml);
             LOGGER.at(Level.INFO).log("Loaded configuration with {0} zones", zoneConfig.getZones().size());
             save();
         } catch (Exception e) {
@@ -86,6 +89,7 @@ public class ConfigManager {
             mobFragmentsConfig = MobFragmentsConfig.createDefault();
             zonePermissionsConfig = ZonePermissionsConfig.createDefault();
             rtphConfig = RtphConfig.createDefault();
+            rtpvConfig = RtpvConfig.createDefault();
         }
     }
 
@@ -158,6 +162,18 @@ public class ConfigManager {
         sb.append("[rtph]\n");
         sb.append("outerMax = ").append(rtph.getOuterMax()).append("\n");
         sb.append("innerMax = ").append(rtph.getInnerMax()).append("\n\n");
+
+        RtpvConfig rtpv = rtpvConfig != null ? rtpvConfig : RtpvConfig.createDefault();
+        sb.append("[rtpv]\n");
+        sb.append("economyEnabled = ").append(rtpv.isEconomyEnabled()).append("\n");
+        sb.append("safeCostMultiplier = ").append(rtpv.getSafeCostMultiplier()).append("\n");
+        sb.append("zoneCosts = [");
+        List<Integer> costs = rtpv.getZoneCosts();
+        for (int i = 0; i < costs.size(); i++) {
+            sb.append(costs.get(i));
+            if (i < costs.size() - 1) sb.append(", ");
+        }
+        sb.append("]\n\n");
 
         for (DifficultyZone zone : zoneConfig.getZones()) {
             sb.append("[[zones]]\n");
@@ -275,6 +291,23 @@ public class ConfigManager {
     }
 
     @Nonnull
+    private RtpvConfig parseRtpvConfig(@Nonnull Toml toml) {
+        Toml rtpvToml = toml.getTable("rtpv");
+        if (rtpvToml == null) return RtpvConfig.createDefault();
+        boolean economyEnabled = rtpvToml.getBoolean("economyEnabled", true);
+        double safeCostMultiplier = rtpvToml.getDouble("safeCostMultiplier", 2.0);
+        List<Long> rawCosts = rtpvToml.getList("zoneCosts");
+        List<Integer> zoneCosts = new ArrayList<>();
+        if (rawCosts != null) {
+            for (Long v : rawCosts) zoneCosts.add(v.intValue());
+        }
+        if (zoneCosts.isEmpty()) {
+            zoneCosts = RtpvConfig.createDefault().getZoneCosts();
+        }
+        return new RtpvConfig(zoneCosts, safeCostMultiplier, economyEnabled);
+    }
+
+    @Nonnull
     private ReturnConfig parseReturnConfig(@Nonnull Toml toml) {
         Toml returnToml = toml.getTable("return");
         if (returnToml == null) return ReturnConfig.createDefault();
@@ -297,6 +330,7 @@ public class ConfigManager {
     @Nonnull public MobFragmentsConfig getMobFragmentsConfig()       { return mobFragmentsConfig != null ? mobFragmentsConfig : MobFragmentsConfig.createDefault(); }
     @Nonnull public ZonePermissionsConfig getZonePermissionsConfig() { return zonePermissionsConfig != null ? zonePermissionsConfig : ZonePermissionsConfig.createDefault(); }
     @Nonnull public RtphConfig getRtphConfig()                       { return rtphConfig != null ? rtphConfig : RtphConfig.createDefault(); }
+    @Nonnull public RtpvConfig getRtpvConfig()                       { return rtpvConfig != null ? rtpvConfig : RtpvConfig.createDefault(); }
 
     public void reload() { load(); }
 }

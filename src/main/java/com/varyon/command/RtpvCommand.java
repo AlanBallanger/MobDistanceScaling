@@ -20,11 +20,17 @@ import com.hypixel.hytale.server.core.universe.world.worldgen.IWorldGen;
 import com.hypixel.hytale.server.worldgen.chunk.ChunkGenerator;
 import com.varyon.VaryonPlugin;
 import com.varyon.config.DifficultyZone;
+import com.varyon.config.RtpvConfig;
 import com.varyon.config.ZoneConfig;
 import com.varyon.config.ZonePermissionsConfig;
 import com.varyon.safezone.SafeZoneManager;
 import com.varyon.safezone.SafeZoneQuadrant;
 import com.varyon.teleport.RtpService;
+import net.cfh.vault.VaultUnlockedServicesManager;
+import net.milkbowl.vault2.economy.Economy;
+import net.milkbowl.vault2.economy.EconomyResponse;
+
+import java.math.BigDecimal;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -120,6 +126,27 @@ public class RtpvCommand extends AbstractPlayerCommand {
             }
         }
 
+        RtpvConfig rtpvConfig = VaryonPlugin.getStaticConfigManager().getRtpvConfig();
+        int baseCost = rtpvConfig.getCostForZone(zoneNumber);
+        double multipliedCost = (pvpFilter != null && !pvpFilter)
+            ? baseCost * rtpvConfig.getSafeCostMultiplier()
+            : baseCost;
+        final int finalCost = (int) Math.ceil(multipliedCost);
+        final BigDecimal costBD = BigDecimal.valueOf(finalCost);
+
+        if (rtpvConfig.isEconomyEnabled()) {
+            Economy economy = VaultUnlockedServicesManager.get().economyObj();
+            if (economy != null && economy.isEnabled()) {
+                if (!economy.has("Varyon", playerRef.getUuid(), costBD)) {
+                    BigDecimal balance = economy.getBalance("Varyon", playerRef.getUuid());
+                    context.sendMessage(Message.raw(
+                        "Coins insuffisants. Coût : " + finalCost + " | Solde : " + balance.intValue()
+                    ).color(Color.RED));
+                    return;
+                }
+            }
+        }
+
         DifficultyZone targetZone = zones.get(zoneNumber - 1);
 
         double minDist = targetZone.getRadiusStart();
@@ -133,7 +160,8 @@ public class RtpvCommand extends AbstractPlayerCommand {
         ChunkGenerator generator = (ChunkGenerator) worldGen;
 
         String pvpLabel = pvpFilter == null ? "" : (pvpFilter ? " (PvP)" : " (Hors PvP)");
-        context.sendMessage(Message.raw("Téléportation vers " + targetZone.getName() + pvpLabel + "...").color(Color.GREEN));
+        String costLabel = rtpvConfig.isEconomyEnabled() ? " [" + finalCost + " coins]" : "";
+        context.sendMessage(Message.raw("Téléportation vers " + targetZone.getName() + pvpLabel + costLabel + "...").color(Color.GREEN));
 
         world.execute(() -> {
             try {
@@ -147,8 +175,20 @@ public class RtpvCommand extends AbstractPlayerCommand {
 
                 if (safePosition != null) {
                     teleportPlayer(store, ref, world, safePosition);
+
+                    if (rtpvConfig.isEconomyEnabled()) {
+                        Economy economy = VaultUnlockedServicesManager.get().economyObj();
+                        if (economy != null && economy.isEnabled()) {
+                            EconomyResponse response = economy.withdraw("Varyon", playerRef.getUuid(), costBD);
+                            if (!response.transactionSuccess()) {
+                                LOGGER.at(Level.WARNING).log("Failed to deduct " + finalCost + " coins from " + playerRef.getUuid() + ": " + response.errorMessage);
+                            }
+                        }
+                    }
+
                     context.sendMessage(Message.raw("Téléporté vers " + targetZone.getName() + pvpLabel +
-                        " en " + (int) safePosition.x + ", " + (int) safePosition.y + ", " + (int) safePosition.z).color(Color.GREEN));
+                        " en " + (int) safePosition.x + ", " + (int) safePosition.y + ", " + (int) safePosition.z +
+                        (rtpvConfig.isEconomyEnabled() ? " (-" + finalCost + " coins)" : "")).color(Color.GREEN));
                 } else {
                     context.sendMessage(Message.raw("Impossible de trouver un emplacement sûr dans " + targetZone.getName()).color(Color.RED));
                 }
