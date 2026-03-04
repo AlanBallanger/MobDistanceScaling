@@ -12,12 +12,21 @@ repositories {
     maven("https://maven.hytale-modding.info/releases") {
         name = "HytaleModdingReleases"
     }
+    maven("https://oss.sonatype.org/content/repositories/snapshots/") {
+        name = "SonatypeSnapshots"
+    }
+    maven("https://repo.codemc.io/repository/creatorfromhell/") {
+        name = "VaultUnlocked"
+    }
 }
 
 dependencies {
     compileOnly(libs.jetbrains.annotations)
     compileOnly(libs.jspecify)
+    compileOnly("net.luckperms:api:5.4")
+    compileOnly("net.cfh.vault:VaultUnlocked:2.18.3")
     compileOnly(files("libs/MultipleHUD-1.0.4.jar"))
+    compileOnly(files("libs/NameplateBuilder-API-1.0.0.jar"))
     runtimeOnly(files("libs/MultipleHUD-1.0.4.jar"))
     implementation("com.moandjiezana.toml:toml4j:0.7.2")
     implementation("org.xerial:sqlite-jdbc:3.45.1.0")

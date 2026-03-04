@@ -4,7 +4,6 @@ import com.hypixel.hytale.component.*;
 import com.hypixel.hytale.component.query.Query;
 import com.hypixel.hytale.component.system.EntityEventSystem;
 import com.hypixel.hytale.logger.HytaleLogger;
-import com.hypixel.hytale.protocol.InteractionType;
 import com.hypixel.hytale.server.core.asset.type.blocktype.config.BlockType;
 import com.hypixel.hytale.server.core.entity.InteractionChain;
 import com.hypixel.hytale.server.core.entity.InteractionContext;
@@ -44,11 +43,6 @@ public class VoidPortalInteractionSystem extends EntityEventSystem<EntityStore, 
             return;
         }
         if (!blockType.getId().contains(VOID_PORTAL_BLOCK_ID)) {
-            return;
-        }
-
-        InteractionType interactionType = event.getInteractionType();
-        if (interactionType != InteractionType.Use && interactionType != InteractionType.Secondary) {
             return;
         }
 

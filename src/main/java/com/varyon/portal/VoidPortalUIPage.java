@@ -16,8 +16,11 @@ import com.hypixel.hytale.server.core.ui.builder.UICommandBuilder;
 import com.hypixel.hytale.server.core.ui.builder.UIEventBuilder;
 import com.hypixel.hytale.server.core.universe.PlayerRef;
 import com.hypixel.hytale.server.core.universe.world.storage.EntityStore;
+import com.varyon.VaryonPlugin;
+import com.varyon.config.RtpvConfig;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
 public class VoidPortalUIPage extends InteractiveCustomUIPage<VoidPortalUIPage.EventDataClass> {
 
@@ -32,10 +35,37 @@ public class VoidPortalUIPage extends InteractiveCustomUIPage<VoidPortalUIPage.E
                       @Nonnull Store<EntityStore> store) {
         commandBuilder.append("VoidPortalMenu.ui");
 
+        RtpvConfig rtpvConfig = null;
+        boolean economyEnabled = false;
+        double safeMultiplier = 2.0;
+        try {
+            if (VaryonPlugin.getStaticConfigManager() != null) {
+                rtpvConfig = VaryonPlugin.getStaticConfigManager().getRtpvConfig();
+                economyEnabled = rtpvConfig.isEconomyEnabled();
+                safeMultiplier = rtpvConfig.getSafeCostMultiplier();
+            }
+        } catch (Exception ignored) {}
+
         for (int i = 1; i <= 10; i++) {
-            eventBuilder.addEventBinding(CustomUIEventBindingType.Activating, "#Zone" + i,
-                EventData.of("Action", "zone").append("ZoneId", String.valueOf(i)));
+            int baseCost = rtpvConfig != null ? rtpvConfig.getCostForZone(i) : 0;
+            int safeCost = (int) Math.ceil(baseCost * safeMultiplier);
+
+            String basePrice = economyEnabled ? "(" + baseCost + " coins)" : "";
+            String safePrice = economyEnabled ? "(" + safeCost + " coins)" : "";
+
+            commandBuilder.set("#ZoneMainPrice" + i + ".Text", basePrice);
+            commandBuilder.set("#ZonePvPPrice" + i + ".Text", basePrice);
+            commandBuilder.set("#ZoneSafePrice" + i + ".Text", safePrice);
+
+            int zoneId = i;
+            eventBuilder.addEventBinding(CustomUIEventBindingType.Activating, "#ZoneMain" + i,
+                EventData.of("Action", "zone").append("ZoneId", String.valueOf(zoneId)).append("Pvp", "none"));
+            eventBuilder.addEventBinding(CustomUIEventBindingType.Activating, "#ZonePvP" + i,
+                EventData.of("Action", "zone").append("ZoneId", String.valueOf(zoneId)).append("Pvp", "true"));
+            eventBuilder.addEventBinding(CustomUIEventBindingType.Activating, "#ZoneSafe" + i,
+                EventData.of("Action", "zone").append("ZoneId", String.valueOf(zoneId)).append("Pvp", "false"));
         }
+
         eventBuilder.addEventBinding(CustomUIEventBindingType.Activating, "#CloseButton",
             EventData.of("Action", "close"));
     }
@@ -57,7 +87,14 @@ public class VoidPortalUIPage extends InteractiveCustomUIPage<VoidPortalUIPage.E
             PlayerRef playerRefComp = store.getComponent(ref, PlayerRef.getComponentType());
             if (player != null && playerRefComp != null) {
                 player.getPageManager().setPage(ref, store, Page.None);
-                String command = "rtpz zone" + data.zoneId;
+                String command;
+                if ("true".equals(data.pvp)) {
+                    command = "rtpv " + data.zoneId + " true";
+                } else if ("false".equals(data.pvp)) {
+                    command = "rtpv " + data.zoneId + " false";
+                } else {
+                    command = "rtpv " + data.zoneId;
+                }
                 CommandManager.get().handleCommand(playerRefComp, command);
             }
         }
@@ -70,9 +107,12 @@ public class VoidPortalUIPage extends InteractiveCustomUIPage<VoidPortalUIPage.E
                     (entry, s) -> entry.action = s, entry -> entry.action)
                 .addField(new KeyedCodec<>("ZoneId", Codec.STRING),
                     (entry, s) -> entry.zoneId = s, entry -> entry.zoneId)
+                .addField(new KeyedCodec<>("Pvp", Codec.STRING),
+                    (entry, s) -> entry.pvp = s, entry -> entry.pvp)
                 .build();
 
         public String action;
         public String zoneId;
+        @Nullable public String pvp;
     }
 }
