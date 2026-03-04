@@ -166,13 +166,9 @@ public class RtpvCommand extends AbstractPlayerCommand {
 
         world.execute(() -> {
             try {
-                double targetDistance = minDist + random.nextDouble() * (maxDist - minDist);
-                double angle = pickAngle(pvpFilter);
+                double[] angleRange = pickAngleRange(pvpFilter);
 
-                double targetX = Math.cos(angle) * targetDistance;
-                double targetZ = Math.sin(angle) * targetDistance;
-
-                Vector3d safePosition = rtpService.findSafePosition(world, generator, null, 50, targetX, targetZ);
+                Vector3d safePosition = rtpService.findSafePositionInRing(world, generator, minDist, maxDist, angleRange[0], angleRange[1], 50);
 
                 if (safePosition != null) {
                     teleportPlayer(store, ref, world, safePosition);
@@ -219,14 +215,14 @@ public class RtpvCommand extends AbstractPlayerCommand {
         }
     }
 
-    private double pickAngle(@Nullable Boolean pvpFilter) {
+    private double[] pickAngleRange(@Nullable Boolean pvpFilter) {
         if (pvpFilter == null) {
-            return random.nextDouble() * 2 * Math.PI;
+            return new double[]{0, 2 * Math.PI};
         }
 
         SafeZoneManager szm = VaryonPlugin.getStaticSafeZoneManager();
         if (szm == null) {
-            return random.nextDouble() * 2 * Math.PI;
+            return new double[]{0, 2 * Math.PI};
         }
 
         SafeZoneQuadrant current = szm.getCurrentQuadrant();
@@ -242,13 +238,14 @@ public class RtpvCommand extends AbstractPlayerCommand {
         }
 
         if (candidates.isEmpty()) {
-            return random.nextDouble() * 2 * Math.PI;
+            return new double[]{0, 2 * Math.PI};
         }
 
         SafeZoneQuadrant chosen = candidates.get(random.nextInt(candidates.size()));
-        double startRad = Math.toRadians(chosen.getStartAngle());
-        double endRad = Math.toRadians(chosen.getEndAngle());
-        return startRad + random.nextDouble() * (endRad - startRad);
+        return new double[]{
+            Math.toRadians(chosen.getStartAngle()),
+            Math.toRadians(chosen.getEndAngle())
+        };
     }
 
     private void teleportPlayer(Store<EntityStore> store, Ref<EntityStore> ref, World world, Vector3d position) {

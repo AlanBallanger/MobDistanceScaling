@@ -67,6 +67,35 @@ public class RtpService {
     }
 
     @Nullable
+    public Vector3d findSafePositionInRing(@Nonnull World world, @Nonnull ChunkGenerator generator,
+                                           double minDist, double maxDist,
+                                           double minAngle, double maxAngle,
+                                           int maxAttempts) {
+        int seed = (int) world.getWorldConfig().getSeed();
+        double distSqMin = minDist * minDist;
+        double distSqMax = maxDist * maxDist;
+
+        for (int attempt = 0; attempt < maxAttempts; attempt++) {
+            double t = random.nextDouble();
+            double dist = Math.sqrt(t * (distSqMax - distSqMin) + distSqMin);
+            double angle = minAngle + random.nextDouble() * (maxAngle - minAngle);
+
+            int x = (int) (Math.cos(angle) * dist);
+            int z = (int) (Math.sin(angle) * dist);
+
+            Double safeY = findSafeRtpY(world, x, z);
+            if (safeY != null) {
+                ZoneBiomeResult result = generator.getZoneBiomeResultAt(seed, x, z);
+                LOGGER.at(Level.INFO).log("RTP: position trouvée après " + (attempt + 1) + " tentative(s) — zone: " + result.getZoneResult().getZone().name());
+                return new Vector3d(x + 0.5, safeY, z + 0.5);
+            }
+        }
+
+        LOGGER.at(Level.WARNING).log("RTP: aucune position sûre après " + maxAttempts + " tentatives");
+        return null;
+    }
+
+    @Nullable
     private Double findSafeRtpY(@Nonnull World world, int x, int z) {
         long chunkIndex = ChunkUtil.indexChunkFromBlock(x, z);
         WorldChunk chunk = world.getChunk(chunkIndex);
@@ -80,19 +109,16 @@ public class RtpService {
     private Double findSafeRtpYFromChunk(@Nonnull WorldChunk chunk, int blockX, int blockZ) {
         for (int checkY = START_Y; checkY >= MIN_Y; checkY--) {
             try {
-                // Vérifier s'il y a du fluide à cette hauteur
                 if (hasFluid(chunk, blockX, checkY, blockZ)) {
-                    // Si fluide détecté, passer à la coordonnée suivante
-                    return null;
+                    continue;
                 }
                 
                 if (isSolidBlock(chunk, blockX, checkY, blockZ)) {
                     int spawnY = checkY + 1;
                     
-                    // Vérifier qu'il n'y a pas de fluide au niveau du spawn
                     if (hasFluid(chunk, blockX, spawnY, blockZ) || 
                         hasFluid(chunk, blockX, spawnY + 1, blockZ)) {
-                        return null;
+                        continue;
                     }
                     
                     // Vérifier qu'il y a 2 blocs d'espace au-dessus

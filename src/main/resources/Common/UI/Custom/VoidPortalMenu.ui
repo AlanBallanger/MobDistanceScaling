@@ -11,7 +11,7 @@ $C.@PageOverlay {
 
         Label #MenuTitle {
           FlexWeight: 1;
-          Text: "VOID PORTAL - Choisis une Zone";
+          Text: "Téléportation zones Varyon";
           Style: (FontSize: 20, RenderBold: true, TextColor: #ffffff, VerticalAlignment: Center, HorizontalAlignment: Center);
         }
 
