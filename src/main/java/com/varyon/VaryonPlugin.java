@@ -214,8 +214,10 @@ public class VaryonPlugin extends JavaPlugin {
             DepositBlockInteractionSystem depositInteractionSystem = new DepositBlockInteractionSystem(depositBlockManager, depositUIManager);
             this.getEntityStoreRegistry().registerSystem(depositInteractionSystem);
             LOGGER.at(Level.INFO).log("Deposit block system initialized");
+            this.getEntityStoreRegistry().registerSystem(new com.varyon.portal.VoidPortalPreInteractionSystem());
             VoidPortalInteractionSystem voidPortalInteractionSystem = new VoidPortalInteractionSystem();
             this.getEntityStoreRegistry().registerSystem(voidPortalInteractionSystem);
+            this.getEntityStoreRegistry().registerSystem(new com.varyon.portal.VoidPortalTickSystem());
             LOGGER.at(Level.INFO).log("Void portal interaction system initialized");
 
 

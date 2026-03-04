@@ -9,7 +9,6 @@ import com.hypixel.hytale.protocol.packets.interface_.CustomPageLifetime;
 import com.hypixel.hytale.protocol.packets.interface_.CustomUIEventBindingType;
 import com.hypixel.hytale.protocol.packets.interface_.Page;
 import com.hypixel.hytale.server.core.command.system.CommandManager;
-import com.hypixel.hytale.server.core.entity.entities.Player;
 import com.hypixel.hytale.server.core.entity.entities.player.pages.InteractiveCustomUIPage;
 import com.hypixel.hytale.server.core.ui.builder.EventData;
 import com.hypixel.hytale.server.core.ui.builder.UICommandBuilder;
@@ -18,6 +17,8 @@ import com.hypixel.hytale.server.core.universe.PlayerRef;
 import com.hypixel.hytale.server.core.universe.world.storage.EntityStore;
 import com.varyon.VaryonPlugin;
 import com.varyon.config.RtpvConfig;
+import com.varyon.config.ZonePermissionsConfig;
+import com.hypixel.hytale.server.core.entity.entities.Player;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -38,15 +39,35 @@ public class VoidPortalUIPage extends InteractiveCustomUIPage<VoidPortalUIPage.E
         RtpvConfig rtpvConfig = null;
         boolean economyEnabled = false;
         double safeMultiplier = 2.0;
+        ZonePermissionsConfig zonePermissionsConfig = null;
         try {
             if (VaryonPlugin.getStaticConfigManager() != null) {
                 rtpvConfig = VaryonPlugin.getStaticConfigManager().getRtpvConfig();
                 economyEnabled = rtpvConfig.isEconomyEnabled();
                 safeMultiplier = rtpvConfig.getSafeCostMultiplier();
+                zonePermissionsConfig = VaryonPlugin.getStaticConfigManager().getZonePermissionsConfig();
             }
         } catch (Exception ignored) {}
 
+        Player player = store.getComponent(ref, Player.getComponentType());
+        int maxAccessibleZone = 1;
+        if (player != null && zonePermissionsConfig != null) {
+            maxAccessibleZone = zonePermissionsConfig.getMaxAccessibleZone(player);
+        } else if (player != null) {
+            maxAccessibleZone = 10;
+        }
+
         for (int i = 1; i <= 10; i++) {
+            boolean accessible = i <= maxAccessibleZone;
+
+            if (!accessible) {
+                commandBuilder.set("#ZoneImg" + i + ".Background", "varyon_zones_no.png");
+                commandBuilder.set("#ZoneMain" + i + ".Disabled", true);
+                commandBuilder.set("#ZonePvP" + i + ".Disabled", true);
+                commandBuilder.set("#ZoneSafe" + i + ".Disabled", true);
+                continue;
+            }
+
             int baseCost = rtpvConfig != null ? rtpvConfig.getCostForZone(i) : 0;
             int safeCost = (int) Math.ceil(baseCost * safeMultiplier);
 
@@ -86,6 +107,15 @@ public class VoidPortalUIPage extends InteractiveCustomUIPage<VoidPortalUIPage.E
         if ("zone".equals(data.action) && data.zoneId != null) {
             PlayerRef playerRefComp = store.getComponent(ref, PlayerRef.getComponentType());
             if (player != null && playerRefComp != null) {
+                try {
+                    int requestedZone = Integer.parseInt(data.zoneId);
+                    ZonePermissionsConfig zonePerms = VaryonPlugin.getStaticConfigManager() != null
+                        ? VaryonPlugin.getStaticConfigManager().getZonePermissionsConfig() : null;
+                    if (zonePerms != null && !zonePerms.canAccessZone(player, requestedZone)) {
+                        return;
+                    }
+                } catch (NumberFormatException ignored) {}
+
                 player.getPageManager().setPage(ref, store, Page.None);
                 String command;
                 if ("true".equals(data.pvp)) {

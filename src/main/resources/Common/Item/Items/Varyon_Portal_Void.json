@@ -42,19 +42,6 @@
       "Color": "#59d"
     },
     "Interactions": {
-      "CollisionEnter": {
-        "Interactions": [
-          {
-            "Type": "PortalReturn",
-            "Next": {
-              "Type": "Simple",
-              "Effects": {
-                "LocalSoundEventId": "SFX_Portal_Neutral_Teleport_Local"
-              }
-            }
-          }
-        ]
-      },
       "Use": {
         "Interactions": [
           {
