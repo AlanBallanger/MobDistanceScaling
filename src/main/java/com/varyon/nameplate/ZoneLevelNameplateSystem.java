@@ -18,6 +18,7 @@ import com.varyon.config.MobFragmentsConfig;
 import com.varyon.util.ZoneCalculator;
 
 import javax.annotation.Nonnull;
+import java.util.List;
 import java.util.logging.Level;
 
 /**
@@ -66,6 +67,16 @@ public class ZoneLevelNameplateSystem extends EntityTickingSystem<EntityStore> {
 
             Ref<EntityStore> ref = chunk.getReferenceTo(index);
 
+            String worldName = store.getExternalData().getWorld().getName();
+            if (!configManager.getZoneConfig().isWorldEnabled(worldName)) {
+                NameplateData existing = store.getComponent(ref, nameplateDataType);
+                if (existing != null) {
+                    existing.setText("monster_level", "");
+                    existing.setText("monster_level.1", "");
+                }
+                return;
+            }
+
             // --- 1. Try level from MobScalingComponent (assigned at spawn) ---
             int tier = -1;
             MobScalingComponent scaling = store.getComponent(ref, MobScalingComponent.getComponentType());
@@ -73,10 +84,22 @@ public class ZoneLevelNameplateSystem extends EntityTickingSystem<EntityStore> {
                 tier = scaling.getMobLevel();
             }
 
-            // --- 2. Fallback: zone ID ---
+            // --- 2. Fallback: compute mid-range level from zone index ---
             if (tier < 0) {
                 DifficultyZone zone = ZoneCalculator.getCurrentZone(store, ref, configManager.getZoneConfig());
-                tier = zone != null ? zone.getZoneId() : 1;
+                if (zone != null) {
+                    List<DifficultyZone> zones = configManager.getZoneConfig().getZones();
+                    int zoneIndex = -1;
+                    for (int i = 0; i < zones.size(); i++) {
+                        if (zones.get(i).getZoneId() == zone.getZoneId()) {
+                            zoneIndex = i;
+                            break;
+                        }
+                    }
+                    tier = zoneIndex >= 0 ? (zoneIndex + 1) * 10 - 4 : 1;
+                } else {
+                    tier = 1;
+                }
             }
 
             // --- 3. Push to NameplateData ---
