@@ -135,15 +135,16 @@ public class RtpvCommand extends AbstractPlayerCommand {
         final BigDecimal costBD = BigDecimal.valueOf(finalCost);
 
         if (rtpvConfig.isEconomyEnabled()) {
-            Economy economy = VaultUnlockedServicesManager.get().economyObj();
-            if (economy != null && economy.isEnabled()) {
-                if (!economy.has("Varyon", playerRef.getUuid(), costBD)) {
-                    BigDecimal balance = economy.getBalance("Varyon", playerRef.getUuid());
+            try {
+                if (!hasEnoughBalance(playerRef, costBD)) {
+                    BigDecimal balance = getBalance(playerRef);
                     context.sendMessage(Message.raw(
                         "Coins insuffisants. Coût : " + finalCost + " | Solde : " + balance.intValue()
                     ).color(Color.RED));
                     return;
                 }
+            } catch (NoClassDefFoundError e) {
+                LOGGER.at(Level.WARNING).log("Vault non disponible, vérification économie ignorée");
             }
         }
 
@@ -177,12 +178,10 @@ public class RtpvCommand extends AbstractPlayerCommand {
                     teleportPlayer(store, ref, world, safePosition);
 
                     if (rtpvConfig.isEconomyEnabled()) {
-                        Economy economy = VaultUnlockedServicesManager.get().economyObj();
-                        if (economy != null && economy.isEnabled()) {
-                            EconomyResponse response = economy.withdraw("Varyon", playerRef.getUuid(), costBD);
-                            if (!response.transactionSuccess()) {
-                                LOGGER.at(Level.WARNING).log("Failed to deduct " + finalCost + " coins from " + playerRef.getUuid() + ": " + response.errorMessage);
-                            }
+                        try {
+                            withdrawBalance(playerRef, costBD, finalCost);
+                        } catch (NoClassDefFoundError e) {
+                            LOGGER.at(Level.WARNING).log("Vault non disponible, déduction ignorée");
                         }
                     }
 
@@ -197,6 +196,27 @@ public class RtpvCommand extends AbstractPlayerCommand {
                 context.sendMessage(Message.raw("Échec de la téléportation").color(Color.RED));
             }
         });
+    }
+
+    private boolean hasEnoughBalance(PlayerRef playerRef, BigDecimal cost) {
+        Economy economy = VaultUnlockedServicesManager.get().economyObj();
+        if (economy == null || !economy.isEnabled()) return true;
+        return economy.has("Varyon", playerRef.getUuid(), cost);
+    }
+
+    private BigDecimal getBalance(PlayerRef playerRef) {
+        Economy economy = VaultUnlockedServicesManager.get().economyObj();
+        if (economy == null || !economy.isEnabled()) return BigDecimal.ZERO;
+        return economy.getBalance("Varyon", playerRef.getUuid());
+    }
+
+    private void withdrawBalance(PlayerRef playerRef, BigDecimal cost, int finalCost) {
+        Economy economy = VaultUnlockedServicesManager.get().economyObj();
+        if (economy == null || !economy.isEnabled()) return;
+        EconomyResponse response = economy.withdraw("Varyon", playerRef.getUuid(), cost);
+        if (!response.transactionSuccess()) {
+            LOGGER.at(Level.WARNING).log("Failed to deduct " + finalCost + " coins from " + playerRef.getUuid() + ": " + response.errorMessage);
+        }
     }
 
     private double pickAngle(@Nullable Boolean pvpFilter) {

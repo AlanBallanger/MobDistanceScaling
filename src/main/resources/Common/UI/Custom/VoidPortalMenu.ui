@@ -44,7 +44,7 @@ $C.@PageOverlay {
 
           Group #ZoneImg1 {
             Anchor: (Height: 92);
-            Background: "UI/Custom/varyon_zones.png";
+            Background: "varyon_zones.png";
             Padding: (Top: 5, Left: 7);
             Label {
               Text: "Zone 1";
@@ -151,7 +151,7 @@ $C.@PageOverlay {
 
           Group #ZoneImg2 {
             Anchor: (Height: 92);
-            Background: "UI/Custom/varyon_zones.png";
+            Background: "varyon_zones.png";
             Padding: (Top: 5, Left: 7);
             Label {
               Text: "Zone 2";
@@ -258,7 +258,7 @@ $C.@PageOverlay {
 
           Group #ZoneImg3 {
             Anchor: (Height: 92);
-            Background: "UI/Custom/varyon_zones.png";
+            Background: "varyon_zones.png";
             Padding: (Top: 5, Left: 7);
             Label {
               Text: "Zone 3";
@@ -364,7 +364,7 @@ $C.@PageOverlay {
 
           Group #ZoneImg4 {
             Anchor: (Height: 92);
-            Background: "UI/Custom/varyon_zones.png";
+            Background: "varyon_zones.png";
             Padding: (Top: 5, Left: 7);
             Label {
               Text: "Zone 4";
@@ -477,7 +477,7 @@ $C.@PageOverlay {
 
           Group #ZoneImg5 {
             Anchor: (Height: 92);
-            Background: "UI/Custom/varyon_zones.png";
+            Background: "varyon_zones.png";
             Padding: (Top: 5, Left: 7);
             Label {
               Text: "Zone 5";
@@ -584,7 +584,7 @@ $C.@PageOverlay {
 
           Group #ZoneImg6 {
             Anchor: (Height: 92);
-            Background: "UI/Custom/varyon_zones.png";
+            Background: "varyon_zones.png";
             Padding: (Top: 5, Left: 7);
             Label {
               Text: "Zone 6";
@@ -691,7 +691,7 @@ $C.@PageOverlay {
 
           Group #ZoneImg7 {
             Anchor: (Height: 92);
-            Background: "UI/Custom/varyon_zones.png";
+            Background: "varyon_zones.png";
             Padding: (Top: 5, Left: 7);
             Label {
               Text: "Zone 7";
@@ -797,7 +797,7 @@ $C.@PageOverlay {
 
           Group #ZoneImg8 {
             Anchor: (Height: 92);
-            Background: "UI/Custom/varyon_zones.png";
+            Background: "varyon_zones.png";
             Padding: (Top: 5, Left: 7);
             Label {
               Text: "Zone 8";
@@ -912,7 +912,7 @@ $C.@PageOverlay {
 
           Group #ZoneImg9 {
             Anchor: (Height: 92);
-            Background: "UI/Custom/varyon_zones.png";
+            Background: "varyon_zones.png";
             Padding: (Top: 5, Left: 7);
             Label {
               Text: "Zone 9";
@@ -1018,7 +1018,7 @@ $C.@PageOverlay {
 
           Group #ZoneImg10 {
             Anchor: (Height: 92);
-            Background: "UI/Custom/varyon_zones.png";
+            Background: "varyon_zones.png";
             Padding: (Top: 5, Left: 7);
             Label {
               Text: "Zone 10";
