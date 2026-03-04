@@ -56,7 +56,7 @@ public class PlaceOreListener extends EntityEventSystem<EntityStore, PlaceBlockE
             String world = resolveWorld(store);
 
             tracker.add(world, pos);
-            LOGGER.at(Level.FINE).log("Tracked placed ore " + itemId + " at " + world + ":" + pos.getX() + "," + pos.getY() + "," + pos.getZ());
+            LOGGER.at(Level.INFO).log("Tracked placed ore " + itemId + " at " + world + ":" + pos.getX() + "," + pos.getY() + "," + pos.getZ());
 
         } catch (Exception e) {
             LOGGER.at(Level.WARNING).log("Error in PlaceOreListener: " + e.getMessage());

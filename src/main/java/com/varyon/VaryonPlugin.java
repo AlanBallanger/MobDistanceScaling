@@ -192,7 +192,7 @@ public class VaryonPlugin extends JavaPlugin {
                 placedOreTracker);
             this.getEntityStoreRegistry().registerSystem(miningFragmentDropSystem);
 
-            this.getEntityStoreRegistry().registerSystem(new BreakOreCleanupListener(placedOreTracker));
+            this.getEntityStoreRegistry().registerSystem(new BreakOreCleanupListener(placedOreTracker, configManager.getMobFragmentsConfig(), essenceRewardsConfig));
             LOGGER.at(Level.INFO).log("Essence reward systems registered");
 
             // NameplateBuilder â€” zone level tick system (optional, skipped if mod absent)

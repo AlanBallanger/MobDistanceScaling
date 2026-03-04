@@ -28,19 +28,28 @@ public class PlacedOreTracker {
     }
 
     public void add(@Nonnull String world, @Nonnull Vector3i pos) {
-        if (placedPositions.add(key(world, pos))) {
+        String k = key(world, pos);
+        boolean added = placedPositions.add(k);
+        LOGGER.at(Level.INFO).log("[Tracker.add] key=" + k + " added=" + added + " setSize=" + placedPositions.size());
+        if (added) {
             save();
         }
     }
 
     public void remove(@Nonnull String world, @Nonnull Vector3i pos) {
-        if (placedPositions.remove(key(world, pos))) {
+        String k = key(world, pos);
+        boolean removed = placedPositions.remove(k);
+        LOGGER.at(Level.INFO).log("[Tracker.remove] key=" + k + " removed=" + removed + " setSize=" + placedPositions.size());
+        if (removed) {
             save();
         }
     }
 
     public boolean isPlayerPlaced(@Nonnull String world, @Nonnull Vector3i pos) {
-        return placedPositions.contains(key(world, pos));
+        String k = key(world, pos);
+        boolean found = placedPositions.contains(k);
+        LOGGER.at(Level.INFO).log("[Tracker.isPlayerPlaced] key=" + k + " found=" + found + " setSize=" + placedPositions.size());
+        return found;
     }
 
     private String key(@Nonnull String world, @Nonnull Vector3i pos) {

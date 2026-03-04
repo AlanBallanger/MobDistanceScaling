@@ -5,24 +5,31 @@ import com.hypixel.hytale.component.CommandBuffer;
 import com.hypixel.hytale.component.Store;
 import com.hypixel.hytale.component.query.Query;
 import com.hypixel.hytale.component.system.EntityEventSystem;
-import com.hypixel.hytale.component.Archetype;
 import com.hypixel.hytale.logger.HytaleLogger;
 import com.hypixel.hytale.math.vector.Vector3i;
 import com.hypixel.hytale.server.core.event.events.ecs.BreakBlockEvent;
+import com.hypixel.hytale.server.core.universe.PlayerRef;
 import com.hypixel.hytale.server.core.universe.world.storage.EntityStore;
+import com.varyon.config.EssenceRewardsConfig;
+import com.varyon.config.MobFragmentsConfig;
 
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 import java.util.logging.Level;
 
 public class BreakOreCleanupListener extends EntityEventSystem<EntityStore, BreakBlockEvent> {
     private static final HytaleLogger LOGGER = HytaleLogger.forEnclosingClass();
 
     private final PlacedOreTracker tracker;
+    private final MobFragmentsConfig fragmentsConfig;
+    private final EssenceRewardsConfig rewardsConfig;
 
-    public BreakOreCleanupListener(@Nonnull PlacedOreTracker tracker) {
+    public BreakOreCleanupListener(@Nonnull PlacedOreTracker tracker,
+                                   @Nonnull MobFragmentsConfig fragmentsConfig,
+                                   @Nonnull EssenceRewardsConfig rewardsConfig) {
         super(BreakBlockEvent.class);
         this.tracker = tracker;
+        this.fragmentsConfig = fragmentsConfig;
+        this.rewardsConfig = rewardsConfig;
     }
 
     @Override
@@ -30,11 +37,22 @@ public class BreakOreCleanupListener extends EntityEventSystem<EntityStore, Brea
                        @Nonnull Store<EntityStore> store, @Nonnull CommandBuffer<EntityStore> commandBuffer,
                        @Nonnull BreakBlockEvent event) {
         try {
+            if (event.getBlockType() == null) return;
+            String blockId = event.getBlockType().getId().toLowerCase();
+
+            if (fragmentsConfig.getMiningFragments(blockId) <= 0 && rewardsConfig.getOreReward(blockId) <= 0) {
+                return;
+            }
+
             Vector3i pos = event.getTargetBlock();
             if (pos == null) return;
 
             String world = resolveWorld(store);
+            boolean wasTracked = tracker.isPlayerPlaced(world, pos);
             tracker.remove(world, pos);
+            if (wasTracked) {
+                LOGGER.at(Level.INFO).log("AntiExploit cleanup: removed " + world + ":" + pos.getX() + "," + pos.getY() + "," + pos.getZ() + " block=" + blockId);
+            }
 
         } catch (Exception e) {
             LOGGER.at(Level.WARNING).log("Error in BreakOreCleanupListener: " + e.getMessage());
@@ -50,9 +68,9 @@ public class BreakOreCleanupListener extends EntityEventSystem<EntityStore, Brea
         return "world";
     }
 
-    @Nullable
+    @Nonnull
     @Override
     public Query<EntityStore> getQuery() {
-        return Archetype.empty();
+        return PlayerRef.getComponentType();
     }
 }

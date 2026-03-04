@@ -72,7 +72,9 @@ public class EssenceMiningSystem extends EntityEventSystem<EntityStore, BreakBlo
             }
 
             if (event.getTargetBlock() != null) {
-                if (placedOreTracker.isPlayerPlaced(world, event.getTargetBlock())) {
+                boolean placed = placedOreTracker.isPlayerPlaced(world, event.getTargetBlock());
+                LOGGER.at(Level.INFO).log("AntiExploit check: world=" + world + " pos=" + event.getTargetBlock().getX() + "," + event.getTargetBlock().getY() + "," + event.getTargetBlock().getZ() + " playerPlaced=" + placed);
+                if (placed) {
                     return;
                 }
             }
