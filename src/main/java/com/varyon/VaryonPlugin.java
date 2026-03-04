@@ -167,7 +167,8 @@ public class VaryonPlugin extends JavaPlugin {
             MobFragmentDropSystem mobFragmentDropSystem = new MobFragmentDropSystem(
                 configManager.getMobFragmentsConfig(),
                 configManager.getZoneLootConfig(),
-                configManager.getZonePermissionsConfig());
+                configManager.getZonePermissionsConfig(),
+                configManager);
             this.getEntityStoreRegistry().registerSystem(mobFragmentDropSystem.createTracker());
             this.getEntityStoreRegistry().registerSystem(mobFragmentDropSystem.createDropSystem());
 

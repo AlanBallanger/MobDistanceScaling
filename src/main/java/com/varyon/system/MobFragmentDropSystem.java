@@ -24,6 +24,7 @@ import com.hypixel.hytale.server.core.universe.PlayerRef;
 import com.hypixel.hytale.server.core.universe.world.storage.EntityStore;
 import com.hypixel.hytale.server.npc.entities.NPCEntity;
 import com.varyon.component.MobScalingComponent;
+import com.varyon.config.ConfigManager;
 import com.varyon.config.MobFragmentsConfig;
 import com.varyon.config.ZoneLootConfig;
 import com.varyon.config.ZonePermissionsConfig;
@@ -49,13 +50,16 @@ public class MobFragmentDropSystem {
     private final MobFragmentsConfig mobConfig;
     private final ZoneLootConfig zoneConfig;
     private final ZonePermissionsConfig zonePermsConfig;
+    private final ConfigManager configManager;
 
     public MobFragmentDropSystem(@Nonnull MobFragmentsConfig mobConfig,
                                  @Nonnull ZoneLootConfig zoneConfig,
-                                 @Nonnull ZonePermissionsConfig zonePermsConfig) {
+                                 @Nonnull ZonePermissionsConfig zonePermsConfig,
+                                 @Nonnull ConfigManager configManager) {
         this.mobConfig = mobConfig;
         this.zoneConfig = zoneConfig;
         this.zonePermsConfig = zonePermsConfig;
+        this.configManager = configManager;
     }
 
     // -------------------------------------------------------------------------
@@ -128,6 +132,12 @@ public class MobFragmentDropSystem {
                 @Nonnull CommandBuffer commandBuffer) {
             try {
                 int victimId = System.identityHashCode(ref);
+
+                String worldName = ((EntityStore) store.getExternalData()).getWorld().getName();
+                if (!configManager.getZoneConfig().isWorldEnabled(worldName)) {
+                    killerHasPermission.remove(victimId);
+                    return;
+                }
 
                 Boolean hasAccess = killerHasPermission.remove(victimId);
                 if (Boolean.FALSE.equals(hasAccess)) {
