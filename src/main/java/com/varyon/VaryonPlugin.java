@@ -33,6 +33,7 @@ import com.varyon.config.EssenceRewardsConfig;
 import com.varyon.death.DeathDetectionSystem;
 import com.varyon.death.DeathPointManager;
 import com.varyon.deposit.DepositBlockInteractionSystem;
+import com.varyon.portal.VoidPortalInteractionSystem;
 import com.varyon.deposit.DepositBlockManager;
 import com.varyon.deposit.DepositUIManager;
 import com.varyon.essence.EssenceKillSystem;
@@ -88,7 +89,7 @@ public class VaryonPlugin extends JavaPlugin {
 
     @Override
     protected void setup() {
-        // NameplateBuilder — describe segments before any tick system is registered.
+        // NameplateBuilder â€” describe segments before any tick system is registered.
         // Wrapped in try/catch: if NameplateBuilder is not installed the classes simply
         // won't be on the classpath and we log a warning instead of crashing.
         try {
@@ -97,8 +98,8 @@ public class VaryonPlugin extends JavaPlugin {
                     com.frotty27.nameplatebuilder.api.SegmentTarget.NPCS, "Nv.5");
             com.frotty27.nameplatebuilder.api.NameplateAPI.describeVariants(
                     this, "monster_level", java.util.List.of(
-                            "Préfixé (ex: Nv.5)",
-                            "Numéro  (ex: 5)"));
+                            "PrÃ©fixÃ© (ex: Nv.5)",
+                            "NumÃ©ro  (ex: 5)"));
             LOGGER.at(Level.INFO).log("NameplateBuilder integration registered (monster_level)");
         } catch (Throwable t) {
             LOGGER.at(Level.INFO).log("NameplateBuilder not available, skipping nameplate integration (" + t.getClass().getSimpleName() + ")");
@@ -115,7 +116,7 @@ public class VaryonPlugin extends JavaPlugin {
             configManager.load();
             staticConfigManager = configManager;
 
-            // Initialiser le système d'essence
+            // Initialiser le systÃ¨me d'essence
             essenceManager = new EssenceManager(this.getDataDirectory().toFile());
             staticEssenceManager = essenceManager;
 
@@ -123,12 +124,12 @@ public class VaryonPlugin extends JavaPlugin {
             essenceRewardsConfig.load(this.getDataDirectory());
             LOGGER.at(Level.INFO).log("Essence system initialized");
 
-            // Initialiser le système de factions
+            // Initialiser le systÃ¨me de factions
             factionManager = new FactionManager();
             staticFactionManager = factionManager;
             LOGGER.at(Level.INFO).log("Faction system initialized");
 
-            // Initialiser le système de récompenses de faction
+            // Initialiser le systÃ¨me de rÃ©compenses de faction
             globalRewardsManager = new GlobalRewardsManager(
                 configManager.getFactionRewardsConfig(),
                 essenceManager,
@@ -137,12 +138,12 @@ public class VaryonPlugin extends JavaPlugin {
                 this.getDataDirectory());
             staticGlobalRewardsManager = globalRewardsManager;
             
-            // Lier le rewards manager à l'essence manager
+            // Lier le rewards manager Ã  l'essence manager
             essenceManager.setRewardsManager(globalRewardsManager);
             
             LOGGER.at(Level.INFO).log("Global rewards system initialized");
             
-            // Vérifier les récompenses au démarrage
+            // VÃ©rifier les rÃ©compenses au dÃ©marrage
             globalRewardsManager.checkAndDistributeRewards();
 
             extractionPortalManager = new ExtractionPortalManager(configManager.getExtractionConfig());
@@ -194,7 +195,7 @@ public class VaryonPlugin extends JavaPlugin {
             this.getEntityStoreRegistry().registerSystem(new BreakOreCleanupListener(placedOreTracker));
             LOGGER.at(Level.INFO).log("Essence reward systems registered");
 
-            // NameplateBuilder — zone level tick system (optional, skipped if mod absent)
+            // NameplateBuilder â€” zone level tick system (optional, skipped if mod absent)
             try {
                 ZoneLevelNameplateSystem zoneLevelNameplateSystem = new ZoneLevelNameplateSystem(
                         com.frotty27.nameplatebuilder.api.NameplateAPI.getComponentType(),
@@ -206,22 +207,26 @@ public class VaryonPlugin extends JavaPlugin {
                 LOGGER.at(Level.INFO).log("NameplateBuilder tick system skipped (" + t.getClass().getSimpleName() + ")");
             }
 
-            // Initialiser le système de dépôt d'essence
+            // Initialiser le systÃ¨me de dÃ©pÃ´t d'essence
             depositBlockManager = new DepositBlockManager(this.getDataDirectory());
             depositUIManager = new DepositUIManager(essenceManager, factionManager);
             
             DepositBlockInteractionSystem depositInteractionSystem = new DepositBlockInteractionSystem(depositBlockManager, depositUIManager);
             this.getEntityStoreRegistry().registerSystem(depositInteractionSystem);
             LOGGER.at(Level.INFO).log("Deposit block system initialized");
+            VoidPortalInteractionSystem voidPortalInteractionSystem = new VoidPortalInteractionSystem();
+            this.getEntityStoreRegistry().registerSystem(voidPortalInteractionSystem);
+            LOGGER.at(Level.INFO).log("Void portal interaction system initialized");
 
-            // Initialiser le système de retour au point de mort
+
+            // Initialiser le systÃ¨me de retour au point de mort
             deathPointManager = new DeathPointManager(this.getDataDirectory());
             
             DeathDetectionSystem deathDetectionSystem = new DeathDetectionSystem(deathPointManager);
             this.getEntityStoreRegistry().registerSystem(deathDetectionSystem);
             LOGGER.at(Level.INFO).log("Death point system initialized");
 
-            // Initialiser le système de safe zone
+            // Initialiser le systÃ¨me de safe zone
             if (configManager.getSafeZoneConfig().isEnabled()) {
                 safeZoneManager = new SafeZoneManager(configManager.getSafeZoneConfig(), configManager.getZoneConfig(), this.getDataDirectory());
                 staticSafeZoneManager = safeZoneManager;
@@ -235,7 +240,7 @@ public class VaryonPlugin extends JavaPlugin {
                 this.getEntityStoreRegistry().registerSystem(safeZoneNotificationSystem);
                 staticSafeZoneNotificationSystem = safeZoneNotificationSystem;
                 
-                // Activer le PvP dans tous les mondes pour que le système de SafeZone fonctionne
+                // Activer le PvP dans tous les mondes pour que le systÃ¨me de SafeZone fonctionne
                 this.getEventRegistry().registerGlobal(AddWorldEvent.class, event -> {
                     World world = event.getWorld();
                     if (!world.getWorldConfig().isDeleteOnRemove()) {
@@ -245,7 +250,7 @@ public class VaryonPlugin extends JavaPlugin {
                     }
                 });
                 
-                // Activer aussi pour les mondes déjà chargés
+                // Activer aussi pour les mondes dÃ©jÃ  chargÃ©s
                 for (World world : Universe.get().getWorlds().values()) {
                     if (!world.getWorldConfig().isDeleteOnRemove()) {
                         world.getWorldConfig().setPvpEnabled(true);
@@ -271,7 +276,7 @@ public class VaryonPlugin extends JavaPlugin {
                 this.getEventRegistry().registerGlobal(PlayerConnectEvent.class, event -> {
                     try {
                         PlayerRef playerRef = event.getPlayerRef();
-                        // Charger l'essence du joueur depuis la base de données
+                        // Charger l'essence du joueur depuis la base de donnÃ©es
                         essenceManager.loadPlayer(playerRef.getUuid());
                     } catch (Exception e) {
                         LOGGER.at(Level.WARNING).log("Failed to load player essence: " + e.getMessage());
@@ -453,3 +458,5 @@ public class VaryonPlugin extends JavaPlugin {
         return staticInstance;
     }
 }
+
+

@@ -1,0 +1,202 @@
+﻿$C = "Common.ui";
+
+$C.@PageOverlay {
+
+  $C.@DecoratedContainer {
+    Anchor: (Width: 950, Height: 380);
+
+    #Title {
+      Group {
+        LayoutMode: Left;
+
+        Label #MenuTitle {
+          FlexWeight: 1;
+          Text: "VOID PORTAL - Choisis une Zone";
+          Style: (FontSize: 20, RenderBold: true, TextColor: #ffffff, VerticalAlignment: Center, HorizontalAlignment: Center);
+        }
+
+        TextButton #CloseButton {
+          Text: "X";
+          Anchor: (Width: 30, Height: 30, Top: 2, Right: 10);
+          Style: TextButtonStyle(
+            Default: (LabelStyle: (FontSize: 18, TextColor: #ffffff, RenderBold: true, HorizontalAlignment: Center, VerticalAlignment: Center)),
+            Hovered: (Background: (Color: #cc4444), LabelStyle: (FontSize: 18, TextColor: #ffffff, RenderBold: true, HorizontalAlignment: Center, VerticalAlignment: Center))
+          );
+        }
+      }
+    }
+
+    #Content {
+      Padding: (Top: 14, Bottom: 14, Left: 14, Right: 14);
+      LayoutMode: Top;
+
+      Group #Row1 {
+        LayoutMode: Left;
+        Anchor: (Height: 120, Bottom: 10);
+
+        Button #Zone1 {
+          FlexWeight: 1;
+          Anchor: (Right: 8);
+          Style: ButtonStyle(
+            Default: (Background: (Color: #1a2a3a)),
+            Hovered: (Background: (Color: #2a4a6a)),
+            Pressed: (Background: (Color: #1a3050))
+          );
+          OutlineColor: #2a3a4a;
+          OutlineSize: 2;
+          Group {
+            LayoutMode: Middle;
+            Label { Text: "Zone 1"; Style: (FontSize: 17, RenderBold: true, TextColor: #88ccff, HorizontalAlignment: Center); }
+          }
+        }
+
+        Button #Zone2 {
+          FlexWeight: 1;
+          Anchor: (Right: 8);
+          Style: ButtonStyle(
+            Default: (Background: (Color: #1a2a3a)),
+            Hovered: (Background: (Color: #2a4a6a)),
+            Pressed: (Background: (Color: #1a3050))
+          );
+          OutlineColor: #2a3a4a;
+          OutlineSize: 2;
+          Group {
+            LayoutMode: Middle;
+            Label { Text: "Zone 2"; Style: (FontSize: 17, RenderBold: true, TextColor: #88ccff, HorizontalAlignment: Center); }
+          }
+        }
+
+        Button #Zone3 {
+          FlexWeight: 1;
+          Anchor: (Right: 8);
+          Style: ButtonStyle(
+            Default: (Background: (Color: #1a2a3a)),
+            Hovered: (Background: (Color: #2a4a6a)),
+            Pressed: (Background: (Color: #1a3050))
+          );
+          OutlineColor: #2a3a4a;
+          OutlineSize: 2;
+          Group {
+            LayoutMode: Middle;
+            Label { Text: "Zone 3"; Style: (FontSize: 17, RenderBold: true, TextColor: #88ccff, HorizontalAlignment: Center); }
+          }
+        }
+
+        Button #Zone4 {
+          FlexWeight: 1;
+          Anchor: (Right: 8);
+          Style: ButtonStyle(
+            Default: (Background: (Color: #1a2a3a)),
+            Hovered: (Background: (Color: #2a4a6a)),
+            Pressed: (Background: (Color: #1a3050))
+          );
+          OutlineColor: #2a3a4a;
+          OutlineSize: 2;
+          Group {
+            LayoutMode: Middle;
+            Label { Text: "Zone 4"; Style: (FontSize: 17, RenderBold: true, TextColor: #88ccff, HorizontalAlignment: Center); }
+          }
+        }
+
+        Button #Zone5 {
+          FlexWeight: 1;
+          Style: ButtonStyle(
+            Default: (Background: (Color: #1a2a3a)),
+            Hovered: (Background: (Color: #2a4a6a)),
+            Pressed: (Background: (Color: #1a3050))
+          );
+          OutlineColor: #2a3a4a;
+          OutlineSize: 2;
+          Group {
+            LayoutMode: Middle;
+            Label { Text: "Zone 5"; Style: (FontSize: 17, RenderBold: true, TextColor: #88ccff, HorizontalAlignment: Center); }
+          }
+        }
+      }
+
+      Group #Row2 {
+        LayoutMode: Left;
+        Anchor: (Height: 120);
+
+        Button #Zone6 {
+          FlexWeight: 1;
+          Anchor: (Right: 8);
+          Style: ButtonStyle(
+            Default: (Background: (Color: #1a2a3a)),
+            Hovered: (Background: (Color: #2a4a6a)),
+            Pressed: (Background: (Color: #1a3050))
+          );
+          OutlineColor: #2a3a4a;
+          OutlineSize: 2;
+          Group {
+            LayoutMode: Middle;
+            Label { Text: "Zone 6"; Style: (FontSize: 17, RenderBold: true, TextColor: #88ccff, HorizontalAlignment: Center); }
+          }
+        }
+
+        Button #Zone7 {
+          FlexWeight: 1;
+          Anchor: (Right: 8);
+          Style: ButtonStyle(
+            Default: (Background: (Color: #1a2a3a)),
+            Hovered: (Background: (Color: #2a4a6a)),
+            Pressed: (Background: (Color: #1a3050))
+          );
+          OutlineColor: #2a3a4a;
+          OutlineSize: 2;
+          Group {
+            LayoutMode: Middle;
+            Label { Text: "Zone 7"; Style: (FontSize: 17, RenderBold: true, TextColor: #88ccff, HorizontalAlignment: Center); }
+          }
+        }
+
+        Button #Zone8 {
+          FlexWeight: 1;
+          Anchor: (Right: 8);
+          Style: ButtonStyle(
+            Default: (Background: (Color: #1a2a3a)),
+            Hovered: (Background: (Color: #2a4a6a)),
+            Pressed: (Background: (Color: #1a3050))
+          );
+          OutlineColor: #2a3a4a;
+          OutlineSize: 2;
+          Group {
+            LayoutMode: Middle;
+            Label { Text: "Zone 8"; Style: (FontSize: 17, RenderBold: true, TextColor: #88ccff, HorizontalAlignment: Center); }
+          }
+        }
+
+        Button #Zone9 {
+          FlexWeight: 1;
+          Anchor: (Right: 8);
+          Style: ButtonStyle(
+            Default: (Background: (Color: #1a2a3a)),
+            Hovered: (Background: (Color: #2a4a6a)),
+            Pressed: (Background: (Color: #1a3050))
+          );
+          OutlineColor: #2a3a4a;
+          OutlineSize: 2;
+          Group {
+            LayoutMode: Middle;
+            Label { Text: "Zone 9"; Style: (FontSize: 17, RenderBold: true, TextColor: #88ccff, HorizontalAlignment: Center); }
+          }
+        }
+
+        Button #Zone10 {
+          FlexWeight: 1;
+          Style: ButtonStyle(
+            Default: (Background: (Color: #1a2a3a)),
+            Hovered: (Background: (Color: #2a4a6a)),
+            Pressed: (Background: (Color: #1a3050))
+          );
+          OutlineColor: #2a3a4a;
+          OutlineSize: 2;
+          Group {
+            LayoutMode: Middle;
+            Label { Text: "Zone 10"; Style: (FontSize: 17, RenderBold: true, TextColor: #88ccff, HorizontalAlignment: Center); }
+          }
+        }
+      }
+    }
+  }
+}
