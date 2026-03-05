@@ -167,13 +167,7 @@ public class ConfigManager {
         sb.append("[rtpv]\n");
         sb.append("economyEnabled = ").append(rtpv.isEconomyEnabled()).append("\n");
         sb.append("safeCostMultiplier = ").append(rtpv.getSafeCostMultiplier()).append("\n");
-        sb.append("zoneCosts = [");
-        List<Integer> costs = rtpv.getZoneCosts();
-        for (int i = 0; i < costs.size(); i++) {
-            sb.append(costs.get(i));
-            if (i < costs.size() - 1) sb.append(", ");
-        }
-        sb.append("]\n\n");
+        sb.append("\n");
 
         for (DifficultyZone zone : zoneConfig.getZones()) {
             sb.append("[[zones]]\n");
@@ -183,7 +177,8 @@ public class ConfigManager {
             sb.append("healthMultiplier = ").append(zone.getHealthMultiplier()).append("\n");
             sb.append("damageMultiplier = ").append(zone.getDamageMultiplier()).append("\n");
             sb.append("lootMultiplier = ").append(zone.getLootMultiplier()).append("\n");
-            sb.append("radiusStart = ").append(zone.getRadiusStart()).append("\n\n");
+            sb.append("radiusStart = ").append(zone.getRadiusStart()).append("\n");
+            sb.append("teleportCost = ").append(zone.getTeleportCost()).append("\n\n");
         }
 
         return sb.toString();
@@ -241,8 +236,9 @@ public class ConfigManager {
                 double essenceMultiplier = zoneToml.getDouble("essenceMultiplier", 1.0);
                 int radiusStart = zoneToml.getLong("radiusStart", 0L).intValue();
                 String name = zoneToml.getString("name", "Zone " + id);
+                int teleportCost = zoneToml.getLong("teleportCost", (long)(id * 100)).intValue();
                 zones.add(new DifficultyZone(id, color, healthMultiplier, damageMultiplier,
-                        lootMultiplier, essenceMultiplier, radiusStart, name));
+                        lootMultiplier, essenceMultiplier, radiusStart, name, teleportCost));
             }
         }
 
@@ -296,15 +292,7 @@ public class ConfigManager {
         if (rtpvToml == null) return RtpvConfig.createDefault();
         boolean economyEnabled = rtpvToml.getBoolean("economyEnabled", true);
         double safeCostMultiplier = rtpvToml.getDouble("safeCostMultiplier", 2.0);
-        List<Long> rawCosts = rtpvToml.getList("zoneCosts");
-        List<Integer> zoneCosts = new ArrayList<>();
-        if (rawCosts != null) {
-            for (Long v : rawCosts) zoneCosts.add(v.intValue());
-        }
-        if (zoneCosts.isEmpty()) {
-            zoneCosts = RtpvConfig.createDefault().getZoneCosts();
-        }
-        return new RtpvConfig(zoneCosts, safeCostMultiplier, economyEnabled);
+        return new RtpvConfig(safeCostMultiplier, economyEnabled);
     }
 
     @Nonnull

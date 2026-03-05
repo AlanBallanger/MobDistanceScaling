@@ -20,7 +20,7 @@ public class PlacedOreTracker {
 
     private final Set<String> placedPositions = ConcurrentHashMap.newKeySet();
     private final Path dataDirectory;
-    private final Gson gson = new GsonBuilder().create();
+    private final Gson gson = new GsonBuilder().setPrettyPrinting().create();
 
     public PlacedOreTracker(@Nonnull Path dataDirectory) {
         this.dataDirectory = dataDirectory;

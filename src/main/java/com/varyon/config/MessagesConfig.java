@@ -66,10 +66,11 @@ public class MessagesConfig {
         public String noSafeLocation;
         public String error;
         public String firstUseWarning;
+        public String cooldownWarning;
 
         public ReturnMessages(String success, String cooldown, String noDeathPoint, String expired,
                               String alreadyUsed, String teleporting, String noSafeLocation,
-                              String error, String firstUseWarning) {
+                              String error, String firstUseWarning, String cooldownWarning) {
             this.success = success;
             this.cooldown = cooldown;
             this.noDeathPoint = noDeathPoint;
@@ -79,6 +80,7 @@ public class MessagesConfig {
             this.noSafeLocation = noSafeLocation;
             this.error = error;
             this.firstUseWarning = firstUseWarning;
+            this.cooldownWarning = cooldownWarning;
         }
     }
 
@@ -210,7 +212,8 @@ public class MessagesConfig {
                 returnToml.getString("teleporting", "Recherche d'un emplacement sûr près de votre point de mort..."),
                 returnToml.getString("noSafeLocation", "Impossible de trouver un emplacement sûr après {attempts} tentatives"),
                 returnToml.getString("error", "Erreur lors de la téléportation"),
-                returnToml.getString("firstUseWarning", "⚠ ATTENTION: Vous ne pourrez utiliser /return qu'UNE SEULE FOIS pour cette mort!")
+                returnToml.getString("firstUseWarning", "⚠ ATTENTION: Vous ne pourrez utiliser /return qu'UNE SEULE FOIS pour cette mort!"),
+                returnToml.getString("cooldownWarning", "⏳ Cooldown encore actif ({remaining}s). Réutiliser /return coûtera {cost} coins (×{multiplier}). Tapez /return force pour confirmer.")
             );
 
             Toml safeToml = toml.getTable("safezone");
@@ -291,7 +294,8 @@ public class MessagesConfig {
             sb.append("teleporting = \"").append(returnMessages.teleporting).append("\"\n");
             sb.append("noSafeLocation = \"").append(returnMessages.noSafeLocation).append("\"\n");
             sb.append("error = \"").append(returnMessages.error).append("\"\n");
-            sb.append("firstUseWarning = \"").append(returnMessages.firstUseWarning).append("\"\n\n");
+            sb.append("firstUseWarning = \"").append(returnMessages.firstUseWarning).append("\"\n");
+            sb.append("cooldownWarning = \"").append(returnMessages.cooldownWarning).append("\"\n\n");
 
             sb.append("[safezone]\n");
             sb.append("enterTitle = \"").append(safeZone.enterSafeTitle).append("\"\n");
@@ -359,7 +363,8 @@ public class MessagesConfig {
             "Recherche d'un emplacement sûr près de votre point de mort...",
             "Impossible de trouver un emplacement sûr après {attempts} tentatives",
             "Erreur lors de la téléportation",
-            "⚠ ATTENTION: Vous ne pourrez utiliser /return qu'UNE SEULE FOIS pour cette mort!"
+            "⚠ ATTENTION: Vous ne pourrez utiliser /return qu'UNE SEULE FOIS pour cette mort!",
+            "⏳ Cooldown encore actif ({remaining}s). Réutiliser /return coûtera {cost} coins (×{multiplier}). Tapez /return force pour confirmer."
         );
 
         SafeZoneMessages safeZone = new SafeZoneMessages(

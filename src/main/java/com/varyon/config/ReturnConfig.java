@@ -17,7 +17,7 @@ public class ReturnConfig {
     }
 
     public static ReturnConfig createDefault() {
-        return new ReturnConfig(true, 1800, 100, 200, 30);
+        return new ReturnConfig(true, 300, 100, 200, 30);
     }
 
     public boolean isEnabled()          { return enabled; }

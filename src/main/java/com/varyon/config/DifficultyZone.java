@@ -12,9 +12,15 @@ public class DifficultyZone {
     private final double essenceMultiplier;
     private final int radiusStart;
     private final String name;
+    private final int teleportCost;
 
     public DifficultyZone(int zoneId, @Nonnull String color, double healthMultiplier, double damageMultiplier,
                           double lootMultiplier, double essenceMultiplier, int radiusStart, @Nonnull String name) {
+        this(zoneId, color, healthMultiplier, damageMultiplier, lootMultiplier, essenceMultiplier, radiusStart, name, zoneId * 100);
+    }
+
+    public DifficultyZone(int zoneId, @Nonnull String color, double healthMultiplier, double damageMultiplier,
+                          double lootMultiplier, double essenceMultiplier, int radiusStart, @Nonnull String name, int teleportCost) {
         this.zoneId = zoneId;
         this.color = color;
         this.healthMultiplier = healthMultiplier;
@@ -23,6 +29,7 @@ public class DifficultyZone {
         this.essenceMultiplier = essenceMultiplier;
         this.radiusStart = radiusStart;
         this.name = name;
+        this.teleportCost = teleportCost;
     }
 
     public int getZoneId() {
@@ -59,6 +66,10 @@ public class DifficultyZone {
 
     public int getRadiusStart() {
         return radiusStart;
+    }
+
+    public int getTeleportCost() {
+        return teleportCost;
     }
 
     @Nonnull

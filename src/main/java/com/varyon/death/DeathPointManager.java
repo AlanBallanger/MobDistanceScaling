@@ -22,6 +22,7 @@ public class DeathPointManager {
     private final Path dataDirectory;
     private final Map<UUID, DeathPoint> deathPoints = new ConcurrentHashMap<>();
     private final Map<UUID, Long> cooldowns = new ConcurrentHashMap<>();
+    private final Map<UUID, Integer> returnCostMultipliers = new ConcurrentHashMap<>();
 
     public static class DeathPoint {
         private final String world;
@@ -102,6 +103,22 @@ public class DeathPointManager {
         Long cooldownEnd = cooldowns.get(playerId);
         if (cooldownEnd == null) return 0;
         return Math.max(0, (cooldownEnd - System.currentTimeMillis()) / 1000);
+    }
+
+    public int getReturnCostMultiplier(@Nonnull UUID playerId) {
+        if (!isOnCooldown(playerId)) {
+            returnCostMultipliers.remove(playerId);
+            return 1;
+        }
+        return returnCostMultipliers.getOrDefault(playerId, 1);
+    }
+
+    public void recordReturnUse(@Nonnull UUID playerId, int cooldownSeconds) {
+        int current = isOnCooldown(playerId)
+            ? returnCostMultipliers.getOrDefault(playerId, 1)
+            : 1;
+        returnCostMultipliers.put(playerId, current * 2);
+        setCooldown(playerId, cooldownSeconds);
     }
 
     private void load() {

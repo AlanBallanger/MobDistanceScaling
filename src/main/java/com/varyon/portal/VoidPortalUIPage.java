@@ -16,8 +16,12 @@ import com.hypixel.hytale.server.core.ui.builder.UIEventBuilder;
 import com.hypixel.hytale.server.core.universe.PlayerRef;
 import com.hypixel.hytale.server.core.universe.world.storage.EntityStore;
 import com.varyon.VaryonPlugin;
+import com.varyon.config.DifficultyZone;
 import com.varyon.config.RtpvConfig;
+import com.varyon.config.ZoneConfig;
 import com.varyon.config.ZonePermissionsConfig;
+
+import java.util.List;
 import com.hypixel.hytale.server.core.entity.entities.Player;
 
 import javax.annotation.Nonnull;
@@ -37,12 +41,14 @@ public class VoidPortalUIPage extends InteractiveCustomUIPage<VoidPortalUIPage.E
         commandBuilder.append("VoidPortalMenu.ui");
 
         RtpvConfig rtpvConfig = null;
+        List<DifficultyZone> zones = null;
         boolean economyEnabled = false;
         double safeMultiplier = 2.0;
         ZonePermissionsConfig zonePermissionsConfig = null;
         try {
             if (VaryonPlugin.getStaticConfigManager() != null) {
                 rtpvConfig = VaryonPlugin.getStaticConfigManager().getRtpvConfig();
+                zones = VaryonPlugin.getStaticConfigManager().getZoneConfig().getZones();
                 economyEnabled = rtpvConfig.isEconomyEnabled();
                 safeMultiplier = rtpvConfig.getSafeCostMultiplier();
                 zonePermissionsConfig = VaryonPlugin.getStaticConfigManager().getZonePermissionsConfig();
@@ -54,10 +60,11 @@ public class VoidPortalUIPage extends InteractiveCustomUIPage<VoidPortalUIPage.E
         if (player != null && zonePermissionsConfig != null) {
             maxAccessibleZone = zonePermissionsConfig.getMaxAccessibleZone(player);
         } else if (player != null) {
-            maxAccessibleZone = 10;
+            maxAccessibleZone = zones != null ? zones.size() : 10;
         }
 
-        for (int i = 1; i <= 10; i++) {
+        int totalZones = zones != null ? zones.size() : 10;
+        for (int i = 1; i <= totalZones; i++) {
             boolean accessible = i <= maxAccessibleZone;
 
             if (!accessible) {
@@ -68,7 +75,8 @@ public class VoidPortalUIPage extends InteractiveCustomUIPage<VoidPortalUIPage.E
                 continue;
             }
 
-            int baseCost = rtpvConfig != null ? rtpvConfig.getCostForZone(i) : 0;
+            DifficultyZone zone = zones != null ? zones.get(i - 1) : null;
+            int baseCost = zone != null ? zone.getTeleportCost() : 0;
             int safeCost = (int) Math.ceil(baseCost * safeMultiplier);
 
             String basePrice = economyEnabled ? "(" + baseCost + " coins)" : "";

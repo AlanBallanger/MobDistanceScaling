@@ -126,8 +126,10 @@ public class RtpvCommand extends AbstractPlayerCommand {
             }
         }
 
+        DifficultyZone targetZone = zones.get(zoneNumber - 1);
+
         RtpvConfig rtpvConfig = VaryonPlugin.getStaticConfigManager().getRtpvConfig();
-        int baseCost = rtpvConfig.getCostForZone(zoneNumber);
+        int baseCost = targetZone.getTeleportCost();
         double multipliedCost = (pvpFilter != null && !pvpFilter)
             ? baseCost * rtpvConfig.getSafeCostMultiplier()
             : baseCost;
@@ -147,8 +149,6 @@ public class RtpvCommand extends AbstractPlayerCommand {
                 LOGGER.at(Level.WARNING).log("Vault non disponible, vérification économie ignorée");
             }
         }
-
-        DifficultyZone targetZone = zones.get(zoneNumber - 1);
 
         double minDist = targetZone.getRadiusStart();
         double maxDist = (zoneNumber < zones.size()) ? zones.get(zoneNumber).getRadiusStart() : minDist + 5000;
