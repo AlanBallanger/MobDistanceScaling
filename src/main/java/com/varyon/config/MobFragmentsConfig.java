@@ -28,7 +28,18 @@ public class MobFragmentsConfig {
     }
 
     public int getFragments(@Nonnull String roleName) {
-        return fragmentsByMobId.getOrDefault(roleName.toLowerCase(Locale.ROOT), -1);
+        String id = roleName.toLowerCase(Locale.ROOT);
+        Integer exact = fragmentsByMobId.get(id);
+        if (exact != null) return exact;
+        String bestKey = null;
+        for (String key : fragmentsByMobId.keySet()) {
+            if (id.startsWith(key + "_")) {
+                if (bestKey == null || key.length() > bestKey.length()) {
+                    bestKey = key;
+                }
+            }
+        }
+        return bestKey != null ? fragmentsByMobId.get(bestKey) : -1;
     }
 
     /**
@@ -102,39 +113,42 @@ public class MobFragmentsConfig {
     private String generateToml() {
         StringBuilder sb = new StringBuilder();
         sb.append("# Mob Key Fragment Drops\n");
-        sb.append("# MobId = fragments_count\n");
-        sb.append("# 0 = no drop  |  1 = basic hostile  |  10 = légendaire\n\n");
+        sb.append("# Prefix matching : Wolf = Wolf_Black, Wolf_White... (plus long gagne)\n");
+        sb.append("# 0 = passif  |  1-50 = hostile selon XP\n\n");
         sb.append("[").append(SECTION_MOBS).append("]\n\n");
 
-        sb.append("# --- 0 fragments : trivial aggressors (fish, jellyfish, Bat_Ice...) ---\n");
-        appendGroup(sb, TRIVIAL, 0);
-
-        sb.append("\n# --- Tier 1 : Skeleton/Zombie/Goblin de base, wolves, scarabs communs ---\n");
-        appendGroup(sb, TIER1, 1);
-
-        sb.append("\n# --- Tier 2 : variantes basiques, Trorks, Fen_Stalker ---\n");
-        appendGroup(sb, TIER2, 2);
-
-        sb.append("\n# --- Tier 3 : Knight, Mage, Tiger Sabertooth, Scarab fighters ---\n");
-        appendGroup(sb, TIER3, 3);
-
-        sb.append("\n# --- Tier 4 : Archmage, Bear, Trork_Chieftain, Scarab seekers ---\n");
-        appendGroup(sb, TIER4, 4);
-
-        sb.append("\n# --- Tier 5 : Wraith, Spawn_Void, Scarab defenders ---\n");
-        appendGroup(sb, TIER5, 5);
-
-        sb.append("\n# --- Tier 6 : Yeti, Scarab broodmothers ---\n");
-        appendGroup(sb, TIER6, 6);
-
-        sb.append("\n# --- Tier 8 : Werewolf, Praetorian ---\n");
-        appendGroup(sb, TIER8, 8);
-
-        sb.append("\n# --- Tier 10 : Shadow Knight, Rex Cave, Fire Queen ---\n");
-        appendGroup(sb, TIER10, 10);
-
-        sb.append("\n# --- Passifs (0 fragments) ---\n");
+        sb.append("# --- Passifs (0 frags) ---\n");
         appendGroup(sb, PASSIVE, 0);
+
+        sb.append("\n# --- 1 frag : XP 8-20 (Rat, Scarab, Vulture...) ---\n");
+        appendGroup(sb, F1, 1);
+
+        sb.append("\n# --- 2 frags : XP 35 (Snake, Snail, Cactee...) ---\n");
+        appendGroup(sb, F2, 2);
+
+        sb.append("\n# --- 3 frags : XP 45 (Spider, Fen_Stalker, Chicken_Undead) ---\n");
+        appendGroup(sb, F3, 3);
+
+        sb.append("\n# --- 5 frags : XP 55 (Goblin, Hyena, Leopard...) ---\n");
+        appendGroup(sb, F5, 5);
+
+        sb.append("\n# --- 7 frags : XP 65 (Zombie, Skeleton, Wolf...) ---\n");
+        appendGroup(sb, F7, 7);
+
+        sb.append("\n# --- 10 frags : XP 85 (Bear, Tiger, Outlander... + surcharges) ---\n");
+        appendGroup(sb, F10, 10);
+
+        sb.append("\n# --- 15 frags : XP 130 (Emberwulf, Golem, Wraith...) ---\n");
+        appendGroup(sb, F15, 15);
+
+        sb.append("\n# --- 22 frags : XP 175 (Yeti, Werewolf, Hedera, Rex_Cave) ---\n");
+        appendGroup(sb, F22, 22);
+
+        sb.append("\n# --- 30 frags : XP 250 (Void, Shadow_Knight, Zombie_Aberrant) ---\n");
+        appendGroup(sb, F30, 30);
+
+        sb.append("\n# --- 50 frags : XP 350-500 (Dragon, Goblin_Duke, Golem_Guardian...) ---\n");
+        appendGroup(sb, F50, 50);
 
         sb.append("\n# ============================================================\n");
         sb.append("# Mining fragments : block_id = fragments\n");
@@ -176,16 +190,17 @@ public class MobFragmentsConfig {
     @Nonnull
     public static MobFragmentsConfig createDefault() {
         Map<String, Integer> mobs = new HashMap<>();
-        for (String id : TRIVIAL) { mobs.put(id.toLowerCase(Locale.ROOT), 0); }
-        for (String id : TIER1)   { mobs.put(id.toLowerCase(Locale.ROOT), 1); }
-        for (String id : TIER2)   { mobs.put(id.toLowerCase(Locale.ROOT), 2); }
-        for (String id : TIER3)   { mobs.put(id.toLowerCase(Locale.ROOT), 3); }
-        for (String id : TIER4)   { mobs.put(id.toLowerCase(Locale.ROOT), 4); }
-        for (String id : TIER5)   { mobs.put(id.toLowerCase(Locale.ROOT), 5); }
-        for (String id : TIER6)   { mobs.put(id.toLowerCase(Locale.ROOT), 6); }
-        for (String id : TIER8)   { mobs.put(id.toLowerCase(Locale.ROOT), 8); }
-        for (String id : TIER10)  { mobs.put(id.toLowerCase(Locale.ROOT), 10); }
-        for (String id : PASSIVE) { mobs.put(id.toLowerCase(Locale.ROOT), 0); }
+        for (String id : PASSIVE) { mobs.put(id.toLowerCase(Locale.ROOT),  0); }
+        for (String id : F1)      { mobs.put(id.toLowerCase(Locale.ROOT),  1); }
+        for (String id : F2)      { mobs.put(id.toLowerCase(Locale.ROOT),  2); }
+        for (String id : F3)      { mobs.put(id.toLowerCase(Locale.ROOT),  3); }
+        for (String id : F5)      { mobs.put(id.toLowerCase(Locale.ROOT),  5); }
+        for (String id : F7)      { mobs.put(id.toLowerCase(Locale.ROOT),  7); }
+        for (String id : F10)     { mobs.put(id.toLowerCase(Locale.ROOT), 10); }
+        for (String id : F15)     { mobs.put(id.toLowerCase(Locale.ROOT), 15); }
+        for (String id : F22)     { mobs.put(id.toLowerCase(Locale.ROOT), 22); }
+        for (String id : F30)     { mobs.put(id.toLowerCase(Locale.ROOT), 30); }
+        for (String id : F50)     { mobs.put(id.toLowerCase(Locale.ROOT), 50); }
 
         Map<String, Integer> mining = new LinkedHashMap<>();
         mining.put("ore_copper",         1);
@@ -211,311 +226,82 @@ public class MobFragmentsConfig {
     }
 
     // -------------------------------------------------------------------------
-    // Tier definitions
+    // Fragment values per mob  (prefix matching — plus long gagne sur le nom de base)
     // -------------------------------------------------------------------------
 
-    /** 0 — aggressive but no reward: fish, jellyfish, trivial beasts */
-    private static final List<String> TRIVIAL = List.of(
-        "Jellyfish_Red",
-        "Jellyfish_Green",
-        "Jellyfish_Yellow",
-        "Jellyfish_Cyan",
-        "Jellyfish_Blue",
-        "Jellyfish_Man_Of_War",
-        "Piranha",
-        "Piranha_Black",
-        "Pike",
-        "Snapjaw",
-        "Eel_Moray",
-        "Shark_Hammerhead",
-        "Vulture",
-        "Hawk",
-        "Tetrabird",
-        "Bat_Ice",
-        "Pig_Wild",
-        "Chicken_Undead",
-        "Pig_Undead",
-        "Cow_Undead",
-        "Spark_Living",
-        "Boar"
-    );
-
-    /** 1 — Skeleton/Zombie/Goblin de base, wolves, spiders, snakes, scarabs légers */
-    private static final List<String> TIER1 = List.of(
-        "Zombie",
-        "Zombie_Sand",
-        "Zombie_Frost",
-        "Zombie_Burnt",
-        "Skeleton_Scout",
-        "Skeleton_Soldier",
-        "Skeleton_Archer",
-        "Skeleton_Fighter",
-        "Skeleton_Fighter_Wander",
-        "Skeleton_Ranger",
-        "Ghoul",
-        "Spider",
-        "Spider_Cave",
-        "Snake_Marsh",
-        "Snake_Cobra",
-        "Snake_Rattle",
-        "Wolf_Black",
-        "Wolf_White",
-        "Wolf_Trork_Hunter",
-        "Wolf_Trork_Shaman",
-        "Wolf_Outlander_Priest",
-        "Wolf_Outlander_Sorcerer",
-        "Skeleton_Archer_Patrol",
-        "Skeleton_Fighter_Patrol",
-        "Skeleton_Archer_Wander",
-        "Dungeon_Scarak_Louse",
-        "Scarak_Louse",
-        "Larva_Silk",
-        "Larva_Void",
-        "Fox",
-        "Rat"
-    );
-
-    /** 2 — variantes basiques de biome, Goblins, Trorks (sauf Chieftain), Fen_Stalker */
-    private static final List<String> TIER2 = List.of(
-        "Goblin_Scavenger",
-        "Goblin_Scavenger_Battleaxe",
-        "Goblin_Scavenger_Sword",
-        "Goblin_Scrapper",
-        "Goblin_Scrapper_Patrol",
-        "Goblin_Thief",
-        "Goblin_Thief_Patrol",
-        "Goblin_Miner",
-        "Goblin_Miner_Patrol",
-        "Goblin_Lobber",
-        "Goblin_Lobber_Patrol",
-        "Goblin_Hermit",
-        "Goblin_Ogre",
-        "Trillodon",
-        "Skeleton_Frost_Scout",
-        "Skeleton_Frost_Soldier",
-        "Skeleton_Frost_Ranger",
-        "Skeleton_Frost_Fighter",
-        "Skeleton_Frost_Archer",
-        "Skeleton_Sand_Scout",
-        "Skeleton_Sand_Soldier",
-        "Skeleton_Sand_Archer",
-        "Skeleton_Sand_Ranger",
-        "Skeleton_Sand_Guard",
-        "Skeleton_Pirate_Striker",
-        "Skeleton_Pirate_Gunner",
-        "Skeleton_Burnt_Soldier",
-        "Skeleton_Burnt_Archer",
-        "Skeleton_Burnt_Lancer",
-        "Skeleton_Incandescent_Footman",
-        "Skeleton_Incandescent_Head",
-        "Hound_Bleached",
-        "Archaeopteryx",
-        "Fen_Stalker",
-        "Trork_Brawler",
-        "Trork_Doctor_Witch",
-        "Trork_Guard",
-        "Trork_Hunter",
-        "Trork_Mauler",
-        "Trork_Sentry",
-        "Trork_Sentry_Patrol",
-        "Trork_Shaman",
-        "Trork_Unarmed",
-        "Trork_Warrior",
-        "Trork_Warrior_Patrol",
-        "Skeleton_Burnt_Archer_Patrol",
-        "Skeleton_Burnt_Lancer_Patrol",
-        "Skeleton_Burnt_Soldier_Patrol",
-        "Skeleton_Burnt_Archer_Wander",
-        "Skeleton_Burnt_Lancer_Wander",
-        "Skeleton_Burnt_Soldier_Wander",
-        "Skeleton_Frost_Archer_Wander",
-        "Skeleton_Frost_Fighter_Wander",
-        "Skeleton_Frost_Ranger_Wander",
-        "Skeleton_Frost_Scout_Wander",
-        "Skeleton_Frost_Soldier_Wander"
-    );
-
-    /** 3 — Knight, Mage, Tiger Sabertooth, Scarab fighters */
-    private static final List<String> TIER3 = List.of(
-        "Skeleton_Mage",
-        "Skeleton_Knight",
-        "Skeleton_Frost_Mage",
-        "Skeleton_Frost_Knight",
-        "Skeleton_Sand_Mage",
-        "Skeleton_Sand_Assassin",
-        "Skeleton_Burnt_Wizard",
-        "Skeleton_Burnt_Gunner",
-        "Skeleton_Burnt_Alchemist",
-        "Skeleton_Burnt_Knight",
-        "Skeleton_Incandescent_Mage",
-        "Skeleton_Incandescent_Fighter",
-        "Crawler_Void",
-        "Shellfish_Lava",
-        "Cactee",
-        "Hyena",
-        "Pterodactyl",
-        "Tiger_Sabertooth",
-        "Skeleton_Burnt_Alchemist_Patrol",
-        "Skeleton_Burnt_Gunner_Patrol",
-        "Skeleton_Burnt_Knight_Patrol",
-        "Skeleton_Burnt_Wizard_Patrol",
-        "Skeleton_Burnt_Alchemist_Wander",
-        "Skeleton_Burnt_Gunner_Wander",
-        "Skeleton_Burnt_Knight_Wander",
-        "Skeleton_Frost_Knight_Wander",
-        "Skeleton_Frost_Mage_Wander",
-        "Skeleton_Incandescent_Fighter_Wander",
-        "Dungeon_Scarak_Fighter_Patrol",
-        "Scarak_Fighter_Patrol"
-    );
-
-    /** 4 — Archmage, Outlanders, Trork_Chieftain, Bear, grands prédateurs, Scarab seekers */
-    private static final List<String> TIER4 = List.of(
-        "Outlander_Berserker",
-        "Outlander_Cultist",
-        "Outlander_Hunter",
-        "Outlander_Marauder",
-        "Outlander_Peon",
-        "Outlander_Priest",
-        "Outlander_Sorcerer",
-        "Outlander_Stalker",
-        "Skeleton_Archmage",
-        "Skeleton_Frost_Archmage",
-        "Skeleton_Sand_Archmage",
-        "Skeleton_Pirate_Captain",
-        "Skeleton_Archmage_Patrol",
-        "Skeleton_Archmage_Wander",
-        "Skeleton_Frost_Archmage_Wander",
-        "Eye_Void",
-        "Toad_Rhino",
-        "Raptor_Cave",
-        "Snapdragon",
-        "Emberwulf",
-        "Crocodile",
-        "Leopard_Snow",
-        "Bear_Polar",
-        "Bear_Grizzly",
-        "Trork_Chieftain",
-        "Dungeon_Scarak_Seeker",
-        "Scarak_Seeker",
-        "Scarak_Fighter_Royal_Guard"
-    );
-
-    /** 5 — Wraith, Spawn_Void, Toad Magma, Scarab defenders */
-    private static final List<String> TIER5 = List.of(
-        "Toad_Rhino_Magma",
-        "Wraith",
-        "Spawn_Void",
-        "Dungeon_Scarak_Defender",
-        "Scarak_Defender",
-        "Dungeon_Scarak_Defender_Patrol",
-        "Scarak_Defender_Patrol"
-    );
-
-    /** 6 — Outlander_Brute, Yeti, Scarak broodmothers */
-    private static final List<String> TIER6 = List.of(
-        "Outlander_Brute",
-        "Yeti",
-        "Dungeon_Scarak_Broodmother",
-        "Dungeon_Scarak_Broodmother_Young",
-        "Scarak_Broodmother"
-    );
-
-    /** 8 — Werewolf, Praetorian */
-    private static final List<String> TIER8 = List.of(
-        "Werewolf",
-        "Skeleton_Burnt_Praetorian",
-        "Skeleton_Burnt_Praetorian_Wander",
-        "Skeleton_Burnt_Praetorian_Patrol"
-    );
-
-    /** 10 — Shadow Knight, Rex Cave, Fire Queen */
-    private static final List<String> TIER10 = List.of(
-        "Shadow_Knight",
-        "Rex_Cave",
-        "Fire_Queen"
-    );
-
+    /** 0 frags — passifs + overrides passifs (Moose_Cow/Bull > Moose=5) */
     private static final List<String> PASSIVE = List.of(
-        "Horse_Skeleton",
-        "Horse_Skeleton_Armored",
-        "Bison",
-        "Mosshorn",
-        "Warthog",
-        "Ram",
-        "Mouflon",
-        "Moose_Bull",
-        "Pig_Wild_Piglet",
-        "Trilobite",
-        "Trilobite_Black",
-        "Whale_Humpback",
-        "Frostgill",
-        "Trout_Rainbow",
-        "Bluegill",
-        "Salmon",
-        "Catfish",
-        "Minnow",
-        "Crab",
-        "Pufferfish",
-        "Tang_Sailfin",
-        "Tang_Blue",
-        "Lobster",
-        "Clownfish",
-        "Tang_Lemon_Peel",
-        "Tang_Chevron",
-        "Sparrow",
-        "Bat",
-        "Parrot",
-        "Finch_Green",
-        "Bluebird",
-        "Owl_Snow",
-        "Penguin",
-        "Woodpecker",
-        "Crow",
-        "Raven",
-        "Flamingo",
-        "Owl_Brown",
-        "Duck",
-        "Pigeon",
-        "Lizard_Sand",
-        "Tortoise",
-        "Horse",
-        "Rabbit",
-        "Camel_Calf",
-        "Chicken_Desert_Chick",
-        "Cow_Calf",
-        "Goat_Kid",
-        "Sheep_Lamb",
-        "Skrill_Chick",
-        "Warthog_Piglet",
-        "Bison_Calf",
-        "Pig_Piglet",
-        "Camel",
-        "Bunny",
-        "Pig",
-        "Boar_Piglet",
-        "Horse_Foal",
-        "Chicken_Desert",
-        "Turkey_Chick",
-        "Cow",
-        "Chicken_Chick",
-        "Chicken",
-        "Turkey",
-        "Ram_Lamb",
-        "Goat",
-        "Mouflon_Lamb",
-        "Antelope",
-        "Deer_Stag",
-        "Armadillo",
-        "Deer_Doe",
-        "Moose_Cow",
-        "Mouse",
-        "Meerkat",
-        "Frog_Green",
-        "Gecko",
-        "Frog_Blue",
-        "Squirrel",
-        "Snail_Magma",
-        "Sheep"
+        "Squirrel", "Frog", "Gecko", "Mouse", "Bat", "Hatworm",
+        "Sparrow", "Bluebird", "Finch", "Woodpecker", "Pigeon",
+        "Meerkat", "Turkey", "Chicken", "Crow", "Duck", "Bunny", "Skrill", "Rabbit",
+        "Pig", "Owl", "Parrot", "Flamingo", "Penguin", "Fox", "Hawk", "Tetrabird",
+        "Goat", "Sheep", "Raven",
+        "Cow", "Deer", "Antelope", "Camel", "Warthog", "Horse", "Ram",
+        "Bison", "Boar", "Mouflon", "Feran", "Kweebec",
+        "Archaeopteryx", "Pterodactyl",
+        "Mannequin",
+        "Moose_Cow", "Moose_Bull"
+    );
+
+    /** 1 frag — XP 8-20 */
+    private static final List<String> F1 = List.of(
+        "Rat", "Larva_Silk", "Molerat", "Scarab", "Vulture"
+    );
+
+    /** 2 frags — XP 35 */
+    private static final List<String> F2 = List.of(
+        "Snail", "Snake", "Cactee", "Spark_Living", "Tortoise"
+    );
+
+    /** 3 frags — XP 45 */
+    private static final List<String> F3 = List.of(
+        "Spider", "Fen_Stalker", "Chicken_Undead"
+    );
+
+    /** 5 frags — XP 55 */
+    private static final List<String> F5 = List.of(
+        "Goblin", "Hyena", "Leopard", "Snapdragon", "Moose",
+        "Klops", "Slug_Magma", "Armadillo", "Lizard_Sand"
+    );
+
+    /** 7 frags — XP 65 */
+    private static final List<String> F7 = List.of(
+        "Zombie", "Skeleton", "Wolf", "Trork", "Scarak",
+        "Spirit", "Pig_Undead", "Bramblekin"
+    );
+
+    /** 10 frags — XP 85 + surcharges cross-prefix */
+    private static final List<String> F10 = List.of(
+        "Bear", "Raptor", "Tiger", "Crocodile", "Scorpion",
+        "Toad_Rhino", "Mosshorn", "Hound_Bleached", "Cow_Undead",
+        "Trillodon", "Outlander",
+        "Goblin_Ogre",       // goblin prefix = 5
+        "Skeleton_Burnt",    // skeleton prefix = 7
+        "Zombie_Burnt",      // zombie prefix = 7
+        "Scarak_Broodmother" // scarak prefix = 7
+    );
+
+    /** 15 frags — XP 130 */
+    private static final List<String> F15 = List.of(
+        "Emberwulf", "Golem", "Slothian", "Ghoul", "Wraith",
+        "Spirit_Thunder"     // spirit prefix = 7
+    );
+
+    /** 22 frags — XP 175 */
+    private static final List<String> F22 = List.of(
+        "Rex_Cave", "Yeti", "Werewolf", "Hedera"
+    );
+
+    /** 30 frags — XP 250 */
+    private static final List<String> F30 = List.of(
+        "Void", "Shadow_Knight",
+        "Zombie_Aberrant"    // zombie prefix = 7
+    );
+
+    /** 50 frags — XP 350-500 */
+    private static final List<String> F50 = List.of(
+        "Dragon", "Boss", "Elite",
+        "Goblin_Duke",       // goblin prefix = 5
+        "Golem_Guardian"     // golem prefix = 15
     );
 }

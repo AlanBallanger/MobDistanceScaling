@@ -176,6 +176,19 @@ public class EssenceRewardsConfig {
         mobRewards.put("crab", 3.5);
         mobRewards.put("hawk", 3.5);
         mobRewards.put("parrot", 3.5);
+        mobRewards.put("goat", 2.5);
+        mobRewards.put("sheep", 2.5);
+        mobRewards.put("tetrabird", 2.5);
+        mobRewards.put("raven", 3.5);
+        mobRewards.put("deer", 3.5);
+        mobRewards.put("antelope", 3.5);
+        mobRewards.put("camel", 3.5);
+        mobRewards.put("warthog", 3.5);
+        mobRewards.put("horse", 3.5);
+        mobRewards.put("ram", 3.5);
+        mobRewards.put("bison", 4.0);
+        mobRewards.put("archaeopteryx", 4.0);
+        mobRewards.put("pterodactyl", 4.0);
 
         // Hostiles faibles (20-35 XP) -> 1 essence
         mobRewards.put("snake", 6.5);
@@ -185,6 +198,7 @@ public class EssenceRewardsConfig {
         mobRewards.put("tortoise", 6.5);
         mobRewards.put("scarab", 6.5);
         mobRewards.put("molerat", 6.5);
+        mobRewards.put("vulture", 6.5);
 
         // Hostiles moyens (40-55 XP) -> 2 essence
         mobRewards.put("spider", 12.5);
@@ -204,6 +218,8 @@ public class EssenceRewardsConfig {
         mobRewards.put("klops", 17.5);
         mobRewards.put("slug_magma", 17.5);
         mobRewards.put("armadillo", 17.5);
+        mobRewards.put("lizard_sand", 17.5);
+        mobRewards.put("pig_undead", 25.0);
 
         // Hostiles forts (65-85 XP) -> 3 essence
         mobRewards.put("trork", 25.0);
@@ -240,9 +256,9 @@ public class EssenceRewardsConfig {
         mobRewards.put("wraith", 70.0);
         mobRewards.put("slothian", 70.0);
         mobRewards.put("spirit_thunder", 70.0);
-        mobRewards.put("rex_cave", 70.0);
 
         // Boss (175 XP) -> 12 essence
+        mobRewards.put("rex_cave", 120.0);
         mobRewards.put("yeti", 120.0);
         mobRewards.put("werewolf", 120.0);
         mobRewards.put("hedera", 120.0);
