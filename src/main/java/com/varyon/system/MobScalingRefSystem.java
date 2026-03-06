@@ -1,8 +1,8 @@
 package com.varyon.system;
 
 import com.hypixel.hytale.component.AddReason;
-import com.hypixel.hytale.component.Archetype;
 import com.hypixel.hytale.component.CommandBuffer;
+import com.hypixel.hytale.component.query.Query;
 import com.hypixel.hytale.component.ComponentType;
 import com.hypixel.hytale.component.query.Query;
 import com.hypixel.hytale.component.Ref;
@@ -35,19 +35,15 @@ public class MobScalingRefSystem extends RefSystem<EntityStore> {
     private static final Random RANDOM = new Random();
 
     private final ConfigManager configManager;
-    private Query<EntityStore> query;
 
     public MobScalingRefSystem(@Nonnull ConfigManager configManager) {
         this.configManager = configManager;
     }
 
+    @Nonnull
     @Override
-    @Nullable
     public Query<EntityStore> getQuery() {
-        if (query == null) {
-            query = Archetype.empty();
-        }
-        return query;
+        return Query.and(NPCEntity.getComponentType());
     }
 
     @Override
@@ -62,8 +58,12 @@ public class MobScalingRefSystem extends RefSystem<EntityStore> {
             return;
         }
 
-        String worldName = store.getExternalData().getWorld().getName();
-        if (!configManager.getZoneConfig().isWorldEnabled(worldName)) {
+        Object ext = store.getExternalData();
+        if (!(ext instanceof EntityStore entityStore) || entityStore.getWorld() == null) {
+            return;
+        }
+        String worldName = entityStore.getWorld().getName();
+        if (worldName == null || worldName.isBlank() || !configManager.getZoneConfig().isWorldEnabled(worldName)) {
             return;
         }
 
@@ -73,7 +73,7 @@ public class MobScalingRefSystem extends RefSystem<EntityStore> {
         }
 
         Vector3d pos = transform.getPosition();
-        DifficultyZone zone = ZoneCalculator.getZoneAtPosition(pos.getX(), pos.getZ(), configManager.getZoneConfig());
+        DifficultyZone zone = ZoneCalculator.getZoneAtPosition(pos.getX(), pos.getZ(), worldName, configManager.getZoneConfig());
 
         if (zone == null) {
             return;

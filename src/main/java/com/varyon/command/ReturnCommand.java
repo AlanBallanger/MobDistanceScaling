@@ -128,7 +128,7 @@ public class ReturnCommand extends AbstractPlayerCommand {
 
         RtpvConfig rtpvConfig = VaryonPlugin.getStaticConfigManager().getRtpvConfig();
         ZoneConfig zoneConfig = VaryonPlugin.getStaticConfigManager().getZoneConfig();
-        DifficultyZone zone = ZoneCalculator.getZoneAtPosition(deathPoint.getX(), deathPoint.getZ(), zoneConfig);
+        DifficultyZone zone = ZoneCalculator.getZoneAtPosition(deathPoint.getX(), deathPoint.getZ(), deathPoint.getWorld(), zoneConfig);
         int baseCost = zone != null ? zone.getTeleportCost() : 0;
         int multiplier = deathManager.getReturnCostMultiplier(playerRef.getUuid());
         final int totalCost = baseCost * multiplier;

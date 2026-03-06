@@ -10,7 +10,9 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.logging.Level;
 
 
@@ -120,6 +122,13 @@ public class ConfigManager {
             if (i < worlds.size() - 1) sb.append(", ");
         }
         sb.append("]\n\n");
+
+        sb.append("# Instance worlds: pattern (prefix) = zone id. World name must start with pattern.\n");
+        sb.append("[instanceZones]\n");
+        for (Map.Entry<String, Integer> e : zoneConfig.getInstanceZonePatterns().entrySet()) {
+            sb.append("\"").append(e.getKey()).append("\" = ").append(e.getValue()).append("\n");
+        }
+        sb.append("\n");
 
         sb.append("[safezone]\n");
         sb.append("enabled = ").append(safeZoneConfig.isEnabled()).append("\n");
@@ -242,7 +251,27 @@ public class ConfigManager {
             }
         }
 
-        return new ZoneConfig(enabledWorlds, zones, minimapEnabled, minimapOpacity,
+        Map<String, Integer> instanceZonePatterns = new LinkedHashMap<>();
+        Toml instanceZonesToml = toml.getTable("instanceZones");
+        if (instanceZonesToml != null) {
+            for (Map.Entry<String, Object> e : instanceZonesToml.toMap().entrySet()) {
+                if (e.getValue() instanceof Number n) {
+                    instanceZonePatterns.put(e.getKey(), n.intValue());
+                }
+            }
+        }
+        if (instanceZonePatterns.isEmpty()) {
+            instanceZonePatterns.put("instance-portals_henges", 1);
+            instanceZonePatterns.put("instance-portals_oasis", 1);
+            instanceZonePatterns.put("instance-portals_hedera", 2);
+            instanceZonePatterns.put("instance-portals_jungles", 2);
+            instanceZonePatterns.put("instance-portals_taiga", 2);
+            instanceZonePatterns.put("instance-endgame_frozen_dungeon", 4);
+            instanceZonePatterns.put("instance-endgame_swamp_dungeon", 6);
+            instanceZonePatterns.put("instance-endgame_golem_void", 8);
+        }
+
+        return new ZoneConfig(enabledWorlds, zones, instanceZonePatterns, minimapEnabled, minimapOpacity,
                 minimapPattern, minimapPatternSize, zoneEnterNotification,
                 zoneEnterTopText, notificationDuration, zoneSoundEnabled,
                 zoneSoundId, zoneSoundVolume, zoneSoundPitch, zoneHudEnabled);

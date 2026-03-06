@@ -84,9 +84,8 @@ public class ZoneLevelNameplateSystem extends EntityTickingSystem<EntityStore> {
                 tier = scaling.getMobLevel();
             }
 
-            // --- 2. Fallback: compute mid-range level from zone index ---
             if (tier < 0) {
-                DifficultyZone zone = ZoneCalculator.getCurrentZone(store, ref, configManager.getZoneConfig());
+                DifficultyZone zone = ZoneCalculator.getCurrentZone(store, ref, worldName, configManager.getZoneConfig());
                 if (zone != null) {
                     List<DifficultyZone> zones = configManager.getZoneConfig().getZones();
                     int zoneIndex = -1;

@@ -86,13 +86,12 @@ public class MiningFragmentDropSystem extends EntityEventSystem<EntityStore, Bre
 
             Ref ref = archetypeChunk.getReferenceTo(index);
 
-            // Zone determined from block position (more reliable than player position)
             Vector3i blockPos = event.getTargetBlock();
             DifficultyZone zone;
             if (blockPos != null) {
-                zone = ZoneCalculator.getZoneAtPosition(blockPos.getX(), blockPos.getZ(), configManager.getZoneConfig());
+                zone = ZoneCalculator.getZoneAtPosition(blockPos.getX(), blockPos.getZ(), world, configManager.getZoneConfig());
             } else {
-                zone = ZoneCalculator.getCurrentZone(store, ref, configManager.getZoneConfig());
+                zone = ZoneCalculator.getCurrentZone(store, ref, world, configManager.getZoneConfig());
             }
             int zoneId = zone != null ? zone.getZoneId() : 1;
 

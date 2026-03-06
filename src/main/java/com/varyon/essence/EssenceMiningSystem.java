@@ -82,7 +82,7 @@ public class EssenceMiningSystem extends EntityEventSystem<EntityStore, BreakBlo
             UUID playerUuid = playerRef.getUuid();
 
             Ref<EntityStore> minerRef = archetypeChunk.getReferenceTo(index);
-            DifficultyZone zone = ZoneCalculator.getCurrentZone(store, minerRef, configManager.getZoneConfig());
+            DifficultyZone zone = ZoneCalculator.getCurrentZone(store, minerRef, world, configManager.getZoneConfig());
             double zoneMultiplier = zone != null ? zone.getEssenceMultiplier() : 1.0;
             double lootMultiplier = zone != null ? zone.getLootMultiplier() : 1.0;
 

@@ -99,7 +99,8 @@ public class MobFragmentDropSystem {
                 NPCEntity npc = (NPCEntity) store.getComponent(victimRef, NPCEntity.getComponentType());
                 if (npc == null) return;
 
-                int zoneId = resolveZoneIdFromPosition(store, victimRef);
+                String worldName = ((EntityStore) store.getExternalData()).getWorld().getName();
+                int zoneId = resolveZoneIdFromPosition(store, victimRef, worldName);
 
                 Ref<EntityStore> killerRef = archetypeChunk.getReferenceTo(index);
                 Player killerPlayer = (Player) store.getComponent(killerRef, Player.getComponentType());
@@ -154,7 +155,7 @@ public class MobFragmentDropSystem {
                 int fragments = mobConfig.getFragments(roleName.toLowerCase(Locale.ROOT));
                 if (fragments <= 0) return;
 
-                int zoneId = resolveZoneIdFromPosition(store, ref);
+                int zoneId = resolveZoneIdFromPosition(store, ref, worldName);
 
                 String itemId = zoneConfig.getItemForZone(zoneId);
                 if (itemId == null || itemId.isBlank()) return;
@@ -176,12 +177,13 @@ public class MobFragmentDropSystem {
     }
 
     @SuppressWarnings("unchecked")
-    private int resolveZoneIdFromPosition(@Nonnull Store store, @Nonnull Ref ref) {
+    private int resolveZoneIdFromPosition(@Nonnull Store store, @Nonnull Ref ref, @Nonnull String worldName) {
         TransformComponent transform = (TransformComponent) store.getComponent(ref, TransformComponent.getComponentType());
         if (transform != null) {
             DifficultyZone zone = ZoneCalculator.getZoneAtPosition(
                     transform.getPosition().getX(),
                     transform.getPosition().getZ(),
+                    worldName,
                     configManager.getZoneConfig());
             if (zone != null) return zone.getZoneId();
         }

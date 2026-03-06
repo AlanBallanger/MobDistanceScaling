@@ -92,13 +92,14 @@ public class ZoneHUDManager {
                 double x = transform.getPosition().x;
                 double z = transform.getPosition().z;
                 double distance = ZoneCalculator.calculate2DDistance(x, z);
-                DifficultyZone zone = ZoneCalculator.getZoneAtPosition(x, z, zoneConfig);
+                Player player = playerCache.get(playerId);
+                String worldName = player != null ? player.getWorld().getName() : "";
+                DifficultyZone zone = ZoneCalculator.getZoneAtPosition(x, z, worldName, zoneConfig);
 
                 boolean inSafe = safeZoneAvailable && szm.isInSafeZone(x, z);
 
                 boolean lootActive = false;
                 int maxEssenceCap = 1000;
-                Player player = playerCache.get(playerId);
                 if (player != null) {
                     if (zone != null) lootActive = zonePermsConfig.canAccessZone(player, zone.getZoneId());
                     EssenceManager em = VaryonPlugin.getStaticEssenceManager();

@@ -15,15 +15,24 @@ public class ZoneCalculator {
 
     @Nullable
     public static DifficultyZone getZoneAtPosition(double x, double z, @Nonnull ZoneConfig config) {
-        double distance = calculate2DDistance(x, z);
+        return getZoneAtPosition(x, z, null, config);
+    }
 
-        // Find the zone with the highest radiusStart that is <= distance
+    @Nullable
+    public static DifficultyZone getZoneAtPosition(double x, double z, @Nullable String worldName, @Nonnull ZoneConfig config) {
+        if (worldName != null && !worldName.isBlank()) {
+            Integer instanceZoneId = config.getZoneIdForInstanceWorld(worldName);
+            if (instanceZoneId != null) {
+                return config.getZoneById(instanceZoneId);
+            }
+        }
+
+        double distance = calculate2DDistance(x, z);
         DifficultyZone currentZone = null;
         List<DifficultyZone> zones = config.getZones();
 
         for (DifficultyZone zone : zones) {
             if (distance >= zone.getRadiusStart()) {
-                // Keep updating to get the zone with highest radiusStart <= distance
                 if (currentZone == null || zone.getRadiusStart() > currentZone.getRadiusStart()) {
                     currentZone = zone;
                 }
@@ -35,15 +44,26 @@ public class ZoneCalculator {
 
     @Nullable
     public static DifficultyZone getCurrentZone(@Nonnull Store<EntityStore> store, @Nonnull Ref<EntityStore> ref, @Nonnull ZoneConfig config) {
+        return getCurrentZone(store, ref, null, config);
+    }
+
+    @Nullable
+    public static DifficultyZone getCurrentZone(@Nonnull Store<EntityStore> store, @Nonnull Ref<EntityStore> ref,
+                                               @Nullable String worldName, @Nonnull ZoneConfig config) {
         TransformComponent transform = store.getComponent(ref, TransformComponent.getComponentType());
-        if (transform == null) {
-            return null;
-        }
-        
+        if (transform == null) return null;
+
         double x = transform.getPosition().getX();
         double z = transform.getPosition().getZ();
-        
-        return getZoneAtPosition(x, z, config);
+        if (worldName == null || worldName.isBlank()) {
+            try {
+                Object ext = store.getExternalData();
+                if (ext instanceof EntityStore es && es.getWorld() != null) {
+                    worldName = es.getWorld().getName();
+                }
+            } catch (Exception ignored) {}
+        }
+        return getZoneAtPosition(x, z, worldName, config);
     }
 
     public static double calculate2DDistance(double x, double z) {

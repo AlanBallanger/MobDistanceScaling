@@ -66,12 +66,10 @@ public class ZoneTitleTickingSystem extends EntityTickingSystem<EntityStore> {
             return;
         }
 
-        // Get player position
         double x = playerRef.getTransform().getPosition().getX();
         double z = playerRef.getTransform().getPosition().getZ();
 
-        // Get current zone
-        DifficultyZone currentZone = ZoneCalculator.getZoneAtPosition(x, z, config);
+        DifficultyZone currentZone = ZoneCalculator.getZoneAtPosition(x, z, worldName, config);
         int currentZoneId = currentZone != null ? currentZone.getZoneId() : 0;
 
         // Get previous zone
