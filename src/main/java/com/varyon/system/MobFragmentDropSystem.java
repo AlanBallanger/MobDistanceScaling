@@ -25,9 +25,11 @@ import com.hypixel.hytale.server.core.universe.world.storage.EntityStore;
 import com.hypixel.hytale.server.npc.entities.NPCEntity;
 import com.varyon.component.MobScalingComponent;
 import com.varyon.config.ConfigManager;
+import com.varyon.config.DifficultyZone;
 import com.varyon.config.MobFragmentsConfig;
 import com.varyon.config.ZoneLootConfig;
 import com.varyon.config.ZonePermissionsConfig;
+import com.varyon.util.ZoneCalculator;
 
 import javax.annotation.Nonnull;
 import java.util.List;
@@ -97,8 +99,7 @@ public class MobFragmentDropSystem {
                 NPCEntity npc = (NPCEntity) store.getComponent(victimRef, NPCEntity.getComponentType());
                 if (npc == null) return;
 
-                MobScalingComponent scaling = (MobScalingComponent) store.getComponent(victimRef, MobScalingComponent.getComponentType());
-                int zoneId = scaling != null ? resolveZoneId(scaling.getMobLevel()) : 1;
+                int zoneId = resolveZoneIdFromPosition(store, victimRef);
 
                 Ref<EntityStore> killerRef = archetypeChunk.getReferenceTo(index);
                 Player killerPlayer = (Player) store.getComponent(killerRef, Player.getComponentType());
@@ -153,8 +154,7 @@ public class MobFragmentDropSystem {
                 int fragments = mobConfig.getFragments(roleName.toLowerCase(Locale.ROOT));
                 if (fragments <= 0) return;
 
-                MobScalingComponent scaling = (MobScalingComponent) store.getComponent(ref, MobScalingComponent.getComponentType());
-                int zoneId = scaling != null ? resolveZoneId(scaling.getMobLevel()) : 1;
+                int zoneId = resolveZoneIdFromPosition(store, ref);
 
                 String itemId = zoneConfig.getItemForZone(zoneId);
                 if (itemId == null || itemId.isBlank()) return;
@@ -175,8 +175,18 @@ public class MobFragmentDropSystem {
         }
     }
 
-    private static int resolveZoneId(int mobLevel) {
-        return Math.max(1, (int) Math.ceil(mobLevel / 10.0));
+    @SuppressWarnings("unchecked")
+    private int resolveZoneIdFromPosition(@Nonnull Store store, @Nonnull Ref ref) {
+        TransformComponent transform = (TransformComponent) store.getComponent(ref, TransformComponent.getComponentType());
+        if (transform != null) {
+            DifficultyZone zone = ZoneCalculator.getZoneAtPosition(
+                    transform.getPosition().getX(),
+                    transform.getPosition().getZ(),
+                    configManager.getZoneConfig());
+            if (zone != null) return zone.getZoneId();
+        }
+        MobScalingComponent scaling = (MobScalingComponent) store.getComponent(ref, MobScalingComponent.getComponentType());
+        return scaling != null ? Math.max(1, (int) Math.ceil(scaling.getMobLevel() / 10.0)) : 1;
     }
 
     public KillerPermissionTracker createTracker() {

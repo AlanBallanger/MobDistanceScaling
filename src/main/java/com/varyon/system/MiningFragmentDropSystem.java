@@ -11,6 +11,7 @@ import com.hypixel.hytale.component.system.EntityEventSystem;
 import com.hypixel.hytale.logger.HytaleLogger;
 import com.hypixel.hytale.math.vector.Vector3d;
 import com.hypixel.hytale.math.vector.Vector3f;
+import com.hypixel.hytale.math.vector.Vector3i;
 import com.hypixel.hytale.server.core.entity.entities.Player;
 import com.hypixel.hytale.server.core.event.events.ecs.BreakBlockEvent;
 import com.hypixel.hytale.server.core.inventory.ItemStack;
@@ -85,8 +86,14 @@ public class MiningFragmentDropSystem extends EntityEventSystem<EntityStore, Bre
 
             Ref ref = archetypeChunk.getReferenceTo(index);
 
-            // Zone the player is currently in
-            DifficultyZone zone = ZoneCalculator.getCurrentZone(store, ref, configManager.getZoneConfig());
+            // Zone determined from block position (more reliable than player position)
+            Vector3i blockPos = event.getTargetBlock();
+            DifficultyZone zone;
+            if (blockPos != null) {
+                zone = ZoneCalculator.getZoneAtPosition(blockPos.getX(), blockPos.getZ(), configManager.getZoneConfig());
+            } else {
+                zone = ZoneCalculator.getCurrentZone(store, ref, configManager.getZoneConfig());
+            }
             int zoneId = zone != null ? zone.getZoneId() : 1;
 
             // Permission check

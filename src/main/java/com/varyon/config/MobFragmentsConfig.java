@@ -158,25 +158,25 @@ public class MobFragmentsConfig {
         sb.append("# --- Tier 1 (1 fragment) ---\n");
         sb.append("ore_copper = 1\n");
         sb.append("ore_iron   = 1\n");
+        sb.append("ore_silver = 1\n");
+        sb.append("ore_gold   = 1\n");
         sb.append("\n# --- Tier 2 (2 fragments) ---\n");
-        sb.append("ore_silver  = 2\n");
-        sb.append("ore_gold    = 2\n");
         sb.append("ore_cobalt  = 2\n");
         sb.append("ore_thorium = 2\n");
-        sb.append("\n# --- Tier 3 (3 fragments) ---\n");
-        sb.append("ore_adamantite = 3\n");
-        sb.append("ore_mithril    = 3\n");
-        sb.append("ore_onyxium    = 3\n");
-        sb.append("ore_prisma     = 3\n");
-        sb.append("rock_crystal   = 3\n");
-        sb.append("\n# --- Gemmes (5 fragments) ---\n");
-        sb.append("rock_gem_diamond   = 5\n");
-        sb.append("rock_gem_emerald   = 5\n");
-        sb.append("rock_gem_ruby      = 5\n");
-        sb.append("rock_gem_sapphire  = 5\n");
-        sb.append("rock_gem_topaz     = 5\n");
+        sb.append("\n# --- Tier 3 (2 fragments) ---\n");
+        sb.append("ore_adamantite = 2\n");
+        sb.append("ore_mithril    = 2\n");
+        sb.append("ore_onyxium    = 2\n");
+        sb.append("ore_prisma     = 2\n");
+        sb.append("rock_crystal   = 2\n");
+        sb.append("\n# --- Gemmes ---\n");
+        sb.append("rock_gem_diamond   = 20\n");
+        sb.append("rock_gem_emerald   = 10\n");
+        sb.append("rock_gem_ruby      = 15\n");
+        sb.append("rock_gem_sapphire  = 15\n");
+        sb.append("rock_gem_topaz     = 25\n");
         sb.append("rock_gem_voidstone = 5\n");
-        sb.append("rock_gem_zephyr    = 5\n");
+        sb.append("rock_gem_zephyr    = 25\n");
 
         return sb.toString();
     }
@@ -203,24 +203,24 @@ public class MobFragmentsConfig {
         for (String id : F50)     { mobs.put(id.toLowerCase(Locale.ROOT), 50); }
 
         Map<String, Integer> mining = new LinkedHashMap<>();
-        mining.put("ore_copper",         1);
-        mining.put("ore_iron",           1);
-        mining.put("ore_silver",         2);
-        mining.put("ore_gold",           2);
-        mining.put("ore_cobalt",         2);
-        mining.put("ore_thorium",        2);
-        mining.put("ore_adamantite",     3);
-        mining.put("ore_mithril",        3);
-        mining.put("ore_onyxium",        3);
-        mining.put("ore_prisma",         3);
-        mining.put("rock_crystal",       3);
-        mining.put("rock_gem_diamond",   5);
-        mining.put("rock_gem_emerald",   5);
-        mining.put("rock_gem_ruby",      5);
-        mining.put("rock_gem_sapphire",  5);
-        mining.put("rock_gem_topaz",     5);
-        mining.put("rock_gem_voidstone", 5);
-        mining.put("rock_gem_zephyr",    5);
+        mining.put("ore_copper",          1);
+        mining.put("ore_iron",            1);
+        mining.put("ore_silver",          1);
+        mining.put("ore_gold",            1);
+        mining.put("ore_cobalt",          2);
+        mining.put("ore_thorium",         2);
+        mining.put("ore_adamantite",      2);
+        mining.put("ore_mithril",         2);
+        mining.put("ore_onyxium",         2);
+        mining.put("ore_prisma",          2);
+        mining.put("rock_crystal",        2);
+        mining.put("rock_gem_diamond",   20);
+        mining.put("rock_gem_emerald",   10);
+        mining.put("rock_gem_ruby",      15);
+        mining.put("rock_gem_sapphire",  15);
+        mining.put("rock_gem_topaz",     25);
+        mining.put("rock_gem_voidstone",  5);
+        mining.put("rock_gem_zephyr",    25);
 
         return new MobFragmentsConfig(mobs, mining);
     }
