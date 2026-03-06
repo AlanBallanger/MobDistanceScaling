@@ -20,6 +20,7 @@ import com.hypixel.hytale.server.core.universe.world.worldgen.IWorldGen;
 import com.hypixel.hytale.server.worldgen.chunk.ChunkGenerator;
 import com.varyon.VaryonPlugin;
 import com.varyon.config.DifficultyZone;
+import com.varyon.rtpv.RtpvJoinManager;
 import com.varyon.config.RtpvConfig;
 import com.varyon.config.ZoneConfig;
 import com.varyon.config.ZonePermissionsConfig;
@@ -179,6 +180,12 @@ public class RtpvCommand extends AbstractPlayerCommand {
                         } catch (NoClassDefFoundError e) {
                             LOGGER.at(Level.WARNING).log("Vault non disponible, déduction ignorée");
                         }
+                    }
+
+                    RtpvJoinManager joinMgr = RtpvJoinManager.getInstance();
+                    if (joinMgr != null) {
+                        long expireAt = System.currentTimeMillis() + rtpvConfig.getJoinDurationSeconds() * 1000L;
+                        joinMgr.markJoinable(playerRef.getUuid(), zoneNumber, world.getName(), expireAt);
                     }
 
                     context.sendMessage(Message.raw("Téléporté vers " + targetZone.getName() + pvpLabel +

@@ -176,6 +176,7 @@ public class ConfigManager {
         sb.append("[rtpv]\n");
         sb.append("economyEnabled = ").append(rtpv.isEconomyEnabled()).append("\n");
         sb.append("safeCostMultiplier = ").append(rtpv.getSafeCostMultiplier()).append("\n");
+        sb.append("joinDurationSeconds = ").append(rtpv.getJoinDurationSeconds()).append("\n");
         sb.append("\n");
 
         for (DifficultyZone zone : zoneConfig.getZones()) {
@@ -321,7 +322,8 @@ public class ConfigManager {
         if (rtpvToml == null) return RtpvConfig.createDefault();
         boolean economyEnabled = rtpvToml.getBoolean("economyEnabled", true);
         double safeCostMultiplier = rtpvToml.getDouble("safeCostMultiplier", 2.0);
-        return new RtpvConfig(safeCostMultiplier, economyEnabled);
+        int joinDurationSeconds = rtpvToml.getLong("joinDurationSeconds", 60L).intValue();
+        return new RtpvConfig(safeCostMultiplier, economyEnabled, joinDurationSeconds);
     }
 
     @Nonnull

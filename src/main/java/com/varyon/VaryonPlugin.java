@@ -22,6 +22,7 @@ import com.hypixel.hytale.server.core.universe.world.storage.EntityStore;
 import com.hypixel.hytale.server.core.universe.world.worldmap.provider.IWorldMapProvider;
 import com.varyon.command.EssenceCommand;
 import com.varyon.command.ExtractCommand;
+import com.varyon.command.JoinCommand;
 import com.varyon.command.VaryonCommand;
 import com.varyon.command.RtpzCommand;
 import com.varyon.command.RtpvCommand;
@@ -34,6 +35,7 @@ import com.varyon.death.DeathDetectionSystem;
 import com.varyon.death.DeathPointManager;
 import com.varyon.deposit.DepositBlockInteractionSystem;
 import com.varyon.portal.VoidPortalInteractionSystem;
+import com.varyon.rtpv.RtpvJoinManager;
 import com.varyon.deposit.DepositBlockManager;
 import com.varyon.deposit.DepositUIManager;
 import com.varyon.essence.EssenceKillSystem;
@@ -333,6 +335,8 @@ public class VaryonPlugin extends JavaPlugin {
                 this.getEventRegistry().registerGlobal(PlayerDisconnectEvent.class, event -> {
                     PlayerRef playerRef = event.getPlayerRef();
                     hudManager.removePlayer(playerRef.getUuid());
+                    RtpvJoinManager joinMgr = RtpvJoinManager.getInstance();
+                    if (joinMgr != null) joinMgr.onPlayerDisconnect(playerRef.getUuid());
                     essenceManager.savePlayer(playerRef.getUuid());
                     if (safeZoneNotificationSystem != null) {
                         safeZoneNotificationSystem.removePlayer(playerRef.getUuid());
@@ -353,6 +357,8 @@ public class VaryonPlugin extends JavaPlugin {
             this.getCommandRegistry().registerCommand(new RtpzCommand());
             this.getCommandRegistry().registerCommand(new RtpvCommand());
             this.getCommandRegistry().registerCommand(new RtphCommand());
+            this.getCommandRegistry().registerCommand(new JoinCommand());
+            RtpvJoinManager.setInstance(new RtpvJoinManager());
             LOGGER.at(Level.INFO).log("Commands registered");
 
             LOGGER.at(Level.INFO).log("Varyon initialized with {0} zones",
