@@ -33,6 +33,8 @@ public class ConfigManager {
     private ZonePermissionsConfig zonePermissionsConfig;
     private RtphConfig rtphConfig;
     private RtpvConfig rtpvConfig;
+    private RtpsConfig rtpsConfig;
+    private DeathConfig deathConfig;
 
     public ConfigManager(@Nonnull Path pluginDataFolder) {
         this.pluginDataFolder = pluginDataFolder;
@@ -60,6 +62,8 @@ public class ConfigManager {
             zonePermissionsConfig.save(pluginDataFolder);
             rtphConfig = RtphConfig.createDefault();
             rtpvConfig = RtpvConfig.createDefault();
+            rtpsConfig = RtpsConfig.createDefault();
+            deathConfig = DeathConfig.createDefault();
             save();
             return;
         }
@@ -77,6 +81,8 @@ public class ConfigManager {
             zonePermissionsConfig = ZonePermissionsConfig.load(pluginDataFolder);
             rtphConfig = parseRtphConfig(toml);
             rtpvConfig = parseRtpvConfig(toml);
+            rtpsConfig = parseRtpsConfig(toml);
+            deathConfig = parseDeathConfig(toml);
             LOGGER.at(Level.INFO).log("Loaded configuration with {0} zones", zoneConfig.getZones().size());
             save();
         } catch (Exception e) {
@@ -92,6 +98,8 @@ public class ConfigManager {
             zonePermissionsConfig = ZonePermissionsConfig.createDefault();
             rtphConfig = RtphConfig.createDefault();
             rtpvConfig = RtpvConfig.createDefault();
+            rtpsConfig = RtpsConfig.createDefault();
+            deathConfig = DeathConfig.createDefault();
         }
     }
 
@@ -177,6 +185,17 @@ public class ConfigManager {
         sb.append("economyEnabled = ").append(rtpv.isEconomyEnabled()).append("\n");
         sb.append("safeCostMultiplier = ").append(rtpv.getSafeCostMultiplier()).append("\n");
         sb.append("joinDurationSeconds = ").append(rtpv.getJoinDurationSeconds()).append("\n");
+        sb.append("\n");
+
+        RtpsConfig rtps = rtpsConfig != null ? rtpsConfig : RtpsConfig.createDefault();
+        sb.append("[rtps]\n");
+        sb.append("minBlocks = ").append(rtps.getMinBlocks()).append("\n");
+        sb.append("maxBlocks = ").append(rtps.getMaxBlocks()).append("\n");
+        sb.append("\n");
+
+        DeathConfig death = deathConfig != null ? deathConfig : DeathConfig.createDefault();
+        sb.append("[death]\n");
+        sb.append("essenceLossPercent = ").append(death.getEssenceLossPercent()).append("\n");
         sb.append("\n");
 
         for (DifficultyZone zone : zoneConfig.getZones()) {
@@ -317,6 +336,16 @@ public class ConfigManager {
     }
 
     @Nonnull
+    private RtpsConfig parseRtpsConfig(@Nonnull Toml toml) {
+        Toml rtpsToml = toml.getTable("rtps");
+        if (rtpsToml == null) return RtpsConfig.createDefault();
+        return new RtpsConfig(
+            rtpsToml.getLong("minBlocks", 10000L).intValue(),
+            rtpsToml.getLong("maxBlocks", 15000L).intValue()
+        );
+    }
+
+    @Nonnull
     private RtpvConfig parseRtpvConfig(@Nonnull Toml toml) {
         Toml rtpvToml = toml.getTable("rtpv");
         if (rtpvToml == null) return RtpvConfig.createDefault();
@@ -324,6 +353,13 @@ public class ConfigManager {
         double safeCostMultiplier = rtpvToml.getDouble("safeCostMultiplier", 2.0);
         int joinDurationSeconds = rtpvToml.getLong("joinDurationSeconds", 60L).intValue();
         return new RtpvConfig(safeCostMultiplier, economyEnabled, joinDurationSeconds);
+    }
+
+    @Nonnull
+    private DeathConfig parseDeathConfig(@Nonnull Toml toml) {
+        Toml deathToml = toml.getTable("death");
+        if (deathToml == null) return DeathConfig.createDefault();
+        return new DeathConfig(deathToml.getDouble("essenceLossPercent", 80.0));
     }
 
     @Nonnull
@@ -350,6 +386,8 @@ public class ConfigManager {
     @Nonnull public ZonePermissionsConfig getZonePermissionsConfig() { return zonePermissionsConfig != null ? zonePermissionsConfig : ZonePermissionsConfig.createDefault(); }
     @Nonnull public RtphConfig getRtphConfig()                       { return rtphConfig != null ? rtphConfig : RtphConfig.createDefault(); }
     @Nonnull public RtpvConfig getRtpvConfig()                       { return rtpvConfig != null ? rtpvConfig : RtpvConfig.createDefault(); }
+    @Nonnull public RtpsConfig getRtpsConfig()                       { return rtpsConfig != null ? rtpsConfig : RtpsConfig.createDefault(); }
+    @Nonnull public DeathConfig getDeathConfig()                     { return deathConfig != null ? deathConfig : DeathConfig.createDefault(); }
 
     public void reload() { load(); }
 }

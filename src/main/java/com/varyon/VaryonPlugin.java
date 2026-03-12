@@ -27,6 +27,7 @@ import com.varyon.command.VaryonCommand;
 import com.varyon.command.RtpzCommand;
 import com.varyon.command.RtpvCommand;
 import com.varyon.command.RtphCommand;
+import com.varyon.command.RtpsCommand;
 import com.varyon.command.ReturnCommand;
 import com.varyon.component.MobScalingComponent;
 import com.varyon.config.ConfigManager;
@@ -357,6 +358,7 @@ public class VaryonPlugin extends JavaPlugin {
             this.getCommandRegistry().registerCommand(new RtpzCommand());
             this.getCommandRegistry().registerCommand(new RtpvCommand());
             this.getCommandRegistry().registerCommand(new RtphCommand());
+            this.getCommandRegistry().registerCommand(new RtpsCommand());
             this.getCommandRegistry().registerCommand(new JoinCommand());
             RtpvJoinManager.setInstance(new RtpvJoinManager());
             LOGGER.at(Level.INFO).log("Commands registered");

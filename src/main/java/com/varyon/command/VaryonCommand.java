@@ -89,7 +89,7 @@ public class VaryonCommand extends AbstractAsyncCommand {
 
             if (hasRtp) {
                 context.sendMessage(Message.raw("  /rtpv <zone> : TP dans une zone de varyon").color(Color.WHITE));
-                context.sendMessage(Message.raw("  /v join <joueur> : Rejoindre un ami après son /rtpv").color(Color.WHITE));
+                context.sendMessage(Message.raw("  /join <joueur> : Rejoindre un ami après son /rtpv").color(Color.WHITE));
                 context.sendMessage(Message.raw("  /rtpz [zone] : TP dans une zone du jeu vanilla").color(Color.WHITE));
             }
 

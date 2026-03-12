@@ -11,6 +11,9 @@ import com.hypixel.hytale.server.core.modules.entity.damage.DeathComponent;
 import com.hypixel.hytale.server.core.modules.entity.damage.DeathSystems;
 import com.hypixel.hytale.server.core.universe.PlayerRef;
 import com.hypixel.hytale.server.core.universe.world.storage.EntityStore;
+import com.varyon.VaryonPlugin;
+import com.varyon.config.DeathConfig;
+import com.varyon.essence.EssenceManager;
 
 import javax.annotation.Nonnull;
 import java.util.logging.Level;
@@ -18,7 +21,7 @@ import java.util.logging.Level;
 public class DeathDetectionSystem extends DeathSystems.OnDeathSystem {
     private static final HytaleLogger LOGGER = HytaleLogger.forEnclosingClass();
     private final DeathPointManager deathPointManager;
-    
+
     public DeathDetectionSystem(@Nonnull DeathPointManager deathPointManager) {
         this.deathPointManager = deathPointManager;
     }
@@ -62,8 +65,21 @@ public class DeathDetectionSystem extends DeathSystems.OnDeathSystem {
         double z = transform.getPosition().z;
         
         deathPointManager.recordDeathPoint(playerRef.getUuid(), worldName, x, y, z);
-        
-        LOGGER.at(Level.INFO).log("Death detected for player " + playerRef.getUuid() + " at " + 
+
+        if (VaryonPlugin.getStaticConfigManager() != null && VaryonPlugin.getStaticConfigManager().getZoneConfig().isWorldEnabled(worldName)) {
+            EssenceManager essenceManager = VaryonPlugin.getStaticEssenceManager();
+            DeathConfig deathConfig = VaryonPlugin.getStaticConfigManager().getDeathConfig();
+            if (essenceManager != null && deathConfig.getEssenceLossPercent() > 0) {
+                double current = essenceManager.getEssence(playerRef.getUuid());
+                double loss = current * (deathConfig.getEssenceLossPercent() / 100.0);
+                if (loss > 0) {
+                    essenceManager.addEssence(playerRef.getUuid(), playerRef.getUsername(), -loss);
+                    LOGGER.at(Level.INFO).log("Death: player " + playerRef.getUuid() + " lost " + String.format("%.1f", loss) + " essence (" + (int) deathConfig.getEssenceLossPercent() + "%)");
+                }
+            }
+        }
+
+        LOGGER.at(Level.INFO).log("Death detected for player " + playerRef.getUuid() + " at " +
             worldName + ":" + (int)x + "," + (int)y + "," + (int)z);
     }
 }

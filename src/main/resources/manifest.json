@@ -84,6 +84,11 @@
       "Permission": "varyon.deposit",
       "Description": "Allow depositing essence",
       "Default": false
+    },
+    {
+      "Permission": "varyon.rtps",
+      "Description": "Allow /rtps command (random teleport on map side)",
+      "Default": false
     }
   ]
 }

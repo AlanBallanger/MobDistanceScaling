@@ -71,6 +71,52 @@ public class RtpService {
                                            double minDist, double maxDist,
                                            double minAngle, double maxAngle,
                                            int maxAttempts) {
+        return findSafePositionInRing(world, generator, minDist, maxDist, minAngle, maxAngle, maxAttempts, null);
+    }
+
+    @Nullable
+    public Vector3d findSafePositionInRect(@Nonnull World world, @Nonnull ChunkGenerator generator,
+                                           int minX, int maxX, int minZ, int maxZ,
+                                           int maxAttempts) {
+        return findSafePositionInRect(world, generator, minX, maxX, minZ, maxZ, maxAttempts, null);
+    }
+
+    @Nullable
+    public Vector3d findSafePositionInRect(@Nonnull World world, @Nonnull ChunkGenerator generator,
+                                           int minX, int maxX, int minZ, int maxZ,
+                                           int maxAttempts, @Nullable Zone targetZone) {
+        int seed = (int) world.getWorldConfig().getSeed();
+        int rangeX = maxX - minX + 1;
+        int rangeZ = maxZ - minZ + 1;
+
+        for (int attempt = 0; attempt < maxAttempts; attempt++) {
+            int x = minX + random.nextInt(rangeX);
+            int z = minZ + random.nextInt(rangeZ);
+
+            if (targetZone != null) {
+                ZoneBiomeResult result = generator.getZoneBiomeResultAt(seed, x, z);
+                if (result.getZoneResult().getZone().id() != targetZone.id()) {
+                    continue;
+                }
+            }
+
+            Double safeY = findSafeRtpY(world, x, z);
+            if (safeY != null) {
+                ZoneBiomeResult result = generator.getZoneBiomeResultAt(seed, x, z);
+                LOGGER.at(Level.INFO).log("RTP rect: position trouvée après " + (attempt + 1) + " tentative(s) — zone: " + result.getZoneResult().getZone().name());
+                return new Vector3d(x + 0.5, safeY, z + 0.5);
+            }
+        }
+
+        LOGGER.at(Level.WARNING).log("RTP rect: aucune position sûre après " + maxAttempts + " tentatives");
+        return null;
+    }
+
+    @Nullable
+    public Vector3d findSafePositionInRing(@Nonnull World world, @Nonnull ChunkGenerator generator,
+                                           double minDist, double maxDist,
+                                           double minAngle, double maxAngle,
+                                           int maxAttempts, @Nullable Zone targetZone) {
         int seed = (int) world.getWorldConfig().getSeed();
         double distSqMin = minDist * minDist;
         double distSqMax = maxDist * maxDist;
@@ -82,6 +128,13 @@ public class RtpService {
 
             int x = (int) (Math.cos(angle) * dist);
             int z = (int) (Math.sin(angle) * dist);
+
+            if (targetZone != null) {
+                ZoneBiomeResult result = generator.getZoneBiomeResultAt(seed, x, z);
+                if (result.getZoneResult().getZone().id() != targetZone.id()) {
+                    continue;
+                }
+            }
 
             Double safeY = findSafeRtpY(world, x, z);
             if (safeY != null) {

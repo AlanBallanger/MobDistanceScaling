@@ -19,7 +19,9 @@ import com.hypixel.hytale.server.core.universe.world.worldgen.IWorldGen;
 import com.hypixel.hytale.server.worldgen.chunk.ChunkGenerator;
 import com.hypixel.hytale.server.worldgen.zone.Zone;
 import com.varyon.VaryonPlugin;
+import com.varyon.config.DifficultyZone;
 import com.varyon.config.MessagesConfig;
+import com.varyon.config.ZoneConfig;
 import com.varyon.teleport.RtpService;
 
 import javax.annotation.Nonnull;
@@ -159,11 +161,25 @@ public class RtpzCommand extends AbstractPlayerCommand {
         }
 
         final Zone finalTargetZone = targetZone;
+        final Integer finalExtractedZoneNumber = extractedZoneNumber;
         context.sendMessage(Message.raw(msg.teleporting).color(Color.GREEN));
 
         world.execute(() -> {
             try {
-                Vector3d safePosition = rtpService.findSafePosition(world, generator, finalTargetZone, 50);
+                Vector3d safePosition;
+                if (finalTargetZone != null && finalExtractedZoneNumber != null) {
+                    ZoneConfig zoneConfig = VaryonPlugin.getStaticConfigManager().getZoneConfig();
+                    List<DifficultyZone> configZones = zoneConfig.getZones();
+                    int zoneIndex = finalExtractedZoneNumber - 1;
+                    double minDist = zoneIndex < configZones.size() ? configZones.get(zoneIndex).getRadiusStart() : 0;
+                    double maxDist = zoneIndex + 1 < configZones.size() ? configZones.get(zoneIndex + 1).getRadiusStart() : minDist + 5000;
+                    safePosition = rtpService.findSafePositionInRing(world, generator, minDist, maxDist, 0, 2 * Math.PI, 50, finalTargetZone);
+                } else {
+                    ZoneConfig zoneConfig = VaryonPlugin.getStaticConfigManager().getZoneConfig();
+                    List<DifficultyZone> configZones = zoneConfig.getZones();
+                    double maxDist = configZones.isEmpty() ? 25000 : configZones.get(configZones.size() - 1).getRadiusStart();
+                    safePosition = rtpService.findSafePositionInRing(world, generator, 0, maxDist, 0, 2 * Math.PI, 50);
+                }
 
                 if (safePosition != null) {
                     teleportPlayer(store, ref, world, safePosition);

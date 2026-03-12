@@ -10,7 +10,6 @@ import com.hypixel.hytale.server.core.command.system.CommandContext;
 import com.hypixel.hytale.server.core.command.system.arguments.system.RequiredArg;
 import com.hypixel.hytale.server.core.command.system.arguments.types.ArgTypes;
 import com.hypixel.hytale.server.core.command.system.basecommands.AbstractAsyncCommand;
-import com.hypixel.hytale.server.core.command.system.basecommands.CommandBase;
 import com.hypixel.hytale.server.core.entity.entities.Player;
 import com.hypixel.hytale.server.core.modules.entity.component.TransformComponent;
 import com.hypixel.hytale.server.core.modules.entity.teleport.Teleport;
@@ -36,47 +35,34 @@ import java.util.logging.Level;
 
 public class JoinCommand extends AbstractAsyncCommand {
     private static final HytaleLogger LOGGER = HytaleLogger.forEnclosingClass();
+    private final RequiredArg<String> playerArg;
 
     public JoinCommand() {
-        super("v", "Rejoindre un ami après son /rtpv");
+        super("join", "Rejoindre un ami qui vient de faire /rtpv");
         this.requirePermission("varyon.rtp");
-        this.addSubCommand(new JoinSubCommand());
+        this.playerArg = this.withRequiredArg("joueur", "Nom du joueur", ArgTypes.STRING);
     }
 
     @Override
     protected CompletableFuture<Void> executeAsync(@Nonnull CommandContext context) {
-        context.sendMessage(Message.raw("Usage: /v join <joueur>").color(Color.GRAY));
-        return CompletableFuture.completedFuture(null);
-    }
-
-    private static class JoinSubCommand extends CommandBase {
-        private final RequiredArg<String> playerArg;
-
-        JoinSubCommand() {
-            super("join", "Rejoindre un ami qui vient de faire /rtpv");
-            this.playerArg = this.withRequiredArg("player", "Nom du joueur", ArgTypes.STRING);
-        }
-
-        @Override
-        protected void executeSync(@Nonnull CommandContext context) {
         if (!context.isPlayer()) {
             context.sendMessage(Message.raw("Cette commande doit être exécutée par un joueur.").color(Color.RED));
-            return;
+            return CompletableFuture.completedFuture(null);
         }
 
         Player joinerPlayer = (Player) context.sender();
-        if (joinerPlayer == null) return;
+        if (joinerPlayer == null) return CompletableFuture.completedFuture(null);
 
         String targetName = context.get(playerArg).trim();
         if (targetName.isEmpty()) {
             context.sendMessage(Message.raw("Spécifiez le nom du joueur à rejoindre.").color(Color.RED));
-            return;
+            return CompletableFuture.completedFuture(null);
         }
 
         PlayerRef joinerRef = Universe.get().getPlayer(joinerPlayer.getUuid());
         if (joinerRef == null) {
             context.sendMessage(Message.raw("Vous devez être connecté.").color(Color.RED));
-            return;
+            return CompletableFuture.completedFuture(null);
         }
 
         PlayerRef targetRef = Universe.get().getPlayers().stream()
@@ -85,25 +71,25 @@ public class JoinCommand extends AbstractAsyncCommand {
                 .orElse(null);
         if (targetRef == null || !targetRef.isValid()) {
             context.sendMessage(Message.raw("Joueur introuvable ou hors ligne.").color(Color.RED));
-            return;
+            return CompletableFuture.completedFuture(null);
         }
 
         if (targetRef.getUuid().equals(joinerRef.getUuid())) {
             context.sendMessage(Message.raw("Vous ne pouvez pas vous rejoindre vous-même.").color(Color.RED));
-            return;
+            return CompletableFuture.completedFuture(null);
         }
 
         Ref<EntityStore> targetEntityRef = targetRef.getReference();
         if (targetEntityRef == null || !targetEntityRef.isValid()) {
             context.sendMessage(Message.raw("Le joueur n'est pas dans un monde.").color(Color.RED));
-            return;
+            return CompletableFuture.completedFuture(null);
         }
 
         Store<EntityStore> targetStore = targetEntityRef.getStore();
         Object ext = targetStore.getExternalData();
         if (!(ext instanceof EntityStore targetEntityStore) || targetEntityStore.getWorld() == null) {
             context.sendMessage(Message.raw("Impossible de localiser le joueur.").color(Color.RED));
-            return;
+            return CompletableFuture.completedFuture(null);
         }
 
         World targetWorld = targetEntityStore.getWorld();
@@ -112,33 +98,33 @@ public class JoinCommand extends AbstractAsyncCommand {
         String joinerWorldName = joinerPlayer.getWorld() != null ? joinerPlayer.getWorld().getName() : "";
         if (!targetWorldName.equals(joinerWorldName)) {
             context.sendMessage(Message.raw("Vous devez être dans le même monde (" + targetWorldName + ").").color(Color.RED));
-            return;
+            return CompletableFuture.completedFuture(null);
         }
 
         RtpvJoinManager joinMgr = RtpvJoinManager.getInstance();
         if (joinMgr == null) {
             context.sendMessage(Message.raw("Système de join indisponible.").color(Color.RED));
-            return;
+            return CompletableFuture.completedFuture(null);
         }
 
         ZoneConfig zoneConfig = VaryonPlugin.getStaticConfigManager().getZoneConfig();
         RtpvJoinManager.JoinableEntry entry = joinMgr.getJoinable(targetRef.getUuid(), targetWorldName, zoneConfig);
         if (entry == null) {
             context.sendMessage(Message.raw(targetName + " n'est pas rejoignable (utilisez /rtpv <zone> pour être rejoint).").color(Color.RED));
-            return;
+            return CompletableFuture.completedFuture(null);
         }
 
         ZonePermissionsConfig zonePerms = VaryonPlugin.getStaticConfigManager().getZonePermissionsConfig();
         if (!zonePerms.canAccessZone(joinerPlayer, entry.zoneId())) {
             String required = zonePerms.getPermissionForZone(entry.zoneId());
             context.sendMessage(Message.raw("Vous n'avez pas accès à la zone " + entry.zoneId() + ". Permission : " + required).color(Color.RED));
-            return;
+            return CompletableFuture.completedFuture(null);
         }
 
         DifficultyZone zone = zoneConfig.getZoneById(entry.zoneId());
         if (zone == null) {
             context.sendMessage(Message.raw("Zone invalide.").color(Color.RED));
-            return;
+            return CompletableFuture.completedFuture(null);
         }
 
         RtpvConfig rtpvConfig = VaryonPlugin.getStaticConfigManager().getRtpvConfig();
@@ -155,7 +141,7 @@ public class JoinCommand extends AbstractAsyncCommand {
                         context.sendMessage(Message.raw(
                             "Coins insuffisants. Coût : " + finalCost + " | Solde : " + balance.intValue()
                         ).color(Color.RED));
-                        return;
+                        return CompletableFuture.completedFuture(null);
                     }
                 }
             } catch (NoClassDefFoundError e) {
@@ -166,7 +152,7 @@ public class JoinCommand extends AbstractAsyncCommand {
         TransformComponent targetTransform = targetStore.getComponent(targetEntityRef, TransformComponent.getComponentType());
         if (targetTransform == null) {
             context.sendMessage(Message.raw("Impossible de récupérer la position.").color(Color.RED));
-            return;
+            return CompletableFuture.completedFuture(null);
         }
 
         Vector3d pos = targetTransform.getPosition().clone();
@@ -202,6 +188,6 @@ public class JoinCommand extends AbstractAsyncCommand {
                 context.sendMessage(Message.raw("Échec de la téléportation.").color(Color.RED));
             }
         });
-        }
+        return CompletableFuture.completedFuture(null);
     }
 }
