@@ -35,6 +35,7 @@ public class ConfigManager {
     private RtpvConfig rtpvConfig;
     private RtpsConfig rtpsConfig;
     private DeathConfig deathConfig;
+    private ShopConfig shopConfig;
 
     public ConfigManager(@Nonnull Path pluginDataFolder) {
         this.pluginDataFolder = pluginDataFolder;
@@ -64,6 +65,8 @@ public class ConfigManager {
             rtpvConfig = RtpvConfig.createDefault();
             rtpsConfig = RtpsConfig.createDefault();
             deathConfig = DeathConfig.createDefault();
+            shopConfig = ShopConfig.createDefault();
+            shopConfig.save(pluginDataFolder);
             save();
             return;
         }
@@ -83,6 +86,7 @@ public class ConfigManager {
             rtpvConfig = parseRtpvConfig(toml);
             rtpsConfig = parseRtpsConfig(toml);
             deathConfig = parseDeathConfig(toml);
+            shopConfig = ShopConfig.load(pluginDataFolder);
             LOGGER.at(Level.INFO).log("Loaded configuration with {0} zones", zoneConfig.getZones().size());
             save();
         } catch (Exception e) {
@@ -100,6 +104,7 @@ public class ConfigManager {
             rtpvConfig = RtpvConfig.createDefault();
             rtpsConfig = RtpsConfig.createDefault();
             deathConfig = DeathConfig.createDefault();
+            shopConfig = ShopConfig.createDefault();
         }
     }
 
@@ -388,6 +393,7 @@ public class ConfigManager {
     @Nonnull public RtpvConfig getRtpvConfig()                       { return rtpvConfig != null ? rtpvConfig : RtpvConfig.createDefault(); }
     @Nonnull public RtpsConfig getRtpsConfig()                       { return rtpsConfig != null ? rtpsConfig : RtpsConfig.createDefault(); }
     @Nonnull public DeathConfig getDeathConfig()                     { return deathConfig != null ? deathConfig : DeathConfig.createDefault(); }
+    @Nonnull public ShopConfig getShopConfig()                       { return shopConfig != null ? shopConfig : ShopConfig.createDefault(); }
 
     public void reload() { load(); }
 }

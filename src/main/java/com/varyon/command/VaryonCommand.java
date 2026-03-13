@@ -1,6 +1,7 @@
 package com.varyon.command;
 
 import com.hypixel.hytale.component.Ref;
+import com.hypixel.hytale.component.Store;
 import com.hypixel.hytale.math.util.ChunkUtil;
 import com.hypixel.hytale.server.core.Message;
 import com.hypixel.hytale.server.core.command.system.CommandContext;
@@ -15,6 +16,7 @@ import com.varyon.VaryonPlugin;
 import com.varyon.config.ConfigManager;
 import com.varyon.faction.FactionManager;
 import com.varyon.deposit.DepositBlockManager;
+import com.varyon.shop.ShopUIPage;
 
 import org.checkerframework.checker.nullness.compatqual.NonNullDecl;
 
@@ -40,6 +42,7 @@ public class VaryonCommand extends AbstractAsyncCommand {
         this.addSubCommand(new com.varyon.command.CreateDepositSubCommand(depositBlockManager));
         this.addSubCommand(new com.varyon.command.ResetDepositSubCommand(depositBlockManager));
         this.addSubCommand(new WhoIsSubCommand(factionManager));
+        this.addSubCommand(new ShopSubCommand());
     }
 
     @NonNullDecl
@@ -69,6 +72,7 @@ public class VaryonCommand extends AbstractAsyncCommand {
             }
 
             context.sendMessage(Message.raw("  /varyon extract : Invoque un portail d'extraction").color(Color.WHITE));
+            context.sendMessage(Message.raw("  /varyon shop : Boutique (clés contre fragments)").color(Color.WHITE));
             context.sendMessage(Message.raw("  /varyon whois : Voir votre faction détectée").color(Color.WHITE));
             context.sendMessage(Message.raw("  /return : Retour près de votre point de mort").color(Color.WHITE));
             context.sendMessage(Message.raw("  /essence : Voir votre essence").color(Color.WHITE));
@@ -238,6 +242,36 @@ public class VaryonCommand extends AbstractAsyncCommand {
             }
             
             return CompletableFuture.completedFuture(null);
+        }
+    }
+
+    public static class ShopSubCommand extends AbstractAsyncCommand {
+        public ShopSubCommand() {
+            super("shop", "Ouvre la boutique (clés contre fragments)");
+        }
+
+        @NonNullDecl
+        @Override
+        protected CompletableFuture<Void> executeAsync(CommandContext context) {
+            CommandSender sender = context.sender();
+            if (!(sender instanceof Player player)) {
+                context.sendMessage(Message.raw("Commande joueur uniquement.").color(Color.RED));
+                return CompletableFuture.completedFuture(null);
+            }
+            Ref<EntityStore> ref = context.senderAsPlayerRef();
+            if (ref == null || !ref.isValid()) {
+                context.sendMessage(Message.raw("Joueur non connecté au monde.").color(Color.RED));
+                return CompletableFuture.completedFuture(null);
+            }
+            Store<EntityStore> store = ref.getStore();
+            World world = ((EntityStore) store.getExternalData()).getWorld();
+            return CompletableFuture.runAsync(() -> {
+                PlayerRef playerRef = store.getComponent(ref, PlayerRef.getComponentType());
+                Player playerComp = store.getComponent(ref, Player.getComponentType());
+                if (playerRef == null || playerComp == null) return;
+                ShopUIPage page = new ShopUIPage(playerRef);
+                playerComp.getPageManager().openCustomPage(ref, store, page);
+            }, world);
         }
     }
 }
