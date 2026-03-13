@@ -45,18 +45,18 @@ $C.@PageOverlay {
           Group {
             LayoutMode: Left;
             Anchor: (Height: 20, Bottom: 2);
-            Label { Text: "Coût"; Style: (FontSize: 16, RenderBold: true, TextColor: #ff4444); Anchor: (Width: 90); }
+            Label { Text: "Coût"; Style: (FontSize: 16, RenderBold: true, TextColor: #ff4444); Anchor: (Width: 90, Left: 24); }
             Group { FlexWeight: 1; }
-            Label { Text: "Obtient"; Style: (FontSize: 16, RenderBold: true, TextColor: #44ff44); Anchor: (Width: 90, Right: 8); }
+            Label { Text: "Obtient"; Style: (FontSize: 16, RenderBold: true, TextColor: #44ff44); Anchor: (Width: 90, Right: 16); }
           }
           Group {
             LayoutMode: Left;
-            Anchor: (Height: 48);
-            Label #Item1Cost { Text: "100x"; Style: (FontSize: 14, TextColor: #aacc88, VerticalAlignment: Center); Anchor: (Width: 44, Left: 16, Right: 2); }
+            Anchor: (Height: 48, Left: 0, Right: 0);
+            Label #Item1Cost { Text: "100x"; Style: (FontSize: 14, TextColor: #aacc88, VerticalAlignment: Center); Anchor: (Width: 44, Left: 24, Right: 2); }
             ItemIcon #Item1FragmentIcon { Anchor: (Width: 40, Height: 40, Right: 40); }
-            Label #Item1Arrow { Text: "->"; Style: (FontSize: 16, TextColor: #ffffff, VerticalAlignment: Center); Anchor: (Width: 24, Right: 40); }
+            Label #Item1Arrow { Text: "->"; Style: (FontSize: 16, TextColor: #ffffff, VerticalAlignment: Center, HorizontalAlignment: Center); Anchor: (Width: 24, Right: 40); }
             Label #Item1Reward { Text: "1x"; Style: (FontSize: 14, TextColor: #88dd88, VerticalAlignment: Center); Anchor: (Width: 32, Right: 2); }
-            ItemIcon #Item1KeyIcon { Anchor: (Width: 40, Height: 40); }
+            ItemIcon #Item1KeyIcon { Anchor: (Width: 40, Height: 40, Right: 16); }
           }
           Button #BuyButton1 {
             Anchor: (Height: 36, Bottom: 4, Left: 0, Right: 0);
@@ -76,19 +76,19 @@ $C.@PageOverlay {
           Group {
             LayoutMode: Left;
             Anchor: (Height: 20, Bottom: 2);
-            Label { Text: "Coût"; Style: (FontSize: 16, RenderBold: true, TextColor: #ff4444); Anchor: (Width: 90); }
+            Label { Text: "Coût"; Style: (FontSize: 16, RenderBold: true, TextColor: #ff4444); Anchor: (Width: 90, Left: 24); }
             Group { FlexWeight: 1; }
-            Label { Text: "Obtient"; Style: (FontSize: 16, RenderBold: true, TextColor: #44ff44); Anchor: (Width: 90, Right: 8); }
+            Label { Text: "Obtient"; Style: (FontSize: 16, RenderBold: true, TextColor: #44ff44); Anchor: (Width: 90, Right: 16); }
           }
           Group {
             LayoutMode: Left;
-            Anchor: (Height: 48);
-            Label #Item2Cost { Text: "100x"; Style: (FontSize: 14, TextColor: #aacc88, VerticalAlignment: Center); Anchor: (Width: 44, Left: 16, Right: 2); }
+            Anchor: (Height: 48, Left: 0, Right: 0);
+            Label #Item2Cost { Text: "100x"; Style: (FontSize: 14, TextColor: #aacc88, VerticalAlignment: Center); Anchor: (Width: 44, Left: 24, Right: 2); }
             ItemIcon #Item2FragmentIcon { Anchor: (Width: 40, Height: 40, Right: 40); }
             
-            Label #Item2Arrow { Text: "->"; Style: (FontSize: 16, TextColor: #ffffff, VerticalAlignment: Center); Anchor: (Width: 24, Right: 40); }
+            Label #Item2Arrow { Text: "->"; Style: (FontSize: 16, TextColor: #ffffff, VerticalAlignment: Center, HorizontalAlignment: Center); Anchor: (Width: 24, Right: 40); }
             Label #Item2Reward { Text: "1x"; Style: (FontSize: 14, TextColor: #88dd88, VerticalAlignment: Center); Anchor: (Width: 32, Right: 2); }
-            ItemIcon #Item2KeyIcon { Anchor: (Width: 40, Height: 40); }
+            ItemIcon #Item2KeyIcon { Anchor: (Width: 40, Height: 40, Right: 16); }
           }
           Button #BuyButton2 {
             Anchor: (Height: 36, Bottom: 4, Left: 0, Right: 0);
@@ -108,19 +108,19 @@ $C.@PageOverlay {
           Group {
             LayoutMode: Left;
             Anchor: (Height: 20, Bottom: 2);
-            Label { Text: "Coût"; Style: (FontSize: 16, RenderBold: true, TextColor: #ff4444); Anchor: (Width: 90); }
+            Label { Text: "Coût"; Style: (FontSize: 16, RenderBold: true, TextColor: #ff4444); Anchor: (Width: 90, Left: 24); }
             Group { FlexWeight: 1; }
-            Label { Text: "Obtient"; Style: (FontSize: 16, RenderBold: true, TextColor: #44ff44); Anchor: (Width: 90, Right: 8); }
+            Label { Text: "Obtient"; Style: (FontSize: 16, RenderBold: true, TextColor: #44ff44); Anchor: (Width: 90, Right: 16); }
           }
           Group {
             LayoutMode: Left;
-            Anchor: (Height: 48);
-            Label #Item3Cost { Text: "100x"; Style: (FontSize: 14, TextColor: #aacc88, VerticalAlignment: Center); Anchor: (Width: 44, Left: 16, Right: 2); }
+            Anchor: (Height: 48, Left: 0, Right: 0);
+            Label #Item3Cost { Text: "100x"; Style: (FontSize: 14, TextColor: #aacc88, VerticalAlignment: Center); Anchor: (Width: 44, Left: 24, Right: 2); }
             ItemIcon #Item3FragmentIcon { Anchor: (Width: 40, Height: 40, Right: 40); }
             
-            Label #Item3Arrow { Text: "->"; Style: (FontSize: 16, TextColor: #ffffff, VerticalAlignment: Center); Anchor: (Width: 24, Right: 40); }
+            Label #Item3Arrow { Text: "->"; Style: (FontSize: 16, TextColor: #ffffff, VerticalAlignment: Center, HorizontalAlignment: Center); Anchor: (Width: 24, Right: 40); }
             Label #Item3Reward { Text: "1x"; Style: (FontSize: 14, TextColor: #88dd88, VerticalAlignment: Center); Anchor: (Width: 32, Right: 2); }
-            ItemIcon #Item3KeyIcon { Anchor: (Width: 40, Height: 40); }
+            ItemIcon #Item3KeyIcon { Anchor: (Width: 40, Height: 40, Right: 16); }
           }
           Button #BuyButton3 {
             Anchor: (Height: 36, Bottom: 4, Left: 0, Right: 0);
@@ -145,19 +145,19 @@ $C.@PageOverlay {
           Group {
             LayoutMode: Left;
             Anchor: (Height: 20, Bottom: 2);
-            Label { Text: "Coût"; Style: (FontSize: 16, RenderBold: true, TextColor: #ff4444); Anchor: (Width: 90); }
+            Label { Text: "Coût"; Style: (FontSize: 16, RenderBold: true, TextColor: #ff4444); Anchor: (Width: 90, Left: 24); }
             Group { FlexWeight: 1; }
-            Label { Text: "Obtient"; Style: (FontSize: 16, RenderBold: true, TextColor: #44ff44); Anchor: (Width: 90, Right: 8); }
+            Label { Text: "Obtient"; Style: (FontSize: 16, RenderBold: true, TextColor: #44ff44); Anchor: (Width: 90, Right: 16); }
           }
           Group {
             LayoutMode: Left;
-            Anchor: (Height: 48);
-            Label #Item4Cost { Text: "100x"; Style: (FontSize: 14, TextColor: #aacc88, VerticalAlignment: Center); Anchor: (Width: 44, Left: 16, Right: 2); }
+            Anchor: (Height: 48, Left: 0, Right: 0);
+            Label #Item4Cost { Text: "100x"; Style: (FontSize: 14, TextColor: #aacc88, VerticalAlignment: Center); Anchor: (Width: 44, Left: 24, Right: 2); }
             ItemIcon #Item4FragmentIcon { Anchor: (Width: 40, Height: 40, Right: 40); }
             
-            Label #Item4Arrow { Text: "->"; Style: (FontSize: 16, TextColor: #ffffff, VerticalAlignment: Center); Anchor: (Width: 24, Right: 40); }
+            Label #Item4Arrow { Text: "->"; Style: (FontSize: 16, TextColor: #ffffff, VerticalAlignment: Center, HorizontalAlignment: Center); Anchor: (Width: 24, Right: 40); }
             Label #Item4Reward { Text: "1x"; Style: (FontSize: 14, TextColor: #88dd88, VerticalAlignment: Center); Anchor: (Width: 32, Right: 2); }
-            ItemIcon #Item4KeyIcon { Anchor: (Width: 40, Height: 40); }
+            ItemIcon #Item4KeyIcon { Anchor: (Width: 40, Height: 40, Right: 16); }
           }
           Button #BuyButton4 {
             Anchor: (Height: 36, Bottom: 4, Left: 0, Right: 0);
@@ -177,19 +177,19 @@ $C.@PageOverlay {
           Group {
             LayoutMode: Left;
             Anchor: (Height: 20, Bottom: 2);
-            Label { Text: "Coût"; Style: (FontSize: 16, RenderBold: true, TextColor: #ff4444); Anchor: (Width: 90); }
+            Label { Text: "Coût"; Style: (FontSize: 16, RenderBold: true, TextColor: #ff4444); Anchor: (Width: 90, Left: 24); }
             Group { FlexWeight: 1; }
-            Label { Text: "Obtient"; Style: (FontSize: 16, RenderBold: true, TextColor: #44ff44); Anchor: (Width: 90, Right: 8); }
+            Label { Text: "Obtient"; Style: (FontSize: 16, RenderBold: true, TextColor: #44ff44); Anchor: (Width: 90, Right: 16); }
           }
           Group {
             LayoutMode: Left;
-            Anchor: (Height: 48);
-            Label #Item5Cost { Text: "100x"; Style: (FontSize: 14, TextColor: #aacc88, VerticalAlignment: Center); Anchor: (Width: 44, Left: 16, Right: 2); }
+            Anchor: (Height: 48, Left: 0, Right: 0);
+            Label #Item5Cost { Text: "100x"; Style: (FontSize: 14, TextColor: #aacc88, VerticalAlignment: Center); Anchor: (Width: 44, Left: 24, Right: 2); }
             ItemIcon #Item5FragmentIcon { Anchor: (Width: 40, Height: 40, Right: 40); }
             
-            Label #Item5Arrow { Text: "->"; Style: (FontSize: 16, TextColor: #ffffff, VerticalAlignment: Center); Anchor: (Width: 24, Right: 40); }
+            Label #Item5Arrow { Text: "->"; Style: (FontSize: 16, TextColor: #ffffff, VerticalAlignment: Center, HorizontalAlignment: Center); Anchor: (Width: 24, Right: 40); }
             Label #Item5Reward { Text: "1x"; Style: (FontSize: 14, TextColor: #88dd88, VerticalAlignment: Center); Anchor: (Width: 32, Right: 2); }
-            ItemIcon #Item5KeyIcon { Anchor: (Width: 40, Height: 40); }
+            ItemIcon #Item5KeyIcon { Anchor: (Width: 40, Height: 40, Right: 16); }
           }
           Button #BuyButton5 {
             Anchor: (Height: 36, Bottom: 4, Left: 0, Right: 0);
@@ -209,19 +209,19 @@ $C.@PageOverlay {
           Group {
             LayoutMode: Left;
             Anchor: (Height: 20, Bottom: 2);
-            Label { Text: "Coût"; Style: (FontSize: 16, RenderBold: true, TextColor: #ff4444); Anchor: (Width: 90); }
+            Label { Text: "Coût"; Style: (FontSize: 16, RenderBold: true, TextColor: #ff4444); Anchor: (Width: 90, Left: 24); }
             Group { FlexWeight: 1; }
-            Label { Text: "Obtient"; Style: (FontSize: 16, RenderBold: true, TextColor: #44ff44); Anchor: (Width: 90, Right: 8); }
+            Label { Text: "Obtient"; Style: (FontSize: 16, RenderBold: true, TextColor: #44ff44); Anchor: (Width: 90, Right: 16); }
           }
           Group {
             LayoutMode: Left;
-            Anchor: (Height: 48);
-            Label #Item6Cost { Text: "100x"; Style: (FontSize: 14, TextColor: #aacc88, VerticalAlignment: Center); Anchor: (Width: 44, Left: 16, Right: 2); }
+            Anchor: (Height: 48, Left: 0, Right: 0);
+            Label #Item6Cost { Text: "100x"; Style: (FontSize: 14, TextColor: #aacc88, VerticalAlignment: Center); Anchor: (Width: 44, Left: 24, Right: 2); }
             ItemIcon #Item6FragmentIcon { Anchor: (Width: 40, Height: 40, Right: 40); }
             
-            Label #Item6Arrow { Text: "->"; Style: (FontSize: 16, TextColor: #ffffff, VerticalAlignment: Center); Anchor: (Width: 24, Right: 40); }
+            Label #Item6Arrow { Text: "->"; Style: (FontSize: 16, TextColor: #ffffff, VerticalAlignment: Center, HorizontalAlignment: Center); Anchor: (Width: 24, Right: 40); }
             Label #Item6Reward { Text: "1x"; Style: (FontSize: 14, TextColor: #88dd88, VerticalAlignment: Center); Anchor: (Width: 32, Right: 2); }
-            ItemIcon #Item6KeyIcon { Anchor: (Width: 40, Height: 40); }
+            ItemIcon #Item6KeyIcon { Anchor: (Width: 40, Height: 40, Right: 16); }
           }
           Button #BuyButton6 {
             Anchor: (Height: 36, Bottom: 4, Left: 0, Right: 0);
@@ -246,19 +246,19 @@ $C.@PageOverlay {
           Group {
             LayoutMode: Left;
             Anchor: (Height: 20, Bottom: 2);
-            Label { Text: "Coût"; Style: (FontSize: 16, RenderBold: true, TextColor: #ff4444); Anchor: (Width: 90); }
+            Label { Text: "Coût"; Style: (FontSize: 16, RenderBold: true, TextColor: #ff4444); Anchor: (Width: 90, Left: 24); }
             Group { FlexWeight: 1; }
-            Label { Text: "Obtient"; Style: (FontSize: 16, RenderBold: true, TextColor: #44ff44); Anchor: (Width: 90, Right: 8); }
+            Label { Text: "Obtient"; Style: (FontSize: 16, RenderBold: true, TextColor: #44ff44); Anchor: (Width: 90, Right: 16); }
           }
           Group {
             LayoutMode: Left;
-            Anchor: (Height: 48);
-            Label #Item7Cost { Text: "100x"; Style: (FontSize: 14, TextColor: #aacc88, VerticalAlignment: Center); Anchor: (Width: 44, Left: 16, Right: 2); }
+            Anchor: (Height: 48, Left: 0, Right: 0);
+            Label #Item7Cost { Text: "100x"; Style: (FontSize: 14, TextColor: #aacc88, VerticalAlignment: Center); Anchor: (Width: 44, Left: 24, Right: 2); }
             ItemIcon #Item7FragmentIcon { Anchor: (Width: 40, Height: 40, Right: 40); }
             
-            Label #Item7Arrow { Text: "->"; Style: (FontSize: 16, TextColor: #ffffff, VerticalAlignment: Center); Anchor: (Width: 24, Right: 40); }
+            Label #Item7Arrow { Text: "->"; Style: (FontSize: 16, TextColor: #ffffff, VerticalAlignment: Center, HorizontalAlignment: Center); Anchor: (Width: 24, Right: 40); }
             Label #Item7Reward { Text: "1x"; Style: (FontSize: 14, TextColor: #88dd88, VerticalAlignment: Center); Anchor: (Width: 32, Right: 2); }
-            ItemIcon #Item7KeyIcon { Anchor: (Width: 40, Height: 40); }
+            ItemIcon #Item7KeyIcon { Anchor: (Width: 40, Height: 40, Right: 16); }
           }
           Button #BuyButton7 {
             Anchor: (Height: 36, Bottom: 4, Left: 0, Right: 0);
@@ -278,19 +278,19 @@ $C.@PageOverlay {
           Group {
             LayoutMode: Left;
             Anchor: (Height: 20, Bottom: 2);
-            Label { Text: "Coût"; Style: (FontSize: 16, RenderBold: true, TextColor: #ff4444); Anchor: (Width: 90); }
+            Label { Text: "Coût"; Style: (FontSize: 16, RenderBold: true, TextColor: #ff4444); Anchor: (Width: 90, Left: 24); }
             Group { FlexWeight: 1; }
-            Label { Text: "Obtient"; Style: (FontSize: 16, RenderBold: true, TextColor: #44ff44); Anchor: (Width: 90, Right: 8); }
+            Label { Text: "Obtient"; Style: (FontSize: 16, RenderBold: true, TextColor: #44ff44); Anchor: (Width: 90, Right: 16); }
           }
           Group {
             LayoutMode: Left;
-            Anchor: (Height: 48);
-            Label #Item8Cost { Text: "100x"; Style: (FontSize: 14, TextColor: #aacc88, VerticalAlignment: Center); Anchor: (Width: 44, Left: 16, Right: 2); }
+            Anchor: (Height: 48, Left: 0, Right: 0);
+            Label #Item8Cost { Text: "100x"; Style: (FontSize: 14, TextColor: #aacc88, VerticalAlignment: Center); Anchor: (Width: 44, Left: 24, Right: 2); }
             ItemIcon #Item8FragmentIcon { Anchor: (Width: 40, Height: 40, Right: 40); }
             
-            Label #Item8Arrow { Text: "->"; Style: (FontSize: 16, TextColor: #ffffff, VerticalAlignment: Center); Anchor: (Width: 24, Right: 40); }
+            Label #Item8Arrow { Text: "->"; Style: (FontSize: 16, TextColor: #ffffff, VerticalAlignment: Center, HorizontalAlignment: Center); Anchor: (Width: 24, Right: 40); }
             Label #Item8Reward { Text: "1x"; Style: (FontSize: 14, TextColor: #88dd88, VerticalAlignment: Center); Anchor: (Width: 32, Right: 2); }
-            ItemIcon #Item8KeyIcon { Anchor: (Width: 40, Height: 40); }
+            ItemIcon #Item8KeyIcon { Anchor: (Width: 40, Height: 40, Right: 16); }
           }
           Button #BuyButton8 {
             Anchor: (Height: 36, Bottom: 4, Left: 0, Right: 0);
@@ -310,19 +310,19 @@ $C.@PageOverlay {
           Group {
             LayoutMode: Left;
             Anchor: (Height: 20, Bottom: 2);
-            Label { Text: "Coût"; Style: (FontSize: 16, RenderBold: true, TextColor: #ff4444); Anchor: (Width: 90); }
+            Label { Text: "Coût"; Style: (FontSize: 16, RenderBold: true, TextColor: #ff4444); Anchor: (Width: 90, Left: 24); }
             Group { FlexWeight: 1; }
-            Label { Text: "Obtient"; Style: (FontSize: 16, RenderBold: true, TextColor: #44ff44); Anchor: (Width: 90, Right: 8); }
+            Label { Text: "Obtient"; Style: (FontSize: 16, RenderBold: true, TextColor: #44ff44); Anchor: (Width: 90, Right: 16); }
           }
           Group {
             LayoutMode: Left;
-            Anchor: (Height: 48);
-            Label #Item9Cost { Text: "100x"; Style: (FontSize: 14, TextColor: #aacc88, VerticalAlignment: Center); Anchor: (Width: 44, Left: 16, Right: 2); }
+            Anchor: (Height: 48, Left: 0, Right: 0);
+            Label #Item9Cost { Text: "100x"; Style: (FontSize: 14, TextColor: #aacc88, VerticalAlignment: Center); Anchor: (Width: 44, Left: 24, Right: 2); }
             ItemIcon #Item9FragmentIcon { Anchor: (Width: 40, Height: 40, Right: 40); }
             
-            Label #Item9Arrow { Text: "->"; Style: (FontSize: 16, TextColor: #ffffff, VerticalAlignment: Center); Anchor: (Width: 24, Right: 40); }
+            Label #Item9Arrow { Text: "->"; Style: (FontSize: 16, TextColor: #ffffff, VerticalAlignment: Center, HorizontalAlignment: Center); Anchor: (Width: 24, Right: 40); }
             Label #Item9Reward { Text: "1x"; Style: (FontSize: 14, TextColor: #88dd88, VerticalAlignment: Center); Anchor: (Width: 32, Right: 2); }
-            ItemIcon #Item9KeyIcon { Anchor: (Width: 40, Height: 40); }
+            ItemIcon #Item9KeyIcon { Anchor: (Width: 40, Height: 40, Right: 16); }
           }
           Button #BuyButton9 {
             Anchor: (Height: 36, Bottom: 4, Left: 0, Right: 0);
@@ -347,19 +347,19 @@ $C.@PageOverlay {
           Group {
             LayoutMode: Left;
             Anchor: (Height: 20, Bottom: 2);
-            Label { Text: "Coût"; Style: (FontSize: 16, RenderBold: true, TextColor: #ff4444); Anchor: (Width: 90); }
+            Label { Text: "Coût"; Style: (FontSize: 16, RenderBold: true, TextColor: #ff4444); Anchor: (Width: 90, Left: 24); }
             Group { FlexWeight: 1; }
-            Label { Text: "Obtient"; Style: (FontSize: 16, RenderBold: true, TextColor: #44ff44); Anchor: (Width: 90, Right: 8); }
+            Label { Text: "Obtient"; Style: (FontSize: 16, RenderBold: true, TextColor: #44ff44); Anchor: (Width: 90, Right: 16); }
           }
           Group {
             LayoutMode: Left;
-            Anchor: (Height: 48);
-            Label #Item10Cost { Text: "100x"; Style: (FontSize: 14, TextColor: #aacc88, VerticalAlignment: Center); Anchor: (Width: 44, Left: 16, Right: 2); }
+            Anchor: (Height: 48, Left: 0, Right: 0);
+            Label #Item10Cost { Text: "100x"; Style: (FontSize: 14, TextColor: #aacc88, VerticalAlignment: Center); Anchor: (Width: 44, Left: 24, Right: 2); }
             ItemIcon #Item10FragmentIcon { Anchor: (Width: 40, Height: 40, Right: 40); }
             
-            Label #Item10Arrow { Text: "->"; Style: (FontSize: 16, TextColor: #ffffff, VerticalAlignment: Center); Anchor: (Width: 24, Right: 40); }
+            Label #Item10Arrow { Text: "->"; Style: (FontSize: 16, TextColor: #ffffff, VerticalAlignment: Center, HorizontalAlignment: Center); Anchor: (Width: 24, Right: 40); }
             Label #Item10Reward { Text: "1x"; Style: (FontSize: 14, TextColor: #88dd88, VerticalAlignment: Center); Anchor: (Width: 32, Right: 2); }
-            ItemIcon #Item10KeyIcon { Anchor: (Width: 40, Height: 40); }
+            ItemIcon #Item10KeyIcon { Anchor: (Width: 40, Height: 40, Right: 16); }
           }
           Button #BuyButton10 {
             Anchor: (Height: 36, Bottom: 4, Left: 0, Right: 0);
