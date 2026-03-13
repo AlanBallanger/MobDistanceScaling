@@ -11,7 +11,7 @@ $C.@PageOverlay {
 
         Label #MenuTitle {
           FlexWeight: 1;
-          Text: "Boutique de clÃ© varyon";
+          Text: "Boutique de clé varyon";
           Style: (FontSize: 24, RenderBold: true, TextColor: #ffffff, VerticalAlignment: Center, HorizontalAlignment: Center);
         }
 
@@ -32,7 +32,7 @@ $C.@PageOverlay {
 
       Group #Row1 {
         LayoutMode: Left;
-        Anchor: (Height: 200, Bottom: 10);
+        Anchor: (Height: 145, Bottom: 10);
         Group #Item1 {
           FlexWeight: 1;
           Anchor: (Right: 10);
@@ -41,7 +41,14 @@ $C.@PageOverlay {
           OutlineSize: 2;
           LayoutMode: Top;
           Padding: (Top: 8, Left: 8, Right: 8, Bottom: 8);
-          Label #Item1Label { Text: "Clé Zone 1"; Style: (FontSize: 14, RenderBold: true, TextColor: #ffffff); Anchor: (Height: 24, Bottom: 4); }
+          Label #Item1Label { Text: "Clé Zone 1"; Style: (FontSize: 14, RenderBold: true, TextColor: #ffffff, HorizontalAlignment: Center); Anchor: (Height: 24, Bottom: 4, Left: 0, Right: 0); }
+          Group {
+            LayoutMode: Left;
+            Anchor: (Height: 20, Bottom: 2);
+            Label { Text: "Coût"; Style: (FontSize: 16, RenderBold: true, TextColor: #ff4444); Anchor: (Width: 90); }
+            Group { FlexWeight: 1; }
+            Label { Text: "Obtient"; Style: (FontSize: 16, RenderBold: true, TextColor: #44ff44); Anchor: (Width: 90); }
+          }
           Group {
             LayoutMode: Left;
             Anchor: (Height: 48);
@@ -65,7 +72,14 @@ $C.@PageOverlay {
           OutlineSize: 2;
           LayoutMode: Top;
           Padding: (Top: 8, Left: 8, Right: 8, Bottom: 8);
-          Label #Item2Label { Text: "Clé Zone 2"; Style: (FontSize: 14, RenderBold: true, TextColor: #ffffff); Anchor: (Height: 24, Bottom: 4); }
+          Label #Item2Label { Text: "Clé Zone 2"; Style: (FontSize: 14, RenderBold: true, TextColor: #ffffff, HorizontalAlignment: Center); Anchor: (Height: 24, Bottom: 4, Left: 0, Right: 0); }
+          Group {
+            LayoutMode: Left;
+            Anchor: (Height: 20, Bottom: 2);
+            Label { Text: "Coût"; Style: (FontSize: 16, RenderBold: true, TextColor: #ff4444); Anchor: (Width: 90); }
+            Group { FlexWeight: 1; }
+            Label { Text: "Obtient"; Style: (FontSize: 16, RenderBold: true, TextColor: #44ff44); Anchor: (Width: 90); }
+          }
           Group {
             LayoutMode: Left;
             Anchor: (Height: 48);
@@ -90,7 +104,14 @@ $C.@PageOverlay {
           OutlineSize: 2;
           LayoutMode: Top;
           Padding: (Top: 8, Left: 8, Right: 8, Bottom: 8);
-          Label #Item3Label { Text: "Clé Zone 3"; Style: (FontSize: 14, RenderBold: true, TextColor: #ffffff); Anchor: (Height: 24, Bottom: 4); }
+          Label #Item3Label { Text: "Clé Zone 3"; Style: (FontSize: 14, RenderBold: true, TextColor: #ffffff, HorizontalAlignment: Center); Anchor: (Height: 24, Bottom: 4, Left: 0, Right: 0); }
+          Group {
+            LayoutMode: Left;
+            Anchor: (Height: 20, Bottom: 2);
+            Label { Text: "Coût"; Style: (FontSize: 16, RenderBold: true, TextColor: #ff4444); Anchor: (Width: 90); }
+            Group { FlexWeight: 1; }
+            Label { Text: "Obtient"; Style: (FontSize: 16, RenderBold: true, TextColor: #44ff44); Anchor: (Width: 90); }
+          }
           Group {
             LayoutMode: Left;
             Anchor: (Height: 48);
@@ -107,6 +128,11 @@ $C.@PageOverlay {
             Group { LayoutMode: Middle; Label { Text: "Acheter"; Style: (FontSize: 12, RenderBold: true, TextColor: #ffffff, HorizontalAlignment: Center); } }
           }
         }
+      }
+
+      Group #Row2 {
+        LayoutMode: Left;
+        Anchor: (Height: 145, Bottom: 10);
         Group #Item4 {
           FlexWeight: 1;
           
@@ -115,7 +141,14 @@ $C.@PageOverlay {
           OutlineSize: 2;
           LayoutMode: Top;
           Padding: (Top: 8, Left: 8, Right: 8, Bottom: 8);
-          Label #Item4Label { Text: "Clé Zone 4"; Style: (FontSize: 14, RenderBold: true, TextColor: #ffffff); Anchor: (Height: 24, Bottom: 4); }
+          Label #Item4Label { Text: "Clé Zone 4"; Style: (FontSize: 14, RenderBold: true, TextColor: #ffffff, HorizontalAlignment: Center); Anchor: (Height: 24, Bottom: 4, Left: 0, Right: 0); }
+          Group {
+            LayoutMode: Left;
+            Anchor: (Height: 20, Bottom: 2);
+            Label { Text: "Coût"; Style: (FontSize: 16, RenderBold: true, TextColor: #ff4444); Anchor: (Width: 90); }
+            Group { FlexWeight: 1; }
+            Label { Text: "Obtient"; Style: (FontSize: 16, RenderBold: true, TextColor: #44ff44); Anchor: (Width: 90); }
+          }
           Group {
             LayoutMode: Left;
             Anchor: (Height: 48);
@@ -132,11 +165,6 @@ $C.@PageOverlay {
             Group { LayoutMode: Middle; Label { Text: "Acheter"; Style: (FontSize: 12, RenderBold: true, TextColor: #ffffff, HorizontalAlignment: Center); } }
           }
         }
-      }
-
-      Group #Row2 {
-        LayoutMode: Left;
-        Anchor: (Height: 200, Bottom: 10);
         Group #Item5 {
           FlexWeight: 1;
           
@@ -145,7 +173,14 @@ $C.@PageOverlay {
           OutlineSize: 2;
           LayoutMode: Top;
           Padding: (Top: 8, Left: 8, Right: 8, Bottom: 8);
-          Label #Item5Label { Text: "Clé Zone 5"; Style: (FontSize: 14, RenderBold: true, TextColor: #ffffff); Anchor: (Height: 24, Bottom: 4); }
+          Label #Item5Label { Text: "Clé Zone 5"; Style: (FontSize: 14, RenderBold: true, TextColor: #ffffff, HorizontalAlignment: Center); Anchor: (Height: 24, Bottom: 4, Left: 0, Right: 0); }
+          Group {
+            LayoutMode: Left;
+            Anchor: (Height: 20, Bottom: 2);
+            Label { Text: "Coût"; Style: (FontSize: 16, RenderBold: true, TextColor: #ff4444); Anchor: (Width: 90); }
+            Group { FlexWeight: 1; }
+            Label { Text: "Obtient"; Style: (FontSize: 16, RenderBold: true, TextColor: #44ff44); Anchor: (Width: 90); }
+          }
           Group {
             LayoutMode: Left;
             Anchor: (Height: 48);
@@ -170,7 +205,14 @@ $C.@PageOverlay {
           OutlineSize: 2;
           LayoutMode: Top;
           Padding: (Top: 8, Left: 8, Right: 8, Bottom: 8);
-          Label #Item6Label { Text: "Clé Zone 6"; Style: (FontSize: 14, RenderBold: true, TextColor: #ffffff); Anchor: (Height: 24, Bottom: 4); }
+          Label #Item6Label { Text: "Clé Zone 6"; Style: (FontSize: 14, RenderBold: true, TextColor: #ffffff, HorizontalAlignment: Center); Anchor: (Height: 24, Bottom: 4, Left: 0, Right: 0); }
+          Group {
+            LayoutMode: Left;
+            Anchor: (Height: 20, Bottom: 2);
+            Label { Text: "Coût"; Style: (FontSize: 16, RenderBold: true, TextColor: #ff4444); Anchor: (Width: 90); }
+            Group { FlexWeight: 1; }
+            Label { Text: "Obtient"; Style: (FontSize: 16, RenderBold: true, TextColor: #44ff44); Anchor: (Width: 90); }
+          }
           Group {
             LayoutMode: Left;
             Anchor: (Height: 48);
@@ -187,6 +229,11 @@ $C.@PageOverlay {
             Group { LayoutMode: Middle; Label { Text: "Acheter"; Style: (FontSize: 12, RenderBold: true, TextColor: #ffffff, HorizontalAlignment: Center); } }
           }
         }
+      }
+
+      Group #Row3 {
+        LayoutMode: Left;
+        Anchor: (Height: 145, Bottom: 10);
         Group #Item7 {
           FlexWeight: 1;
           
@@ -195,7 +242,14 @@ $C.@PageOverlay {
           OutlineSize: 2;
           LayoutMode: Top;
           Padding: (Top: 8, Left: 8, Right: 8, Bottom: 8);
-          Label #Item7Label { Text: "Clé Zone 7"; Style: (FontSize: 14, RenderBold: true, TextColor: #ffffff); Anchor: (Height: 24, Bottom: 4); }
+          Label #Item7Label { Text: "Clé Zone 7"; Style: (FontSize: 14, RenderBold: true, TextColor: #ffffff, HorizontalAlignment: Center); Anchor: (Height: 24, Bottom: 4, Left: 0, Right: 0); }
+          Group {
+            LayoutMode: Left;
+            Anchor: (Height: 20, Bottom: 2);
+            Label { Text: "Coût"; Style: (FontSize: 16, RenderBold: true, TextColor: #ff4444); Anchor: (Width: 90); }
+            Group { FlexWeight: 1; }
+            Label { Text: "Obtient"; Style: (FontSize: 16, RenderBold: true, TextColor: #44ff44); Anchor: (Width: 90); }
+          }
           Group {
             LayoutMode: Left;
             Anchor: (Height: 48);
@@ -220,7 +274,14 @@ $C.@PageOverlay {
           OutlineSize: 2;
           LayoutMode: Top;
           Padding: (Top: 8, Left: 8, Right: 8, Bottom: 8);
-          Label #Item8Label { Text: "Clé Zone 8"; Style: (FontSize: 14, RenderBold: true, TextColor: #ffffff); Anchor: (Height: 24, Bottom: 4); }
+          Label #Item8Label { Text: "Clé Zone 8"; Style: (FontSize: 14, RenderBold: true, TextColor: #ffffff, HorizontalAlignment: Center); Anchor: (Height: 24, Bottom: 4, Left: 0, Right: 0); }
+          Group {
+            LayoutMode: Left;
+            Anchor: (Height: 20, Bottom: 2);
+            Label { Text: "Coût"; Style: (FontSize: 16, RenderBold: true, TextColor: #ff4444); Anchor: (Width: 90); }
+            Group { FlexWeight: 1; }
+            Label { Text: "Obtient"; Style: (FontSize: 16, RenderBold: true, TextColor: #44ff44); Anchor: (Width: 90); }
+          }
           Group {
             LayoutMode: Left;
             Anchor: (Height: 48);
@@ -237,11 +298,6 @@ $C.@PageOverlay {
             Group { LayoutMode: Middle; Label { Text: "Acheter"; Style: (FontSize: 12, RenderBold: true, TextColor: #ffffff, HorizontalAlignment: Center); } }
           }
         }
-      }
-
-      Group #Row3 {
-        LayoutMode: Left;
-        Anchor: (Height: 200);
         Group #Item9 {
           FlexWeight: 1;
           
@@ -250,7 +306,14 @@ $C.@PageOverlay {
           OutlineSize: 2;
           LayoutMode: Top;
           Padding: (Top: 8, Left: 8, Right: 8, Bottom: 8);
-          Label #Item9Label { Text: "Clé Zone 9"; Style: (FontSize: 14, RenderBold: true, TextColor: #ffffff); Anchor: (Height: 24, Bottom: 4); }
+          Label #Item9Label { Text: "Clé Zone 9"; Style: (FontSize: 14, RenderBold: true, TextColor: #ffffff, HorizontalAlignment: Center); Anchor: (Height: 24, Bottom: 4, Left: 0, Right: 0); }
+          Group {
+            LayoutMode: Left;
+            Anchor: (Height: 20, Bottom: 2);
+            Label { Text: "Coût"; Style: (FontSize: 16, RenderBold: true, TextColor: #ff4444); Anchor: (Width: 90); }
+            Group { FlexWeight: 1; }
+            Label { Text: "Obtient"; Style: (FontSize: 16, RenderBold: true, TextColor: #44ff44); Anchor: (Width: 90); }
+          }
           Group {
             LayoutMode: Left;
             Anchor: (Height: 48);
@@ -267,6 +330,11 @@ $C.@PageOverlay {
             Group { LayoutMode: Middle; Label { Text: "Acheter"; Style: (FontSize: 12, RenderBold: true, TextColor: #ffffff, HorizontalAlignment: Center); } }
           }
         }
+      }
+
+      Group #Row4 {
+        LayoutMode: Left;
+        Anchor: (Height: 145);
         Group #Item10 {
           FlexWeight: 1;
           
@@ -275,7 +343,14 @@ $C.@PageOverlay {
           OutlineSize: 2;
           LayoutMode: Top;
           Padding: (Top: 8, Left: 8, Right: 8, Bottom: 8);
-          Label #Item10Label { Text: "Clé Zone 10"; Style: (FontSize: 14, RenderBold: true, TextColor: #ffffff); Anchor: (Height: 24, Bottom: 4); }
+          Label #Item10Label { Text: "Clé Zone 10"; Style: (FontSize: 14, RenderBold: true, TextColor: #ffffff, HorizontalAlignment: Center); Anchor: (Height: 24, Bottom: 4, Left: 0, Right: 0); }
+          Group {
+            LayoutMode: Left;
+            Anchor: (Height: 20, Bottom: 2);
+            Label { Text: "Coût"; Style: (FontSize: 16, RenderBold: true, TextColor: #ff4444); Anchor: (Width: 90); }
+            Group { FlexWeight: 1; }
+            Label { Text: "Obtient"; Style: (FontSize: 16, RenderBold: true, TextColor: #44ff44); Anchor: (Width: 90); }
+          }
           Group {
             LayoutMode: Left;
             Anchor: (Height: 48);
