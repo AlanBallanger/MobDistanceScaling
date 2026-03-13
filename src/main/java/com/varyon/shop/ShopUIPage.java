@@ -10,6 +10,8 @@ import com.hypixel.hytale.protocol.packets.interface_.CustomUIEventBindingType;
 import com.hypixel.hytale.protocol.packets.interface_.Page;
 import com.hypixel.hytale.server.core.Message;
 import com.hypixel.hytale.server.core.command.system.CommandManager;
+import com.hypixel.hytale.server.core.command.system.CommandSender;
+import com.hypixel.hytale.server.core.console.ConsoleSender;
 import com.hypixel.hytale.server.core.entity.entities.Player;
 import com.hypixel.hytale.server.core.entity.entities.player.pages.InteractiveCustomUIPage;
 import com.hypixel.hytale.server.core.inventory.ItemStack;
@@ -24,6 +26,7 @@ import com.varyon.config.ShopConfig;
 
 import javax.annotation.Nonnull;
 import java.awt.Color;
+import java.util.List;
 
 public class ShopUIPage extends InteractiveCustomUIPage<ShopUIPage.EventDataClass> {
 
@@ -46,9 +49,7 @@ public class ShopUIPage extends InteractiveCustomUIPage<ShopUIPage.EventDataClas
         Player player = store.getComponent(ref, Player.getComponentType());
         if (player == null || player.getInventory() == null) return;
 
-        CombinedItemContainer container = player.getInventory().getCombinedHotbarFirst();
-
-        java.util.List<ShopConfig.ShopItem> items = shopConfig.getItems();
+        List<ShopConfig.ShopItem> items = shopConfig.getItems();
         for (int i = 1; i <= MAX_ITEMS; i++) {
             boolean visible = i <= items.size();
             commandBuilder.set("#Item" + i + ".Visible", visible);
@@ -61,16 +62,14 @@ public class ShopUIPage extends InteractiveCustomUIPage<ShopUIPage.EventDataClas
             commandBuilder.set("#Item" + i + "FragmentIcon.ItemId", item.getCostItem());
             commandBuilder.set("#Item" + i + "KeyIcon.ItemId", item.getKeyItemId());
 
-            int fragmentCount = countItems(container, item.getCostItem());
-            boolean canAfford = fragmentCount >= item.getCostAmount();
-            commandBuilder.set("#BuyButton" + i + ".Disabled", !canAfford);
-
             eventBuilder.addEventBinding(CustomUIEventBindingType.Activating, "#BuyButton" + i,
                 EventData.of("Action", "buy").append("Index", String.valueOf(i - 1)));
         }
 
         eventBuilder.addEventBinding(CustomUIEventBindingType.Activating, "#CloseButton",
             EventData.of("Action", "close"));
+
+        buildBuyButtonStates(ref, store, commandBuilder);
     }
 
     private int countItems(CombinedItemContainer container, String itemId) {
@@ -78,6 +77,26 @@ public class ShopUIPage extends InteractiveCustomUIPage<ShopUIPage.EventDataClas
             return container.countItemStacks(stack -> itemId.equals(stack.getItemId()));
         } catch (Throwable t) {
             return 0;
+        }
+    }
+
+    private void buildBuyButtonStates(@Nonnull Ref<EntityStore> ref,
+                                      @Nonnull Store<EntityStore> store,
+                                      @Nonnull UICommandBuilder commandBuilder) {
+        ShopConfig shopConfig = getShopConfig();
+        if (shopConfig == null) return;
+
+        Player player = store.getComponent(ref, Player.getComponentType());
+        if (player == null || player.getInventory() == null) return;
+
+        CombinedItemContainer container = player.getInventory().getCombinedHotbarFirst();
+        List<ShopConfig.ShopItem> items = shopConfig.getItems();
+
+        for (int i = 1; i <= Math.min(MAX_ITEMS, items.size()); i++) {
+            ShopConfig.ShopItem item = items.get(i - 1);
+            int fragmentCount = countItems(container, item.getCostItem());
+            boolean canAfford = fragmentCount >= item.getCostAmount();
+            commandBuilder.set("#BuyButton" + i + ".Disabled", !canAfford);
         }
     }
 
@@ -104,7 +123,7 @@ public class ShopUIPage extends InteractiveCustomUIPage<ShopUIPage.EventDataClas
                 return;
             }
 
-            java.util.List<ShopConfig.ShopItem> items = shopConfig.getItems();
+            List<ShopConfig.ShopItem> items = shopConfig.getItems();
             if (idx < 0 || idx >= items.size()) return;
 
             ShopConfig.ShopItem item = items.get(idx);
@@ -126,8 +145,13 @@ public class ShopUIPage extends InteractiveCustomUIPage<ShopUIPage.EventDataClas
             PlayerRef playerRef = store.getComponent(ref, PlayerRef.getComponentType());
             if (playerRef != null) {
                 String cmd = "lb givekey " + playerRef.getUsername() + " " + item.getTierId() + " 1";
-                CommandManager.get().handleCommand(playerRef, cmd);
+                CommandManager.get().handleCommand((CommandSender) ConsoleSender.INSTANCE, cmd);
             }
+
+            UICommandBuilder cb = new UICommandBuilder();
+            buildBuyButtonStates(ref, store, cb);
+            sendUpdate(cb, new UIEventBuilder(), false);
+
             player.sendMessage(Message.raw("Achat réussi: " + item.getLabel()).color(Color.GREEN));
         }
     }
