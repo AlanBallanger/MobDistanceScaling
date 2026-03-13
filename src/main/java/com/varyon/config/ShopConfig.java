@@ -101,16 +101,16 @@ public class ShopConfig {
     private static String deriveKeyId(String costItem) {
         if (costItem != null && costItem.startsWith("Key_Fragment")) {
             String num = costItem.substring("Key_Fragment".length());
-            return "key" + num;
+            return "Key" + num;
         }
-        return "key1";
+        return "Key1";
     }
 
     @Nonnull
     public static ShopConfig createDefault() {
         List<ShopItem> items = new ArrayList<>();
         for (int z = 1; z <= 10; z++) {
-            items.add(new ShopItem("Clé Zone " + z, "Key_Fragment" + z, 1, "key" + z, "tier" + z));
+            items.add(new ShopItem("Clé Zone " + z, "Key_Fragment" + z, 100, "Key" + z, "tier" + z));
         }
         return new ShopConfig(items);
     }

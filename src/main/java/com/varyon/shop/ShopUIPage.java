@@ -57,8 +57,9 @@ public class ShopUIPage extends InteractiveCustomUIPage<ShopUIPage.EventDataClas
             ShopConfig.ShopItem item = items.get(i - 1);
             commandBuilder.set("#Item" + i + "Label.TextSpans", Message.raw(item.getLabel()));
             commandBuilder.set("#Item" + i + "Cost.TextSpans", Message.raw(item.getCostAmount() + "x"));
+            commandBuilder.set("#Item" + i + "Reward.TextSpans", Message.raw("1x"));
             commandBuilder.set("#Item" + i + "FragmentIcon.ItemId", item.getCostItem());
-            commandBuilder.set("#Item" + i + "KeyIcon.ItemId", item.getCostItem());
+            commandBuilder.set("#Item" + i + "KeyIcon.ItemId", item.getKeyItemId());
 
             int fragmentCount = countItems(container, item.getCostItem());
             boolean canAfford = fragmentCount >= item.getCostAmount();
