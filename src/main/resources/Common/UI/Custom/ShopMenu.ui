@@ -11,7 +11,7 @@ $C.@PageOverlay {
 
         Label #MenuTitle {
           FlexWeight: 1;
-          Text: "Boutique";
+          Text: "Boutique de clÃ© varyon";
           Style: (FontSize: 24, RenderBold: true, TextColor: #ffffff, VerticalAlignment: Center, HorizontalAlignment: Center);
         }
 
@@ -53,7 +53,7 @@ $C.@PageOverlay {
           }
           Button #BuyButton1 {
             Anchor: (Height: 36, Bottom: 4, Left: 0, Right: 0);
-            Style: ButtonStyle(Default: (Background: (Color: #1a5a9a)), Hovered: (Background: (Color: #2a6aaa)), Pressed: (Background: (Color: #104878)));
+            Style: ButtonStyle(Default: (Background: (Color: #1a5a9a)), Hovered: (Background: (Color: #2a6aaa)), Pressed: (Background: (Color: #104878)), Disabled: (Background: (Color: #4a4a4a)));
             Group { LayoutMode: Middle; Label { Text: "Acheter"; Style: (FontSize: 12, RenderBold: true, TextColor: #ffffff, HorizontalAlignment: Center); } }
           }
         }
@@ -78,7 +78,7 @@ $C.@PageOverlay {
           }
           Button #BuyButton2 {
             Anchor: (Height: 36, Bottom: 4, Left: 0, Right: 0);
-            Style: ButtonStyle(Default: (Background: (Color: #1a5a9a)), Hovered: (Background: (Color: #2a6aaa)), Pressed: (Background: (Color: #104878)));
+            Style: ButtonStyle(Default: (Background: (Color: #1a5a9a)), Hovered: (Background: (Color: #2a6aaa)), Pressed: (Background: (Color: #104878)), Disabled: (Background: (Color: #4a4a4a)));
             Group { LayoutMode: Middle; Label { Text: "Acheter"; Style: (FontSize: 12, RenderBold: true, TextColor: #ffffff, HorizontalAlignment: Center); } }
           }
         }
@@ -103,7 +103,7 @@ $C.@PageOverlay {
           }
           Button #BuyButton3 {
             Anchor: (Height: 36, Bottom: 4, Left: 0, Right: 0);
-            Style: ButtonStyle(Default: (Background: (Color: #1a5a9a)), Hovered: (Background: (Color: #2a6aaa)), Pressed: (Background: (Color: #104878)));
+            Style: ButtonStyle(Default: (Background: (Color: #1a5a9a)), Hovered: (Background: (Color: #2a6aaa)), Pressed: (Background: (Color: #104878)), Disabled: (Background: (Color: #4a4a4a)));
             Group { LayoutMode: Middle; Label { Text: "Acheter"; Style: (FontSize: 12, RenderBold: true, TextColor: #ffffff, HorizontalAlignment: Center); } }
           }
         }
@@ -128,7 +128,7 @@ $C.@PageOverlay {
           }
           Button #BuyButton4 {
             Anchor: (Height: 36, Bottom: 4, Left: 0, Right: 0);
-            Style: ButtonStyle(Default: (Background: (Color: #1a5a9a)), Hovered: (Background: (Color: #2a6aaa)), Pressed: (Background: (Color: #104878)));
+            Style: ButtonStyle(Default: (Background: (Color: #1a5a9a)), Hovered: (Background: (Color: #2a6aaa)), Pressed: (Background: (Color: #104878)), Disabled: (Background: (Color: #4a4a4a)));
             Group { LayoutMode: Middle; Label { Text: "Acheter"; Style: (FontSize: 12, RenderBold: true, TextColor: #ffffff, HorizontalAlignment: Center); } }
           }
         }
@@ -158,7 +158,7 @@ $C.@PageOverlay {
           }
           Button #BuyButton5 {
             Anchor: (Height: 36, Bottom: 4, Left: 0, Right: 0);
-            Style: ButtonStyle(Default: (Background: (Color: #1a5a9a)), Hovered: (Background: (Color: #2a6aaa)), Pressed: (Background: (Color: #104878)));
+            Style: ButtonStyle(Default: (Background: (Color: #1a5a9a)), Hovered: (Background: (Color: #2a6aaa)), Pressed: (Background: (Color: #104878)), Disabled: (Background: (Color: #4a4a4a)));
             Group { LayoutMode: Middle; Label { Text: "Acheter"; Style: (FontSize: 12, RenderBold: true, TextColor: #ffffff, HorizontalAlignment: Center); } }
           }
         }
@@ -183,7 +183,7 @@ $C.@PageOverlay {
           }
           Button #BuyButton6 {
             Anchor: (Height: 36, Bottom: 4, Left: 0, Right: 0);
-            Style: ButtonStyle(Default: (Background: (Color: #1a5a9a)), Hovered: (Background: (Color: #2a6aaa)), Pressed: (Background: (Color: #104878)));
+            Style: ButtonStyle(Default: (Background: (Color: #1a5a9a)), Hovered: (Background: (Color: #2a6aaa)), Pressed: (Background: (Color: #104878)), Disabled: (Background: (Color: #4a4a4a)));
             Group { LayoutMode: Middle; Label { Text: "Acheter"; Style: (FontSize: 12, RenderBold: true, TextColor: #ffffff, HorizontalAlignment: Center); } }
           }
         }
@@ -208,7 +208,7 @@ $C.@PageOverlay {
           }
           Button #BuyButton7 {
             Anchor: (Height: 36, Bottom: 4, Left: 0, Right: 0);
-            Style: ButtonStyle(Default: (Background: (Color: #1a5a9a)), Hovered: (Background: (Color: #2a6aaa)), Pressed: (Background: (Color: #104878)));
+            Style: ButtonStyle(Default: (Background: (Color: #1a5a9a)), Hovered: (Background: (Color: #2a6aaa)), Pressed: (Background: (Color: #104878)), Disabled: (Background: (Color: #4a4a4a)));
             Group { LayoutMode: Middle; Label { Text: "Acheter"; Style: (FontSize: 12, RenderBold: true, TextColor: #ffffff, HorizontalAlignment: Center); } }
           }
         }
@@ -233,7 +233,7 @@ $C.@PageOverlay {
           }
           Button #BuyButton8 {
             Anchor: (Height: 36, Bottom: 4, Left: 0, Right: 0);
-            Style: ButtonStyle(Default: (Background: (Color: #1a5a9a)), Hovered: (Background: (Color: #2a6aaa)), Pressed: (Background: (Color: #104878)));
+            Style: ButtonStyle(Default: (Background: (Color: #1a5a9a)), Hovered: (Background: (Color: #2a6aaa)), Pressed: (Background: (Color: #104878)), Disabled: (Background: (Color: #4a4a4a)));
             Group { LayoutMode: Middle; Label { Text: "Acheter"; Style: (FontSize: 12, RenderBold: true, TextColor: #ffffff, HorizontalAlignment: Center); } }
           }
         }
@@ -263,7 +263,7 @@ $C.@PageOverlay {
           }
           Button #BuyButton9 {
             Anchor: (Height: 36, Bottom: 4, Left: 0, Right: 0);
-            Style: ButtonStyle(Default: (Background: (Color: #1a5a9a)), Hovered: (Background: (Color: #2a6aaa)), Pressed: (Background: (Color: #104878)));
+            Style: ButtonStyle(Default: (Background: (Color: #1a5a9a)), Hovered: (Background: (Color: #2a6aaa)), Pressed: (Background: (Color: #104878)), Disabled: (Background: (Color: #4a4a4a)));
             Group { LayoutMode: Middle; Label { Text: "Acheter"; Style: (FontSize: 12, RenderBold: true, TextColor: #ffffff, HorizontalAlignment: Center); } }
           }
         }
@@ -288,7 +288,7 @@ $C.@PageOverlay {
           }
           Button #BuyButton10 {
             Anchor: (Height: 36, Bottom: 4, Left: 0, Right: 0);
-            Style: ButtonStyle(Default: (Background: (Color: #1a5a9a)), Hovered: (Background: (Color: #2a6aaa)), Pressed: (Background: (Color: #104878)));
+            Style: ButtonStyle(Default: (Background: (Color: #1a5a9a)), Hovered: (Background: (Color: #2a6aaa)), Pressed: (Background: (Color: #104878)), Disabled: (Background: (Color: #4a4a4a)));
             Group { LayoutMode: Middle; Label { Text: "Acheter"; Style: (FontSize: 12, RenderBold: true, TextColor: #ffffff, HorizontalAlignment: Center); } }
           }
         }

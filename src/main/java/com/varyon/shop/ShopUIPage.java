@@ -123,7 +123,6 @@ public class ShopUIPage extends InteractiveCustomUIPage<ShopUIPage.EventDataClas
             }
             container.removeItemStack(toRemove);
 
-            player.getPageManager().setPage(ref, store, Page.None);
             PlayerRef playerRef = store.getComponent(ref, PlayerRef.getComponentType());
             if (playerRef != null) {
                 String cmd = "lb givekey " + playerRef.getUsername() + " " + item.getTierId() + " 1";
