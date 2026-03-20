@@ -1,14 +1,9 @@
 package com.varyon.hud;
 
 import com.hypixel.hytale.logger.HytaleLogger;
-import com.buuz135.mhud.MultipleHUD;
-import com.hypixel.hytale.common.plugin.PluginIdentifier;
 import com.hypixel.hytale.server.core.HytaleServer;
 import com.hypixel.hytale.server.core.entity.entities.Player;
-import com.hypixel.hytale.server.core.entity.entities.player.hud.CustomUIHud;
 import com.hypixel.hytale.math.vector.Transform;
-import com.hypixel.hytale.server.core.plugin.PluginBase;
-import com.hypixel.hytale.server.core.plugin.PluginManager;
 import com.hypixel.hytale.server.core.universe.PlayerRef;
 import com.hypixel.hytale.server.core.universe.Universe;
 import com.varyon.VaryonPlugin;
@@ -33,10 +28,6 @@ public class ZoneHUDManager {
     private static final HytaleLogger LOGGER = HytaleLogger.forEnclosingClass();
     private static final long UPDATE_INTERVAL_MS = 1000;
     private static final int PAGE_SWITCH_TICKS = 5;
-    private static final String MULTIPLE_HUD_PLUGIN_ID = "Buuz135:MultipleHUD";
-    private static final String MULTIPLE_CUSTOM_UI_HUD_CLASS = "com.buuz135.mhud.MultipleCustomUIHud";
-    private static final int MULTIHUD_MAX_ATTEMPTS = 300;
-    private static final long MULTIHUD_RETRY_DELAY_MS = 100;
 
     private final Map<UUID, ZoneHUD> playerHuds = new ConcurrentHashMap<>();
     private final Map<UUID, Player> playerCache = new ConcurrentHashMap<>();
@@ -88,12 +79,12 @@ public class ZoneHUDManager {
             }
 
             try {
+                Player player = playerCache.get(playerId);
+                String worldName = player != null ? player.getWorld().getName() : "";
                 Transform transform = playerRef.getTransform();
                 double x = transform.getPosition().x;
                 double z = transform.getPosition().z;
                 double distance = ZoneCalculator.calculate2DDistance(x, z);
-                Player player = playerCache.get(playerId);
-                String worldName = player != null ? player.getWorld().getName() : "";
                 DifficultyZone zone = ZoneCalculator.getZoneAtPosition(x, z, worldName, zoneConfig);
 
                 boolean inSafe = safeZoneAvailable && szm.isInSafeZone(x, z);
@@ -130,8 +121,8 @@ public class ZoneHUDManager {
         UUID playerId = playerRef.getUuid();
 
         playerHuds.remove(playerId);
-        Player oldPlayer = playerCache.remove(playerId);
-        removeFromMultipleHud(oldPlayer);
+        playerCache.remove(playerId);
+        removeHud(player);
 
         if (!zoneConfig.isWorldEnabled(worldName)) {
             return;
@@ -141,75 +132,28 @@ public class ZoneHUDManager {
         playerHuds.put(playerId, hud);
         playerCache.put(playerId, player);
 
-        HytaleServer.SCHEDULED_EXECUTOR.schedule(() -> {
-            if (playerHuds.get(playerId) == hud) {
-                tryRegisterWithMultipleHud(player, playerRef, hud, 0);
-            }
-        }, 3000L, TimeUnit.MILLISECONDS);
-    }
-
-    private void tryRegisterWithMultipleHud(@Nonnull Player player, @Nonnull PlayerRef playerRef, @Nonnull ZoneHUD hud, int attempt) {
-        PluginBase pluginBase = PluginManager.get().getPlugin(PluginIdentifier.fromString(MULTIPLE_HUD_PLUGIN_ID));
-        boolean multipleHudEnabled = pluginBase != null && pluginBase.isEnabled();
-
-        if (!multipleHudEnabled) {
-            try {
-                player.getHudManager().setCustomHud(playerRef, hud);
-            } catch (Exception e) {
-                LOGGER.at(Level.SEVERE).log("Failed to register HUD: " + e.getMessage());
-            }
-            return;
-        }
-
         try {
-            CustomUIHud currentHud = player.getHudManager().getCustomHud();
-            if (currentHud != null && MULTIPLE_CUSTOM_UI_HUD_CLASS.equals(currentHud.getClass().getName())) {
-                currentHud.getClass()
-                    .getMethod("add", String.class, CustomUIHud.class)
-                    .invoke(currentHud, "Varyon_Zone", hud);
-                return;
-            }
-
-            if (currentHud == null && attempt >= 20) {
-                MultipleHUD.getInstance().setCustomHud(player, playerRef, "Varyon_Zone", hud);
-                return;
-            }
-
-            if (attempt >= MULTIHUD_MAX_ATTEMPTS) {
-                LOGGER.at(Level.WARNING).log("MultipleCustomUIHud not ready after retries for player " + playerRef.getUuid());
-                return;
-            }
-
-            int nextAttempt = attempt + 1;
-            HytaleServer.SCHEDULED_EXECUTOR.schedule(
-                () -> tryRegisterWithMultipleHud(player, playerRef, hud, nextAttempt),
-                MULTIHUD_RETRY_DELAY_MS,
-                TimeUnit.MILLISECONDS
-            );
+            player.getHudManager().setCustomHud(playerRef, hud);
         } catch (Exception e) {
-            LOGGER.at(Level.SEVERE).log("Failed to register HUD with MultipleHUD: " + e.getMessage());
+            LOGGER.at(Level.SEVERE).log("Failed to register HUD: " + e.getMessage());
         }
     }
 
     public void removePlayer(@Nonnull UUID playerId) {
         playerHuds.remove(playerId);
         Player player = playerCache.remove(playerId);
-        removeFromMultipleHud(player);
+        removeHud(player);
     }
 
-    private void removeFromMultipleHud(@Nullable Player player) {
+    private void removeHud(@Nullable Player player) {
         if (player == null) return;
         try {
-            PluginBase pluginBase = PluginManager.get().getPlugin(PluginIdentifier.fromString(MULTIPLE_HUD_PLUGIN_ID));
-            if (pluginBase == null || !pluginBase.isEnabled()) return;
-            CustomUIHud currentHud = player.getHudManager().getCustomHud();
-            if (currentHud != null && MULTIPLE_CUSTOM_UI_HUD_CLASS.equals(currentHud.getClass().getName())) {
-                currentHud.getClass()
-                    .getMethod("remove", String.class)
-                    .invoke(currentHud, "Varyon_Zone");
+            PlayerRef playerRef = Universe.get().getPlayer(player.getUuid());
+            if (playerRef != null) {
+                player.getHudManager().setCustomHud(playerRef, null);
             }
         } catch (Exception e) {
-            LOGGER.at(Level.WARNING).log("Failed to remove Varyon_Zone from MultipleHUD: " + e.getMessage());
+            LOGGER.at(Level.WARNING).log("Failed to remove HUD: " + e.getMessage());
         }
     }
 

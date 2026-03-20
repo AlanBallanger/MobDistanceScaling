@@ -13,6 +13,8 @@ import com.hypixel.hytale.server.core.universe.PlayerRef;
 import com.hypixel.hytale.server.core.universe.world.World;
 import com.hypixel.hytale.server.core.universe.world.chunk.WorldChunk;
 import com.hypixel.hytale.server.core.universe.world.storage.EntityStore;
+import com.varyon.VaryonPlugin;
+import com.varyon.config.ZoneConfig;
 
 import org.checkerframework.checker.nullness.compatqual.NonNullDecl;
 import org.checkerframework.checker.nullness.compatqual.NullableDecl;
@@ -68,6 +70,11 @@ public class VoidPortalTickSystem extends EntityTickingSystem<EntityStore> {
             return;
         }
         cooldowns.put(playerId, now);
+
+        ZoneConfig zoneConfig = VaryonPlugin.getStaticConfigManager() != null ? VaryonPlugin.getStaticConfigManager().getZoneConfig() : null;
+        if (zoneConfig != null && !zoneConfig.isWorldEnabled(world.getName())) {
+            return;
+        }
 
         try {
             VoidPortalUIPage page = new VoidPortalUIPage(playerRef);

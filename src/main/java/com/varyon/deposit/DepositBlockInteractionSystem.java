@@ -14,7 +14,9 @@ import com.hypixel.hytale.server.core.entity.InteractionContext;
 import com.hypixel.hytale.server.core.entity.InteractionManager;
 import com.hypixel.hytale.server.core.event.events.ecs.UseBlockEvent;
 import com.hypixel.hytale.server.core.universe.world.storage.EntityStore;
+import com.varyon.VaryonPlugin;
 import com.varyon.command.CreateDepositSubCommand;
+import com.varyon.config.ZoneConfig;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -97,6 +99,11 @@ public class DepositBlockInteractionSystem extends EntityEventSystem<EntityStore
         }
         
         if (!depositBlockManager.isDepositBlock(world, pos)) {
+            return;
+        }
+
+        ZoneConfig zoneConfig = VaryonPlugin.getStaticConfigManager() != null ? VaryonPlugin.getStaticConfigManager().getZoneConfig() : null;
+        if (zoneConfig != null && !zoneConfig.isWorldEnabled(world)) {
             return;
         }
         

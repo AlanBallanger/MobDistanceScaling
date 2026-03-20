@@ -25,9 +25,7 @@ dependencies {
     compileOnly(libs.jspecify)
     compileOnly("net.luckperms:api:5.4")
     compileOnly("net.cfh.vault:VaultUnlocked:2.18.3")
-    compileOnly(files("libs/MultipleHUD-1.0.4.jar"))
     compileOnly(files("libs/NameplateBuilder-API-1.0.0.jar"))
-    runtimeOnly(files("libs/MultipleHUD-1.0.4.jar"))
     implementation("com.moandjiezana.toml:toml4j:0.7.2")
     implementation("org.xerial:sqlite-jdbc:3.45.1.0")
     implementation("org.slf4j:slf4j-api:2.0.9")
@@ -43,7 +41,6 @@ val fatJar = tasks.register<Jar>("fatJar") {
     from(sourceSets.main.get().output)
     
     // Inclure seulement les dépendances implementation (toml4j, sqlite-jdbc, slf4j)
-    // Exclure compileOnly et runtimeOnly (MultipleHUD, annotations, etc.)
     val implementationJars = configurations.runtimeClasspath.get()
         .filter { it.name.contains("toml4j") || it.name.contains("sqlite-jdbc") || it.name.contains("slf4j") }
     

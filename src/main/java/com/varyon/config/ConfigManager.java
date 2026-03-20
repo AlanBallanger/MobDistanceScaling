@@ -139,7 +139,8 @@ public class ConfigManager {
         sb.append("# Instance worlds: pattern (prefix) = zone id. World name must start with pattern.\n");
         sb.append("[instanceZones]\n");
         for (Map.Entry<String, Integer> e : zoneConfig.getInstanceZonePatterns().entrySet()) {
-            sb.append("\"").append(e.getKey()).append("\" = ").append(e.getValue()).append("\n");
+            String key = e.getKey().replace("\"", "").trim();
+            sb.append(key).append(" = ").append(e.getValue()).append("\n");
         }
         sb.append("\n");
 
@@ -220,10 +221,17 @@ public class ConfigManager {
 
     @Nonnull
     private ZoneConfig parseZoneConfig(@Nonnull Toml toml) {
-        List<String> enabledWorlds = toml.getList("enabledWorlds");
-        if (enabledWorlds == null) {
-            enabledWorlds = new ArrayList<>();
-            enabledWorlds.add("default");
+        List<String> enabledWorlds = new ArrayList<>();
+        List<?> rawList = toml.getList("enabledWorlds");
+        if (rawList != null) {
+            for (Object o : rawList) {
+                if (o != null) {
+                    String s = o.toString().trim();
+                    if (!s.isEmpty()) {
+                        enabledWorlds.add(s);
+                    }
+                }
+            }
         }
 
         Toml minimapToml = toml.getTable("minimap");

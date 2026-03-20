@@ -14,6 +14,7 @@ import com.hypixel.hytale.server.core.universe.world.World;
 import com.hypixel.hytale.server.core.universe.world.storage.EntityStore;
 import com.varyon.VaryonPlugin;
 import com.varyon.config.ConfigManager;
+import com.varyon.config.ZoneConfig;
 import com.varyon.faction.FactionManager;
 import com.varyon.deposit.DepositBlockManager;
 import com.varyon.shop.ShopUIPage;
@@ -265,6 +266,11 @@ public class VaryonCommand extends AbstractAsyncCommand {
             }
             Store<EntityStore> store = ref.getStore();
             World world = ((EntityStore) store.getExternalData()).getWorld();
+            ZoneConfig zoneConfig = VaryonPlugin.getStaticConfigManager() != null ? VaryonPlugin.getStaticConfigManager().getZoneConfig() : null;
+            if (zoneConfig != null && world != null && !zoneConfig.isWorldEnabled(world.getName())) {
+                context.sendMessage(Message.raw("Cette interface n'est pas disponible dans ce monde.").color(Color.RED));
+                return CompletableFuture.completedFuture(null);
+            }
             return CompletableFuture.runAsync(() -> {
                 PlayerRef playerRef = store.getComponent(ref, PlayerRef.getComponentType());
                 Player playerComp = store.getComponent(ref, Player.getComponentType());

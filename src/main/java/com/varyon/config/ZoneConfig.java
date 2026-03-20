@@ -3,7 +3,6 @@ package com.varyon.config;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.LinkedHashMap;
@@ -127,7 +126,6 @@ public class ZoneConfig {
     @Nonnull
     public static ZoneConfig createDefault() {
         ZoneConfig config = new ZoneConfig();
-        config.enabledWorlds.addAll(Arrays.asList("default"));
         config.minimapEnabled = true;
         config.minimapOpacity = 50;
         config.minimapPattern = "SOLID";
