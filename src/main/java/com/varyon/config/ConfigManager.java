@@ -149,7 +149,8 @@ public class ConfigManager {
         sb.append("minRotationTimeMinutes = ").append(safeZoneConfig.getMinRotationTimeMinutes()).append("\n");
         sb.append("maxRotationTimeMinutes = ").append(safeZoneConfig.getMaxRotationTimeMinutes()).append("\n");
         sb.append("overlapDurationMinutes = ").append(safeZoneConfig.getOverlapDurationMinutes()).append("\n");
-        sb.append("maxRadius = ").append(safeZoneConfig.getMaxRadius()).append("\n\n");
+        sb.append("maxRadius = ").append(safeZoneConfig.getMaxRadius()).append("\n");
+        sb.append("spawnRadius = ").append(safeZoneConfig.getSpawnRadius()).append("\n\n");
 
         sb.append("[minimap]\n");
         sb.append("enabled = ").append(zoneConfig.isMinimapEnabled()).append("\n");
@@ -320,6 +321,7 @@ public class ConfigManager {
             config.setMaxRotationTimeMinutes(safeToml.getLong("maxRotationTimeMinutes", 120L).intValue());
             config.setOverlapDurationMinutes(safeToml.getLong("overlapDurationMinutes", 10L).intValue());
             config.setMaxRadius(safeToml.getLong("maxRadius", -1L).intValue());
+            config.setSpawnRadius(safeToml.getLong("spawnRadius", 100L).intValue());
         }
         return config;
     }

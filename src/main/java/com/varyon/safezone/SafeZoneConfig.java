@@ -6,6 +6,7 @@ public class SafeZoneConfig {
     private int maxRotationTimeMinutes;
     private int overlapDurationMinutes;
     private int maxRadius;
+    private int spawnRadius;
 
     public SafeZoneConfig() {
         this.enabled = true;
@@ -13,6 +14,7 @@ public class SafeZoneConfig {
         this.maxRotationTimeMinutes = 120;
         this.overlapDurationMinutes = 10;
         this.maxRadius = -1;
+        this.spawnRadius = 100;
     }
 
     public boolean isEnabled()                          { return enabled; }
@@ -25,6 +27,8 @@ public class SafeZoneConfig {
     public void setOverlapDurationMinutes(int v)        { this.overlapDurationMinutes = v; }
     public int getMaxRadius()                           { return maxRadius; }
     public void setMaxRadius(int v)                     { this.maxRadius = v; }
+    public int getSpawnRadius()                         { return spawnRadius; }
+    public void setSpawnRadius(int v)                   { this.spawnRadius = v; }
 
     public long getMinRotationTimeMillis()  { return minRotationTimeMinutes * 60L * 1000L; }
     public long getMaxRotationTimeMillis()  { return maxRotationTimeMinutes * 60L * 1000L; }

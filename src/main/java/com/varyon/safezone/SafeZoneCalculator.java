@@ -11,12 +11,14 @@ public class SafeZoneCalculator {
         if (!config.isEnabled()) {
             return false;
         }
+
+        double distanceFromSpawn = Math.sqrt(x * x + z * z);
+        if (config.getSpawnRadius() > 0 && distanceFromSpawn <= config.getSpawnRadius()) {
+            return true;
+        }
         
-        if (config.getMaxRadius() > 0) {
-            double distance = Math.sqrt(x * x + z * z);
-            if (distance > config.getMaxRadius()) {
-                return false;
-            }
+        if (config.getMaxRadius() > 0 && distanceFromSpawn > config.getMaxRadius()) {
+            return false;
         }
         
         double angle = calculateAngle(x, z);
