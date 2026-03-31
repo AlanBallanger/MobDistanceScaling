@@ -10,7 +10,10 @@ import com.hypixel.hytale.server.core.asset.type.fluid.Fluid;
 import com.hypixel.hytale.server.core.universe.world.World;
 import com.hypixel.hytale.server.core.universe.world.chunk.ChunkColumn;
 import com.hypixel.hytale.server.core.universe.world.chunk.WorldChunk;
+import com.hypixel.hytale.server.core.universe.world.chunk.palette.BitFieldArr;
 import com.hypixel.hytale.server.core.universe.world.chunk.section.FluidSection;
+import it.unimi.dsi.fastutil.ints.Int2IntOpenHashMap;
+import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
 import com.varyon.config.ConfigManager;
 import com.varyon.config.DifficultyZone;
 import com.varyon.config.ZoneConfig;
@@ -27,8 +30,12 @@ public class ZoneMapImageBuilder {
     private final long index;
     private final World world;
     private final ConfigManager configManager;
+    private final int imageWidth;
+    private final int imageHeight;
     @Nonnull
-    private final MapImage image;
+    private final int[] rawPixels;
+    @Nullable
+    private MapImage encodedImage;
     private final int sampleWidth;
     private final int sampleHeight;
     private final int blockStepX;
@@ -56,11 +63,13 @@ public class ZoneMapImageBuilder {
         this.index = index;
         this.world = world;
         this.configManager = configManager;
-        this.image = new MapImage(imageWidth, imageHeight, new int[imageWidth * imageHeight]);
-        this.sampleWidth = Math.min(32, this.image.width);
-        this.sampleHeight = Math.min(32, this.image.height);
-        this.blockStepX = Math.max(1, 32 / this.image.width);
-        this.blockStepZ = Math.max(1, 32 / this.image.height);
+        this.imageWidth = imageWidth;
+        this.imageHeight = imageHeight;
+        this.rawPixels = new int[imageWidth * imageHeight];
+        this.sampleWidth = Math.min(32, imageWidth);
+        this.sampleHeight = Math.min(32, imageHeight);
+        this.blockStepX = Math.max(1, 32 / imageWidth);
+        this.blockStepZ = Math.max(1, 32 / imageHeight);
         this.heightSamples = new short[this.sampleWidth * this.sampleHeight];
         this.tintSamples = new int[this.sampleWidth * this.sampleHeight];
         this.blockSamples = new int[this.sampleWidth * this.sampleHeight];
@@ -76,7 +85,44 @@ public class ZoneMapImageBuilder {
 
     @Nonnull
     public MapImage getImage() {
-        return this.image;
+        if (this.encodedImage == null) {
+            this.encodedImage = encodeToPalette();
+        }
+        return this.encodedImage;
+    }
+
+    @Nonnull
+    private MapImage encodeToPalette() {
+        int pixelCount = this.rawPixels.length;
+        IntOpenHashSet uniqueColors = new IntOpenHashSet();
+        for (int i = 0; i < pixelCount; ++i) {
+            uniqueColors.add(this.rawPixels[i]);
+        }
+        int[] palette = uniqueColors.toIntArray();
+        int bitsPerIndex = calculateBitsRequired(palette.length);
+        Int2IntOpenHashMap colorToIndex = new Int2IntOpenHashMap(palette.length);
+        for (int i = 0; i < palette.length; ++i) {
+            colorToIndex.put(palette[i], i);
+        }
+        BitFieldArr indices = new BitFieldArr(bitsPerIndex, pixelCount);
+        for (int i = 0; i < pixelCount; ++i) {
+            indices.set(i, colorToIndex.get(this.rawPixels[i]));
+        }
+        byte[] packedIndices = indices.get();
+        return new MapImage(this.imageWidth, this.imageHeight, palette, (byte) bitsPerIndex, packedIndices);
+    }
+
+    private static int calculateBitsRequired(int colorCount) {
+        if (colorCount <= 16) {
+            return 4;
+        }
+        if (colorCount <= 256) {
+            return 8;
+        }
+        if (colorCount <= 4096) {
+            return 12;
+        }
+        return 16;
     }
 
     @Nonnull
@@ -255,10 +301,10 @@ public class ZoneMapImageBuilder {
             }
         }
 
-        float imageToSampleRatioWidth = (float) this.sampleWidth / (float) this.image.width;
-        float imageToSampleRatioHeight = (float) this.sampleHeight / (float) this.image.height;
-        int blockPixelWidth = Math.max(1, this.image.width / this.sampleWidth);
-        int blockPixelHeight = Math.max(1, this.image.height / this.sampleHeight);
+        float imageToSampleRatioWidth = (float) this.sampleWidth / (float) this.imageWidth;
+        float imageToSampleRatioHeight = (float) this.sampleHeight / (float) this.imageHeight;
+        int blockPixelWidth = Math.max(1, this.imageWidth / this.sampleWidth);
+        int blockPixelHeight = Math.max(1, this.imageHeight / this.sampleHeight);
 
         for (int iz = 0; iz < this.sampleHeight; iz++) {
             System.arraycopy(this.heightSamples, iz * this.sampleWidth, this.neighborHeightSamples, (iz + 1) * (this.sampleWidth + 2) + 1, this.sampleWidth);
@@ -272,8 +318,8 @@ public class ZoneMapImageBuilder {
         ZoneConfig zoneConfig = configManager.getZoneConfig();
 
         // Generate image with zone overlay
-        for (int ix = 0; ix < this.image.width; ix++) {
-            for (int iz = 0; iz < this.image.height; iz++) {
+        for (int ix = 0; ix < this.imageWidth; ix++) {
+            for (int iz = 0; iz < this.imageHeight; iz++) {
                 int sampleX = Math.min((int) ((float) ix * imageToSampleRatioWidth), this.sampleWidth - 1);
                 int sampleZ = Math.min((int) ((float) iz * imageToSampleRatioHeight), this.sampleHeight - 1);
                 int sampleIndex = sampleZ * this.sampleWidth + sampleX;
@@ -307,8 +353,8 @@ public class ZoneMapImageBuilder {
                 }
 
                 // Calculate world position for this pixel
-                int blockX = minBlockX + ix * 32 / this.image.width;
-                int blockZ = minBlockZ + iz * 32 / this.image.height;
+                int blockX = minBlockX + ix * 32 / this.imageWidth;
+                int blockZ = minBlockZ + iz * 32 / this.imageHeight;
 
                 // Apply zone overlay LAST (on top of everything)
                 DifficultyZone zone = ZoneCalculator.getZoneAtPosition(blockX, blockZ, zoneConfig);
@@ -334,7 +380,7 @@ public class ZoneMapImageBuilder {
                     }
                 }
 
-                this.image.data[iz * this.image.width + ix] = this.outColor.pack();
+                this.rawPixels[iz * this.imageWidth + ix] = this.outColor.pack();
             }
         }
 

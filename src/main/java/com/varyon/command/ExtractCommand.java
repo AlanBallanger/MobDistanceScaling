@@ -18,13 +18,18 @@ import com.hypixel.hytale.server.core.universe.world.World;
 import com.hypixel.hytale.server.core.universe.world.chunk.WorldChunk;
 import com.hypixel.hytale.server.core.universe.world.storage.EntityStore;
 import com.varyon.VaryonPlugin;
+import com.varyon.config.DifficultyZone;
 import com.varyon.config.ExtractionConfig;
 import com.varyon.config.MessagesConfig;
+import com.varyon.config.ZoneConfig;
 import com.varyon.extraction.ExtractionPortalManager;
+import com.varyon.util.VaryonWorldAccess;
+import com.varyon.util.ZoneCalculator;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.awt.Color;
+import java.util.Locale;
 import java.util.Random;
 import java.util.UUID;
 import java.util.logging.Level;
@@ -33,7 +38,7 @@ public class ExtractCommand extends AbstractPlayerCommand {
     private static final HytaleLogger LOGGER = HytaleLogger.forEnclosingClass();
     private static final String PERM_USE = "varyon.extract";
     private static final String PERM_BYPASS = "varyon.extract.bypass";
-    private static final int START_Y = 200;
+    private static final int START_Y = 320;
     private static final int MIN_Y = 0;
     private static final Random random = new Random();
 
@@ -59,6 +64,11 @@ public class ExtractCommand extends AbstractPlayerCommand {
 
         if (manager == null) {
             context.sendMessage(Message.raw("Système d'extraction indisponible.").color(Color.RED));
+            return;
+        }
+
+        if (!VaryonWorldAccess.isVaryonEnabledWorld(world)) {
+            context.sendMessage(Message.raw("Cette commande n'est disponible que sur les mondes Varyon.").color(Color.RED));
             return;
         }
 
@@ -92,14 +102,24 @@ public class ExtractCommand extends AbstractPlayerCommand {
         double playerX = playerTransform.getPosition().x;
         double playerZ = playerTransform.getPosition().z;
 
-        int minDist = config.getMinDistance();
-        int maxDist = config.getMaxDistance();
+        ZoneConfig zoneConfig = VaryonPlugin.getStaticConfigManager().getZoneConfig();
+        DifficultyZone zone = ZoneCalculator.getZoneAtPosition(playerX, playerZ, world.getName(), zoneConfig);
+        int zoneId = zone != null ? zone.getZoneId() : 0;
+        int minDist = config.getEffectiveMinDistance(zoneId);
+        int maxDist = config.getEffectiveMaxDistance(zoneId);
+        if (minDist > maxDist) {
+            int t = minDist;
+            minDist = maxDist;
+            maxDist = t;
+        }
+        final int portalMinDist = minDist;
+        final int portalMaxDist = maxDist;
 
         context.sendMessage(Message.raw("Recherche d'un emplacement pour le portail...").color(Color.YELLOW));
 
         world.execute(() -> {
             try {
-                Vector3d portalPos = findPortalPosition(world, playerX, playerZ, minDist, maxDist, 30);
+                Vector3d portalPos = findPortalPosition(world, playerX, playerZ, portalMinDist, portalMaxDist, 30);
 
                 if (portalPos == null) {
                     context.sendMessage(Message.raw(msg.noSafeLocation).color(Color.RED));
@@ -117,7 +137,9 @@ public class ExtractCommand extends AbstractPlayerCommand {
                     .replace("{distance}", String.valueOf((int) distance))
                     .replace("{x}", String.valueOf(px))
                     .replace("{y}", String.valueOf(py))
-                    .replace("{z}", String.valueOf(pz));
+                    .replace("{z}", String.valueOf(pz))
+                    .replace("! Durée: {duration}s", " !")
+                    .replace("{duration}", "");
                 context.sendMessage(Message.raw(spawnMsg).color(Color.GREEN));
 
                 LOGGER.at(Level.INFO).log("Portal spawned for " + playerId + " at " + px + "," + py + "," + pz + " dist=" + (int) distance);
@@ -162,6 +184,9 @@ public class ExtractCommand extends AbstractPlayerCommand {
                 }
 
                 if (isSolidBlock(chunk, x, checkY, z)) {
+                    if (isTreeOrFoliageFooting(chunk, x, checkY, z)) {
+                        continue;
+                    }
                     int spawnY = checkY + 1;
 
                     if (hasFluid(chunk, x, spawnY, z) || hasFluid(chunk, x, spawnY + 1, z)) {
@@ -194,6 +219,32 @@ public class ExtractCommand extends AbstractPlayerCommand {
                 return false;
             }
             return blockType.getMaterial() == BlockMaterial.Solid;
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
+    private static boolean isTreeOrFoliageFooting(@Nonnull WorldChunk chunk, int x, int y, int z) {
+        try {
+            BlockType blockType = chunk.getBlockType(x, y, z);
+            if (blockType == null || blockType.getMaterial() != BlockMaterial.Solid) {
+                return false;
+            }
+            String id = blockType.getId();
+            if (id == null) {
+                return false;
+            }
+            String s = id.toLowerCase(Locale.ROOT);
+            return s.contains("leaf")
+                    || s.contains("leaves")
+                    || s.contains("vine")
+                    || s.contains("sapling")
+                    || s.contains("flower")
+                    || s.contains("mushroom")
+                    || s.contains("bamboo")
+                    || s.contains("log")
+                    || s.contains("bark")
+                    || s.contains("branch");
         } catch (Exception e) {
             return false;
         }

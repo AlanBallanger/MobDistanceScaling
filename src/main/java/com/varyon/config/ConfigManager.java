@@ -2,6 +2,7 @@ package com.varyon.config;
 
 import com.hypixel.hytale.logger.HytaleLogger;
 import com.moandjiezana.toml.Toml;
+import com.varyon.announce.ChatAnnouncementScheduler;
 import com.varyon.safezone.SafeZoneConfig;
 
 import javax.annotation.Nonnull;
@@ -36,6 +37,7 @@ public class ConfigManager {
     private RtpsConfig rtpsConfig;
     private DeathConfig deathConfig;
     private ShopConfig shopConfig;
+    private ChatAnnouncementsConfig chatAnnouncementsConfig;
 
     public ConfigManager(@Nonnull Path pluginDataFolder) {
         this.pluginDataFolder = pluginDataFolder;
@@ -50,6 +52,7 @@ public class ConfigManager {
             zoneConfig = ZoneConfig.createDefault();
             safeZoneConfig = new SafeZoneConfig();
             extractionConfig = new ExtractionConfig();
+            ExtractionConfig.applyDefaultZoneRangesForNewConfig(extractionConfig);
             factionRewardsConfig = FactionRewardsConfig.createDefault();
             factionRewardsConfig.save(pluginDataFolder);
             returnConfig = ReturnConfig.createDefault();
@@ -67,7 +70,10 @@ public class ConfigManager {
             deathConfig = DeathConfig.createDefault();
             shopConfig = ShopConfig.createDefault();
             shopConfig.save(pluginDataFolder);
+            chatAnnouncementsConfig = ChatAnnouncementsConfig.createDefault();
+            chatAnnouncementsConfig.save(pluginDataFolder);
             save();
+            ChatAnnouncementScheduler.onConfigReloaded();
             return;
         }
 
@@ -87,8 +93,10 @@ public class ConfigManager {
             rtpsConfig = parseRtpsConfig(toml);
             deathConfig = parseDeathConfig(toml);
             shopConfig = ShopConfig.load(pluginDataFolder);
+            chatAnnouncementsConfig = ChatAnnouncementsConfig.load(pluginDataFolder);
             LOGGER.at(Level.INFO).log("Loaded configuration with {0} zones", zoneConfig.getZones().size());
             save();
+            ChatAnnouncementScheduler.onConfigReloaded();
         } catch (Exception e) {
             LOGGER.at(Level.SEVERE).log("Failed to load config, using default configuration", e);
             zoneConfig = ZoneConfig.createDefault();
@@ -105,6 +113,8 @@ public class ConfigManager {
             rtpsConfig = RtpsConfig.createDefault();
             deathConfig = DeathConfig.createDefault();
             shopConfig = ShopConfig.createDefault();
+            chatAnnouncementsConfig = ChatAnnouncementsConfig.createDefault();
+            ChatAnnouncementScheduler.onConfigReloaded();
         }
     }
 
@@ -173,7 +183,14 @@ public class ConfigManager {
         sb.append("minDistance = ").append(extractionConfig.getMinDistance()).append("\n");
         sb.append("maxDistance = ").append(extractionConfig.getMaxDistance()).append("\n");
         sb.append("portalDurationSeconds = ").append(extractionConfig.getPortalDurationSeconds()).append("\n");
-        sb.append("cooldownSeconds = ").append(extractionConfig.getCooldownSeconds()).append("\n\n");
+        sb.append("cooldownSeconds = ").append(extractionConfig.getCooldownSeconds()).append("\n");
+        for (ExtractionZoneDistance zr : extractionConfig.getZoneRanges()) {
+            sb.append("[[extraction.zoneRanges]]\n");
+            sb.append("zoneId = ").append(zr.zoneId()).append("\n");
+            sb.append("minDistance = ").append(zr.minDistance()).append("\n");
+            sb.append("maxDistance = ").append(zr.maxDistance()).append("\n");
+        }
+        sb.append("\n");
 
         sb.append("[return]\n");
         sb.append("enabled = ").append(returnConfig != null ? returnConfig.isEnabled() : true).append("\n");
@@ -336,6 +353,24 @@ public class ConfigManager {
             config.setMaxDistance(extractionToml.getLong("maxDistance", 200L).intValue());
             config.setPortalDurationSeconds(extractionToml.getLong("portalDurationSeconds", 300L).intValue());
             config.setCooldownSeconds(extractionToml.getLong("cooldownSeconds", 300L).intValue());
+            List<Toml> zoneRangeTables = extractionToml.getTables("zoneRanges");
+            if (zoneRangeTables != null && !zoneRangeTables.isEmpty()) {
+                List<ExtractionZoneDistance> ranges = new ArrayList<>();
+                for (Toml z : zoneRangeTables) {
+                    int zoneId = z.getLong("zoneId", 0L).intValue();
+                    int minD = z.getLong("minDistance", 100L).intValue();
+                    int maxD = z.getLong("maxDistance", 200L).intValue();
+                    if (zoneId > 0) {
+                        if (minD > maxD) {
+                            int t = minD;
+                            minD = maxD;
+                            maxD = t;
+                        }
+                        ranges.add(new ExtractionZoneDistance(zoneId, minD, maxD));
+                    }
+                }
+                config.setZoneRanges(ranges);
+            }
         }
         return config;
     }
@@ -404,6 +439,9 @@ public class ConfigManager {
     @Nonnull public RtpsConfig getRtpsConfig()                       { return rtpsConfig != null ? rtpsConfig : RtpsConfig.createDefault(); }
     @Nonnull public DeathConfig getDeathConfig()                     { return deathConfig != null ? deathConfig : DeathConfig.createDefault(); }
     @Nonnull public ShopConfig getShopConfig()                       { return shopConfig != null ? shopConfig : ShopConfig.createDefault(); }
+    @Nonnull public ChatAnnouncementsConfig getChatAnnouncementsConfig() {
+        return chatAnnouncementsConfig != null ? chatAnnouncementsConfig : ChatAnnouncementsConfig.createDefault();
+    }
 
     public void reload() { load(); }
 }

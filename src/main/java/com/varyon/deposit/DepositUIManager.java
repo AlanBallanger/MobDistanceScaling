@@ -4,6 +4,7 @@ import com.hypixel.hytale.logger.HytaleLogger;
 import com.hypixel.hytale.server.core.Message;
 import com.hypixel.hytale.server.core.entity.entities.Player;
 import com.hypixel.hytale.server.core.universe.PlayerRef;
+import com.hypixel.hytale.server.core.util.EventTitleUtil;
 import com.varyon.VaryonPlugin;
 import com.varyon.essence.EssenceManager;
 import com.varyon.essence.GlobalRewardsManager;
@@ -55,6 +56,15 @@ public class DepositUIManager {
             int newBalance = essenceManager.getGlobalBalance();
             player.sendMessage(Message.raw("Déposé " + amount + " essence dans " + faction.getDisplayName()).color(Color.GREEN));
             player.sendMessage(Message.raw("Balance globale: " + newBalance + "/10000").color(Color.YELLOW));
+
+            try {
+                EventTitleUtil.showEventTitleToPlayer(
+                        playerRef,
+                        Message.raw("Vous avez déposé " + amount + " essence"),
+                        Message.raw(faction.getDisplayName()),
+                        true);
+            } catch (Exception ignored) {
+            }
 
             VaryonPlugin plugin = VaryonPlugin.getInstance();
             if (plugin != null && plugin.getHudManager() != null) {

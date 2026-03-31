@@ -29,6 +29,7 @@ import com.varyon.command.RtpvCommand;
 import com.varyon.command.RtphCommand;
 import com.varyon.command.RtpsCommand;
 import com.varyon.command.ReturnCommand;
+import com.varyon.announce.ChatAnnouncementScheduler;
 import com.varyon.component.MobScalingComponent;
 import com.varyon.config.ConfigManager;
 import com.varyon.config.EssenceRewardsConfig;
@@ -56,6 +57,7 @@ import com.varyon.system.MobDamageScalingSystem;
 import com.varyon.system.MobLootScalingSystem;
 import com.varyon.system.MobScalingRefSystem;
 import com.varyon.system.PlaceOreListener;
+import com.varyon.system.VaryonBedPlaceBlockSystem;
 import com.varyon.system.PlacedOreTracker;
 import com.varyon.nameplate.ZoneLevelNameplateSystem;
 import com.varyon.system.MobFragmentDropSystem;
@@ -118,6 +120,7 @@ public class VaryonPlugin extends JavaPlugin {
             configManager = new ConfigManager(this.getDataDirectory());
             configManager.load();
             staticConfigManager = configManager;
+            ChatAnnouncementScheduler.init();
 
             // Initialiser le systÃ¨me d'essence
             essenceManager = new EssenceManager(this.getDataDirectory().toFile());
@@ -184,6 +187,7 @@ public class VaryonPlugin extends JavaPlugin {
                 placedOreTracker,
                 configManager.getMobFragmentsConfig(),
                 essenceRewardsConfig));
+            this.getEntityStoreRegistry().registerSystem(new VaryonBedPlaceBlockSystem());
 
             EssenceMiningSystem essenceMiningSystem = new EssenceMiningSystem(essenceManager, configManager, essenceRewardsConfig, configManager.getZonePermissionsConfig(), placedOreTracker);
             this.getEntityStoreRegistry().registerSystem(essenceMiningSystem);
@@ -325,7 +329,7 @@ public class VaryonPlugin extends JavaPlugin {
                     try {
                         PlayerRef playerRef = event.getHolder().getComponent(PlayerRef.getComponentType());
                         Player player = event.getHolder().getComponent(Player.getComponentType());
-                        if (playerRef != null && player != null) {
+                        if (playerRef != null && player != null && player.getWorld() != null) {
                             hudManager.registerPlayer(player, playerRef);
                         }
                     } catch (Exception e) {
@@ -387,6 +391,7 @@ public class VaryonPlugin extends JavaPlugin {
         if (deathPointManager != null) {
             deathPointManager.shutdown();
         }
+        ChatAnnouncementScheduler.shutdown();
     }
 
     private void setupMinimapProvider() {

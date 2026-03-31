@@ -27,6 +27,7 @@ import com.varyon.config.ReturnConfig;
 import com.varyon.config.RtpvConfig;
 import com.varyon.config.ZoneConfig;
 import com.varyon.death.DeathPointManager;
+import com.varyon.util.VaryonWorldAccess;
 import com.varyon.util.ZoneCalculator;
 import net.cfh.vault.VaultUnlockedServicesManager;
 import net.milkbowl.vault2.economy.Economy;
@@ -95,6 +96,11 @@ public class ReturnCommand extends AbstractPlayerCommand {
         DeathPointManager deathManager = VaryonPlugin.getInstance().getDeathPointManager();
         if (deathManager == null) {
             context.sendMessage(Message.raw("Système de retour indisponible.").color(Color.RED));
+            return;
+        }
+
+        if (!VaryonWorldAccess.isVaryonEnabledWorld(world)) {
+            context.sendMessage(Message.raw("Cette commande n'est disponible que sur les mondes Varyon.").color(Color.RED));
             return;
         }
 

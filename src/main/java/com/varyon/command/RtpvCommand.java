@@ -169,7 +169,7 @@ public class RtpvCommand extends AbstractPlayerCommand {
             try {
                 double[] angleRange = pickAngleRange(pvpFilter);
 
-                Vector3d safePosition = rtpService.findSafePositionInRing(world, generator, minDist, maxDist, angleRange[0], angleRange[1], 50);
+                Vector3d safePosition = rtpService.findSafePositionInRing(world, generator, minDist, maxDist, angleRange[0], angleRange[1], RtpService.DEFAULT_RTP_MAX_ATTEMPTS);
 
                 if (safePosition != null) {
                     teleportPlayer(store, ref, world, safePosition);

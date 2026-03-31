@@ -6,6 +6,7 @@ import com.hypixel.hytale.server.core.entity.entities.Player;
 import com.hypixel.hytale.math.vector.Transform;
 import com.hypixel.hytale.server.core.universe.PlayerRef;
 import com.hypixel.hytale.server.core.universe.Universe;
+import com.hypixel.hytale.server.core.universe.world.World;
 import com.varyon.VaryonPlugin;
 import com.varyon.config.DifficultyZone;
 import com.varyon.config.MessagesConfig;
@@ -80,7 +81,8 @@ public class ZoneHUDManager {
 
             try {
                 Player player = playerCache.get(playerId);
-                String worldName = player != null ? player.getWorld().getName() : "";
+                String worldName = (player != null && player.getWorld() != null)
+                        ? player.getWorld().getName() : "";
                 Transform transform = playerRef.getTransform();
                 double x = transform.getPosition().x;
                 double z = transform.getPosition().z;
@@ -117,7 +119,11 @@ public class ZoneHUDManager {
     }
 
     public void registerPlayer(@Nonnull Player player, @Nonnull PlayerRef playerRef) {
-        String worldName = player.getWorld().getName();
+        World world = player.getWorld();
+        if (world == null) {
+            return;
+        }
+        String worldName = world.getName();
         UUID playerId = playerRef.getUuid();
 
         playerHuds.remove(playerId);

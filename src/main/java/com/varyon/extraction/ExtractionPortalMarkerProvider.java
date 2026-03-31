@@ -5,6 +5,8 @@ import com.hypixel.hytale.math.vector.Vector3d;
 import com.hypixel.hytale.protocol.FormattedMessage;
 import com.hypixel.hytale.protocol.packets.worldmap.MapMarker;
 import com.hypixel.hytale.server.core.entity.entities.Player;
+import com.hypixel.hytale.server.core.universe.PlayerRef;
+import com.hypixel.hytale.server.core.universe.Universe;
 import com.hypixel.hytale.server.core.universe.world.World;
 import com.hypixel.hytale.server.core.universe.world.worldmap.WorldMapManager;
 import com.hypixel.hytale.server.core.universe.world.worldmap.markers.MarkersCollector;
@@ -22,7 +24,11 @@ public class ExtractionPortalMarkerProvider implements WorldMapManager.MarkerPro
             return;
         }
 
-        UUID playerUuid = player.getPlayerRef().getUuid();
+        PlayerRef playerRef = Universe.get().getPlayer(player.getUuid());
+        if (playerRef == null) {
+            return;
+        }
+        UUID playerUuid = playerRef.getUuid();
 
         ExtractionPortalManager.PortalData portalData = manager.getActivePortals().get(playerUuid);
         if (portalData == null) {
@@ -41,7 +47,6 @@ public class ExtractionPortalMarkerProvider implements WorldMapManager.MarkerPro
         MapMarker marker = new MapMarker(
             "extraction_portal_" + playerUuid,
             name,
-            null,
             "Portal.png",
             PositionUtil.toTransformPacket(new Transform(position)),
             null,

@@ -298,7 +298,7 @@ public class ZoneHUD extends CustomUIHud {
         labelAnchor.setWidth(Value.of(labelWidth));
         labelAnchor.setHeight(Value.of(14));
         builder.setObject("#EssenceValue.Anchor", labelAnchor);
-        builder.set("#EssenceValue.Text", String.valueOf(clamped));
+        builder.set("#EssenceValue.Text", String.valueOf(Math.abs(clamped)));
     }
 
     public void updateGlobalBalance() {

@@ -173,12 +173,12 @@ public class RtpzCommand extends AbstractPlayerCommand {
                     int zoneIndex = finalExtractedZoneNumber - 1;
                     double minDist = zoneIndex < configZones.size() ? configZones.get(zoneIndex).getRadiusStart() : 0;
                     double maxDist = zoneIndex + 1 < configZones.size() ? configZones.get(zoneIndex + 1).getRadiusStart() : minDist + 5000;
-                    safePosition = rtpService.findSafePositionInRing(world, generator, minDist, maxDist, 0, 2 * Math.PI, 50, finalTargetZone);
+                    safePosition = rtpService.findSafePositionInRing(world, generator, minDist, maxDist, 0, 2 * Math.PI, RtpService.DEFAULT_RTP_MAX_ATTEMPTS, finalTargetZone);
                 } else {
                     ZoneConfig zoneConfig = VaryonPlugin.getStaticConfigManager().getZoneConfig();
                     List<DifficultyZone> configZones = zoneConfig.getZones();
                     double maxDist = configZones.isEmpty() ? 25000 : configZones.get(configZones.size() - 1).getRadiusStart();
-                    safePosition = rtpService.findSafePositionInRing(world, generator, 0, maxDist, 0, 2 * Math.PI, 50);
+                    safePosition = rtpService.findSafePositionInRing(world, generator, 0, maxDist, 0, 2 * Math.PI, RtpService.DEFAULT_RTP_MAX_ATTEMPTS);
                 }
 
                 if (safePosition != null) {
@@ -191,7 +191,7 @@ public class RtpzCommand extends AbstractPlayerCommand {
                         .replace("{z}", String.valueOf((int)safePosition.z))).color(Color.GREEN));
                 } else {
                     context.sendMessage(Message.raw(msg.noSafeLocation
-                        .replace("{attempts}", "50")).color(Color.RED));
+                        .replace("{attempts}", String.valueOf(RtpService.DEFAULT_RTP_MAX_ATTEMPTS))).color(Color.RED));
                 }
             } catch (Exception e) {
                 LOGGER.at(Level.SEVERE).log("Erreur lors de la téléportation RTP: " + e.getMessage(), e);
