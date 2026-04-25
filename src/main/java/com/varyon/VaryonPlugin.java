@@ -64,6 +64,9 @@ import com.varyon.system.PlacedOreTracker;
 import com.varyon.nameplate.ZoneLevelNameplateSystem;
 import com.varyon.system.MobFragmentDropSystem;
 import com.varyon.system.ZoneTitleTickingSystem;
+import com.varyon.item.AmbassadeOrbInteraction;
+
+import com.hypixel.hytale.server.core.modules.interaction.interaction.config.Interaction;
 
 import javax.annotation.Nullable;
 import java.util.logging.Level;
@@ -114,6 +117,17 @@ public class VaryonPlugin extends JavaPlugin {
 
         try {
             staticInstance = this;
+
+            try {
+                this.getCodecRegistry(Interaction.CODEC)
+                    .register(AmbassadeOrbInteraction.TYPE_NAME,
+                             AmbassadeOrbInteraction.class,
+                             AmbassadeOrbInteraction.CODEC);
+                LOGGER.at(Level.INFO).log("Interaction varyon_ambassade_orb registered");
+            } catch (Exception e) {
+                LOGGER.at(Level.WARNING).log("Failed to register varyon_ambassade_orb: " + e.getMessage());
+            }
+
             ComponentType<EntityStore, MobScalingComponent> mobScalingComponentType =
                     this.getEntityStoreRegistry().registerComponent(MobScalingComponent.class,
                             () -> new MobScalingComponent(0, 1.0f, 1.0f, 1.0f, 1.0f));
