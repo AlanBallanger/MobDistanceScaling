@@ -149,17 +149,17 @@ public class JoinCommand extends AbstractAsyncCommand {
             }
         }
 
-        TransformComponent targetTransform = targetStore.getComponent(targetEntityRef, TransformComponent.getComponentType());
-        if (targetTransform == null) {
-            context.sendMessage(Message.raw("Impossible de récupérer la position.").color(Color.RED));
-            return CompletableFuture.completedFuture(null);
-        }
-
-        Vector3d pos = targetTransform.getPosition().clone();
-        Vector3f rot = targetTransform.getRotation() != null ? targetTransform.getRotation().clone() : new Vector3f(0, 0, 0);
-
         targetWorld.execute(() -> {
             try {
+                TransformComponent targetTransform = targetStore.getComponent(targetEntityRef, TransformComponent.getComponentType());
+                if (targetTransform == null) {
+                    context.sendMessage(Message.raw("Impossible de récupérer la position.").color(Color.RED));
+                    return;
+                }
+
+                Vector3d pos = targetTransform.getPosition().clone();
+                Vector3f rot = targetTransform.getRotation() != null ? targetTransform.getRotation().clone() : new Vector3f(0, 0, 0);
+
                 Ref<EntityStore> joinerEntityRef = joinerRef.getReference();
                 if (joinerEntityRef == null || !joinerEntityRef.isValid()) return;
 
