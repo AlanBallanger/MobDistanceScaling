@@ -20,8 +20,10 @@ public class DeathPointManager {
     private static final String SECTION = "players";
 
     private final Path dataDirectory;
+    private final Object returnPenaltyLock = new Object();
     private final Map<UUID, DeathPoint> deathPoints = new ConcurrentHashMap<>();
-    private final Map<UUID, Long> cooldowns = new ConcurrentHashMap<>();
+    private final Map<UUID, Long> returnBlockingUntil = new ConcurrentHashMap<>();
+    private final Map<UUID, Long> returnMultiplierExpiresAt = new ConcurrentHashMap<>();
     private final Map<UUID, Integer> returnCostMultipliers = new ConcurrentHashMap<>();
 
     public static class DeathPoint {
@@ -86,39 +88,63 @@ public class DeathPointManager {
     }
 
     public boolean isOnCooldown(@Nonnull UUID playerId) {
-        Long cooldownEnd = cooldowns.get(playerId);
-        if (cooldownEnd == null) return false;
-        if (System.currentTimeMillis() >= cooldownEnd) {
-            cooldowns.remove(playerId);
-            return false;
+        synchronized (returnPenaltyLock) {
+            sweepExpiredReturnPenalty(playerId);
+            Long blockingEnd = returnBlockingUntil.get(playerId);
+            return blockingEnd != null && System.currentTimeMillis() < blockingEnd;
         }
-        return true;
-    }
-
-    public void setCooldown(@Nonnull UUID playerId, int cooldownSeconds) {
-        cooldowns.put(playerId, System.currentTimeMillis() + (cooldownSeconds * 1000L));
     }
 
     public long getCooldownRemainingSeconds(@Nonnull UUID playerId) {
-        Long cooldownEnd = cooldowns.get(playerId);
-        if (cooldownEnd == null) return 0;
-        return Math.max(0, (cooldownEnd - System.currentTimeMillis()) / 1000);
+        synchronized (returnPenaltyLock) {
+            sweepExpiredReturnPenalty(playerId);
+            Long blockingEnd = returnBlockingUntil.get(playerId);
+            if (blockingEnd == null) {
+                return 0;
+            }
+            return Math.max(0, (blockingEnd - System.currentTimeMillis()) / 1000);
+        }
     }
 
     public int getReturnCostMultiplier(@Nonnull UUID playerId) {
-        if (!isOnCooldown(playerId)) {
-            returnCostMultipliers.remove(playerId);
-            return 1;
+        synchronized (returnPenaltyLock) {
+            sweepExpiredReturnPenalty(playerId);
+            if (!returnCostMultipliers.containsKey(playerId)) {
+                return 1;
+            }
+            return returnCostMultipliers.getOrDefault(playerId, 1);
         }
-        return returnCostMultipliers.getOrDefault(playerId, 1);
     }
 
     public void recordReturnUse(@Nonnull UUID playerId, int cooldownSeconds) {
-        int current = isOnCooldown(playerId)
-            ? returnCostMultipliers.getOrDefault(playerId, 1)
-            : 1;
-        returnCostMultipliers.put(playerId, current * 2);
-        setCooldown(playerId, cooldownSeconds);
+        synchronized (returnPenaltyLock) {
+            sweepExpiredReturnPenalty(playerId);
+            long now = System.currentTimeMillis();
+            boolean blockingActive = returnBlockingUntil.containsKey(playerId)
+                && now < returnBlockingUntil.get(playerId);
+            int current = blockingActive
+                ? returnCostMultipliers.getOrDefault(playerId, 1)
+                : 1;
+            returnCostMultipliers.put(playerId, current * 2);
+            returnBlockingUntil.put(playerId, now + cooldownSeconds * 1000L);
+            returnMultiplierExpiresAt.put(playerId, now + (cooldownSeconds + 1L) * 1000L);
+        }
+    }
+
+    private void sweepExpiredReturnPenalty(@Nonnull UUID playerId) {
+        long now = System.currentTimeMillis();
+        Long multExp = returnMultiplierExpiresAt.get(playerId);
+        if (multExp != null && now >= multExp) {
+            returnCostMultipliers.remove(playerId);
+            returnMultiplierExpiresAt.remove(playerId);
+        }
+        Long blockingEnd = returnBlockingUntil.get(playerId);
+        if (blockingEnd != null && now >= blockingEnd) {
+            returnBlockingUntil.remove(playerId);
+        }
+        if (!returnBlockingUntil.containsKey(playerId) && !returnMultiplierExpiresAt.containsKey(playerId)) {
+            returnCostMultipliers.remove(playerId);
+        }
     }
 
     private void load() {

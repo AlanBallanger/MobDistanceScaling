@@ -83,12 +83,7 @@ public class ExtractCommand extends AbstractPlayerCommand {
         boolean bypass = player != null && player.hasPermission(PERM_BYPASS);
 
         if (manager.hasActivePortal(playerId)) {
-            if (bypass) {
-                manager.removePlayerPortal(playerId);
-            } else {
-                context.sendMessage(Message.raw(msg.alreadyHasPortal).color(Color.RED));
-                return;
-            }
+            manager.removePlayerPortal(playerId);
         }
 
         if (!bypass && manager.isOnCooldown(playerId)) {
@@ -133,13 +128,13 @@ public class ExtractCommand extends AbstractPlayerCommand {
 
                 manager.placePortal(playerId, world, px, py, pz);
 
+                int durationSec = config.getPortalDurationSeconds();
                 String spawnMsg = msg.portalSpawned
                     .replace("{distance}", String.valueOf((int) distance))
                     .replace("{x}", String.valueOf(px))
                     .replace("{y}", String.valueOf(py))
                     .replace("{z}", String.valueOf(pz))
-                    .replace("! Durée: {duration}s", " !")
-                    .replace("{duration}", "");
+                    .replace("{duration}", String.valueOf(durationSec));
                 context.sendMessage(Message.raw(spawnMsg).color(Color.GREEN));
 
                 LOGGER.at(Level.INFO).log("Portal spawned for " + playerId + " at " + px + "," + py + "," + pz + " dist=" + (int) distance);

@@ -192,7 +192,7 @@ public class MessagesConfig {
 
             Toml extractToml = toml.getTable("extraction");
             ExtractionMessages extraction = new ExtractionMessages(
-                extractToml.getString("portalSpawned", "Portail d'extraction créé à {distance}m ({x}, {y}, {z}) !"),
+                extractToml.getString("portalSpawned", "Portail d'extraction créé à {distance}m ({x}, {y}, {z}) ! Il reste actif {duration} s."),
                 extractToml.getString("portalExpired", "Votre portail d'extraction a expiré."),
                 extractToml.getString("alreadyHasPortal", "Vous avez déjà un portail actif"),
                 extractToml.getString("cooldown", "Cooldown actif. Temps restant: {remaining} secondes"),
@@ -344,7 +344,7 @@ public class MessagesConfig {
         HudMessages hud = new HudMessages("HP", "DMG", "Loot", "Multiplicateurs");
 
         ExtractionMessages extraction = new ExtractionMessages(
-            "Portail d'extraction créé à {distance}m ({x}, {y}, {z}) !",
+            "Portail d'extraction créé à {distance}m ({x}, {y}, {z}) ! Il reste actif {duration} s.",
             "Votre portail d'extraction a expiré.",
             "Vous avez déjà un portail actif",
             "Cooldown actif. Temps restant: {remaining} secondes",

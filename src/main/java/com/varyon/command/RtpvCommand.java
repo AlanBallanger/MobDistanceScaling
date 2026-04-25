@@ -5,6 +5,7 @@ import com.hypixel.hytale.component.Store;
 import com.hypixel.hytale.logger.HytaleLogger;
 import com.hypixel.hytale.math.vector.Vector3d;
 import com.hypixel.hytale.math.vector.Vector3f;
+import com.hypixel.hytale.server.core.HytaleServer;
 import com.hypixel.hytale.server.core.Message;
 import com.hypixel.hytale.server.core.command.system.CommandContext;
 import com.hypixel.hytale.server.core.command.system.arguments.system.RequiredArg;
@@ -20,6 +21,9 @@ import com.hypixel.hytale.server.core.universe.world.worldgen.IWorldGen;
 import com.hypixel.hytale.server.worldgen.chunk.ChunkGenerator;
 import com.varyon.VaryonPlugin;
 import com.varyon.config.DifficultyZone;
+import com.varyon.portal.RtpvConfirmUIPage;
+import com.varyon.rtpv.RtpvConfirmManager;
+import com.varyon.rtpv.RtpvCooldownStore;
 import com.varyon.rtpv.RtpvJoinManager;
 import com.varyon.config.RtpvConfig;
 import com.varyon.config.ZoneConfig;
@@ -39,6 +43,8 @@ import java.awt.Color;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 
 public class RtpvCommand extends AbstractPlayerCommand {
@@ -130,6 +136,17 @@ public class RtpvCommand extends AbstractPlayerCommand {
         DifficultyZone targetZone = zones.get(zoneNumber - 1);
 
         RtpvConfig rtpvConfig = VaryonPlugin.getStaticConfigManager().getRtpvConfig();
+        int cooldownSec = rtpvConfig.getCooldownSeconds();
+        if (cooldownSec > 0) {
+            int remain = RtpvCooldownStore.getRemainingCooldownSeconds(playerRef.getUuid(), cooldownSec);
+            if (remain > 0) {
+                context.sendMessage(Message.raw(
+                    "Téléportation aléatoire en cooldown. Réessayez dans " + remain + " s."
+                ).color(Color.RED));
+                return;
+            }
+        }
+
         int baseCost = targetZone.getTeleportCost();
         double multipliedCost = (pvpFilter != null && !pvpFilter)
             ? baseCost * rtpvConfig.getSafeCostMultiplier()
@@ -191,6 +208,9 @@ public class RtpvCommand extends AbstractPlayerCommand {
                     context.sendMessage(Message.raw("Téléporté vers " + targetZone.getName() + pvpLabel +
                         " en " + (int) safePosition.x + ", " + (int) safePosition.y + ", " + (int) safePosition.z +
                         (rtpvConfig.isEconomyEnabled() ? " (-" + finalCost + " coins)" : "")).color(Color.GREEN));
+
+                    scheduleConfirmMenu(playerRef, world, zoneNumber, pvpFilter, finalCost);
+                    RtpvCooldownStore.recordSuccessfulRtpv(playerRef.getUuid());
                 } else {
                     context.sendMessage(Message.raw("Impossible de trouver un emplacement sûr dans " + targetZone.getName()).color(Color.RED));
                 }
@@ -258,5 +278,38 @@ public class RtpvCommand extends AbstractPlayerCommand {
     private void teleportPlayer(Store<EntityStore> store, Ref<EntityStore> ref, World world, Vector3d position) {
         Teleport teleport = Teleport.createForPlayer(world, position, new Vector3f(0, 0, 0));
         store.addComponent(ref, Teleport.getComponentType(), teleport);
+    }
+
+    private void scheduleConfirmMenu(
+        @Nonnull PlayerRef playerRef,
+        @Nonnull World world,
+        int zoneNumber,
+        @Nullable Boolean pvpFilter,
+        int paidCost
+    ) {
+        RtpvConfirmManager mgr = RtpvConfirmManager.getInstance();
+        if (mgr == null) {
+            return;
+        }
+        int firstRetryCost = (int) Math.ceil(paidCost * 1.2);
+
+        ScheduledFuture<?> future = HytaleServer.SCHEDULED_EXECUTOR.schedule(
+            () -> world.execute(() -> {
+                Ref<EntityStore> liveRef = playerRef.getReference();
+                if (liveRef == null || !liveRef.isValid()) {
+                    return;
+                }
+                Store<EntityStore> liveStore = liveRef.getStore();
+                Player livePlayer = liveStore.getComponent(liveRef, Player.getComponentType());
+                if (livePlayer == null) {
+                    return;
+                }
+                livePlayer.getPageManager().openCustomPage(
+                    liveRef, liveStore,
+                    new RtpvConfirmUIPage(playerRef, zoneNumber, pvpFilter, firstRetryCost));
+            }),
+            5_000L,
+            TimeUnit.MILLISECONDS);
+        mgr.schedulePendingMenu(playerRef.getUuid(), future);
     }
 }

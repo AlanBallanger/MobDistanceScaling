@@ -1,0 +1,81 @@
+﻿$C = "Common.ui";
+
+$C.@PageOverlay {
+
+  $C.@DecoratedContainer {
+    Anchor: (Width: 420, Height: 180);
+
+    #Title {
+      Group {
+        LayoutMode: Left;
+
+        Label {
+          FlexWeight: 1;
+          Text: "Teleportation";
+          Style: (FontSize: 16, RenderBold: true, TextColor: #ffffff, VerticalAlignment: Center, HorizontalAlignment: Center);
+        }
+
+        TextButton #CloseButton {
+          Text: "X";
+          Anchor: (Width: 24, Height: 24, Top: 2, Right: 8);
+          Style: TextButtonStyle(
+            Default: (LabelStyle: (FontSize: 14, TextColor: #ffffff, RenderBold: true, HorizontalAlignment: Center, VerticalAlignment: Center)),
+            Hovered: (Background: (Color: #cc4444), LabelStyle: (FontSize: 14, TextColor: #ffffff, RenderBold: true, HorizontalAlignment: Center, VerticalAlignment: Center))
+          );
+        }
+      }
+    }
+
+    #Content {
+      Padding: (Top: 12, Bottom: 12, Left: 16, Right: 16);
+      LayoutMode: Top;
+
+      Label {
+        Anchor: (Bottom: 16, Left: 0, Right: 0);
+        Text: "Cette destination vous convient elle ?";
+        Style: (FontSize: 14, TextColor: #e0e8f0, HorizontalAlignment: Center, Wrap: true);
+      }
+
+      Group {
+        LayoutMode: Left;
+        Anchor: (Height: 44);
+
+        Button #YesButton {
+          Anchor: (Width: 80, Right: 10);
+          Style: ButtonStyle(
+            Default: (Background: (Color: #185a28)),
+            Hovered: (Background: (Color: #286a38)),
+            Pressed: (Background: (Color: #0f4018))
+          );
+          OutlineColor: #083818;
+          OutlineSize: 1;
+          Group {
+            LayoutMode: Middle;
+            Label {
+              Text: "Oui";
+              Style: (FontSize: 13, RenderBold: true, TextColor: #aaffaa, HorizontalAlignment: Center);
+            }
+          }
+        }
+
+        Button #NoButton {
+          FlexWeight: 1;
+          Style: ButtonStyle(
+            Default: (Background: (Color: #6a1818)),
+            Hovered: (Background: (Color: #7a2828)),
+            Pressed: (Background: (Color: #550f0f))
+          );
+          OutlineColor: #3a0808;
+          OutlineSize: 1;
+          Group {
+            LayoutMode: Middle;
+            Label #NoButtonLabel {
+              Text: "";
+              Style: (FontSize: 12, RenderBold: true, TextColor: #ffaaaa, HorizontalAlignment: Center, Wrap: true);
+            }
+          }
+        }
+      }
+    }
+  }
+}

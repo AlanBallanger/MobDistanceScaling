@@ -37,6 +37,8 @@ import com.varyon.death.DeathDetectionSystem;
 import com.varyon.death.DeathPointManager;
 import com.varyon.deposit.DepositBlockInteractionSystem;
 import com.varyon.portal.VoidPortalInteractionSystem;
+import com.varyon.rtpv.RtpvConfirmManager;
+import com.varyon.rtpv.RtpvCooldownStore;
 import com.varyon.rtpv.RtpvJoinManager;
 import com.varyon.deposit.DepositBlockManager;
 import com.varyon.deposit.DepositUIManager;
@@ -349,6 +351,11 @@ public class VaryonPlugin extends JavaPlugin {
                     if (extractionPortalManager != null) {
                         extractionPortalManager.removePlayerPortal(playerRef.getUuid());
                     }
+                    RtpvConfirmManager confirmMgr = RtpvConfirmManager.getInstance();
+                    if (confirmMgr != null) {
+                        confirmMgr.onPlayerDisconnect(playerRef.getUuid());
+                    }
+                    RtpvCooldownStore.onPlayerDisconnect(playerRef.getUuid());
                 });
             } else {
                 LOGGER.at(Level.WARNING).log("Zone HUD could not be initialized");
@@ -365,6 +372,7 @@ public class VaryonPlugin extends JavaPlugin {
             this.getCommandRegistry().registerCommand(new RtpsCommand());
             this.getCommandRegistry().registerCommand(new JoinCommand());
             RtpvJoinManager.setInstance(new RtpvJoinManager());
+            RtpvConfirmManager.setInstance(new RtpvConfirmManager());
             LOGGER.at(Level.INFO).log("Commands registered");
 
             LOGGER.at(Level.INFO).log("Varyon initialized with {0} zones",

@@ -16,8 +16,8 @@ public class ExtractionConfig {
         this.enabled = true;
         this.minDistance = 100;
         this.maxDistance = 200;
-        this.portalDurationSeconds = 300;
-        this.cooldownSeconds = 300;
+        this.portalDurationSeconds = 60;
+        this.cooldownSeconds = 60;
         this.zoneRanges = new ArrayList<>();
     }
 

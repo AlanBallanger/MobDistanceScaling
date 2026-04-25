@@ -209,6 +209,7 @@ public class ConfigManager {
         sb.append("economyEnabled = ").append(rtpv.isEconomyEnabled()).append("\n");
         sb.append("safeCostMultiplier = ").append(rtpv.getSafeCostMultiplier()).append("\n");
         sb.append("joinDurationSeconds = ").append(rtpv.getJoinDurationSeconds()).append("\n");
+        sb.append("cooldownSeconds = ").append(rtpv.getCooldownSeconds()).append("\n");
         sb.append("\n");
 
         RtpsConfig rtps = rtpsConfig != null ? rtpsConfig : RtpsConfig.createDefault();
@@ -351,8 +352,8 @@ public class ConfigManager {
             config.setEnabled(extractionToml.getBoolean("enabled", true));
             config.setMinDistance(extractionToml.getLong("minDistance", 100L).intValue());
             config.setMaxDistance(extractionToml.getLong("maxDistance", 200L).intValue());
-            config.setPortalDurationSeconds(extractionToml.getLong("portalDurationSeconds", 300L).intValue());
-            config.setCooldownSeconds(extractionToml.getLong("cooldownSeconds", 300L).intValue());
+            config.setPortalDurationSeconds(extractionToml.getLong("portalDurationSeconds", 60L).intValue());
+            config.setCooldownSeconds(extractionToml.getLong("cooldownSeconds", 60L).intValue());
             List<Toml> zoneRangeTables = extractionToml.getTables("zoneRanges");
             if (zoneRangeTables != null && !zoneRangeTables.isEmpty()) {
                 List<ExtractionZoneDistance> ranges = new ArrayList<>();
@@ -402,7 +403,8 @@ public class ConfigManager {
         boolean economyEnabled = rtpvToml.getBoolean("economyEnabled", true);
         double safeCostMultiplier = rtpvToml.getDouble("safeCostMultiplier", 2.0);
         int joinDurationSeconds = rtpvToml.getLong("joinDurationSeconds", 60L).intValue();
-        return new RtpvConfig(safeCostMultiplier, economyEnabled, joinDurationSeconds);
+        int cooldownSeconds = rtpvToml.getLong("cooldownSeconds", 60L).intValue();
+        return new RtpvConfig(safeCostMultiplier, economyEnabled, joinDurationSeconds, cooldownSeconds);
     }
 
     @Nonnull

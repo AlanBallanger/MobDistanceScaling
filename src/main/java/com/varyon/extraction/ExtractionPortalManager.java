@@ -142,19 +142,6 @@ public class ExtractionPortalManager {
         positionToOwner.put(posKey, ownerId);
 
         LOGGER.at(Level.INFO).log("Portal placed for " + ownerId + " at " + x + ", " + y + ", " + z + " (expires in " + config.getPortalDurationSeconds() + "s)");
-        
-        notifyPortalCreated(ownerId, x, y, z);
-    }
-
-    private void notifyPortalCreated(@Nonnull UUID ownerId, int x, int y, int z) {
-        try {
-            PlayerRef playerRef = Universe.get().getPlayer(ownerId);
-            if (playerRef != null && playerRef.getReference() != null && playerRef.getReference().isValid()) {
-                playerRef.sendMessage(Message.raw("[Extraction] Portal activé").color(Color.GREEN));
-            }
-        } catch (Exception e) {
-            LOGGER.at(Level.WARNING).log("Failed to notify player of portal creation: " + e.getMessage());
-        }
     }
 
     private void placeBlockInChunk(@Nonnull WorldChunk chunk, int x, int y, int z) {
