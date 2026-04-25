@@ -11,6 +11,7 @@ import com.hypixel.hytale.server.core.Message;
 import com.hypixel.hytale.server.core.entity.InteractionContext;
 import com.hypixel.hytale.server.core.entity.entities.Player;
 import com.hypixel.hytale.server.core.inventory.ItemStack;
+import com.hypixel.hytale.server.core.inventory.container.ItemContainer;
 import com.hypixel.hytale.server.core.modules.interaction.interaction.CooldownHandler;
 import com.hypixel.hytale.server.core.modules.interaction.interaction.config.SimpleInstantInteraction;
 import com.hypixel.hytale.server.core.universe.PlayerRef;
@@ -94,6 +95,12 @@ public final class AmbassadeOrbInteraction extends SimpleInstantInteraction {
 
         try {
             if (AmbassadeWarpHelper.tryWarp(playerRef, warp)) {
+                ItemContainer container = interactionContext.getHeldItemContainer();
+                if (container != null) {
+                    ItemStack after = held.withQuantity(held.getQuantity() - 1);
+                    interactionContext.setHeldItem(after);
+                    container.replaceItemStackInSlot(interactionContext.getHeldItemSlot(), held, after);
+                }
                 interactionContext.getState().state = InteractionState.Finished;
             } else {
                 interactionContext.getState().state = InteractionState.Failed;
