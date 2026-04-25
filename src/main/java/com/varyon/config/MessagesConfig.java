@@ -213,7 +213,7 @@ public class MessagesConfig {
                 returnToml.getString("noSafeLocation", "Impossible de trouver un emplacement sûr après {attempts} tentatives"),
                 returnToml.getString("error", "Erreur lors de la téléportation"),
                 returnToml.getString("firstUseWarning", "⚠ ATTENTION: Vous ne pourrez utiliser /return qu'UNE SEULE FOIS pour cette mort!"),
-                returnToml.getString("cooldownWarning", "⏳ Cooldown encore actif ({remaining}s). Réutiliser /return coûtera {cost} coins (×{multiplier}). Tapez /return force pour confirmer.")
+                returnToml.getString("cooldownWarning", "⏳ Cooldown encore actif ({remaining}s) : prochain retour {cost} coins (×{multiplier}). Ouvrez /return pour valider le montant et confirmer.")
             );
 
             Toml safeToml = toml.getTable("safezone");
@@ -364,7 +364,7 @@ public class MessagesConfig {
             "Impossible de trouver un emplacement sûr après {attempts} tentatives",
             "Erreur lors de la téléportation",
             "⚠ ATTENTION: Vous ne pourrez utiliser /return qu'UNE SEULE FOIS pour cette mort!",
-            "⏳ Cooldown encore actif ({remaining}s). Réutiliser /return coûtera {cost} coins (×{multiplier}). Tapez /return force pour confirmer."
+            "⏳ Cooldown encore actif ({remaining}s) : prochain retour {cost} coins (×{multiplier}). Ouvrez /return pour valider le montant et confirmer."
         );
 
         SafeZoneMessages safeZone = new SafeZoneMessages(

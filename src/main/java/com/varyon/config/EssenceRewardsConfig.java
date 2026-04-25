@@ -272,6 +272,31 @@ public class EssenceRewardsConfig {
         mobRewards.put("spawn_void", 35.0);
         mobRewards.put("spectre_void", 30.0);
 
+        mobRewards.put("tuluk_fisherman", 12.5);
+        mobRewards.put("tuluk_king", 12.5);
+        mobRewards.put("tuluk_merchant", 12.5);
+        mobRewards.put("tuluk_pink", 12.5);
+
+        mobRewards.put("grung_hopling", 12.5);
+        mobRewards.put("grung_hopling_archer", 12.5);
+        mobRewards.put("grung_hopling_settled", 12.5);
+        mobRewards.put("grung_elder", 37.5);
+
+        mobRewards.put("slothian_monk", 12.5);
+        mobRewards.put("slothian_scout", 12.5);
+        mobRewards.put("slothian_warrior", 12.5);
+
+        mobRewards.put("bramblekin_berserker", 12.5);
+        mobRewards.put("bramblekin_fighter", 12.5);
+        mobRewards.put("bramblekin_shaman", 12.5);
+
+        mobRewards.put("saurian_hunter", 12.5);
+        mobRewards.put("saurian_rogue", 12.5);
+        mobRewards.put("saurian_warrior", 12.5);
+        mobRewards.put("endgame_saurian_hunter", 25.0);
+        mobRewards.put("endgame_saurian_rogue", 25.0);
+        mobRewards.put("endgame_saurian_warrior", 25.0);
+
         // Boss elite (350-400 XP) -> 35 essence
         mobRewards.put("goblin_duke", 350.0);
         mobRewards.put("golem_guardian", 350.0);

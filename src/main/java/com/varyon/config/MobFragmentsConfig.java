@@ -126,10 +126,10 @@ public class MobFragmentsConfig {
         sb.append("\n# --- 2 frags : XP 35 (Snake, Snail, Cactee...) ---\n");
         appendGroup(sb, F2, 2);
 
-        sb.append("\n# --- 3 frags : XP 45 (Spider, Fen_Stalker, Chicken_Undead) ---\n");
+        sb.append("\n# --- 3 frags : XP 45 (Fen_Stalker, Chicken_Undead, Crawler_Void) ---\n");
         appendGroup(sb, F3, 3);
 
-        sb.append("\n# --- 5 frags : XP 55 (Goblin, Hyena, Leopard...) ---\n");
+        sb.append("\n# --- 5 frags : XP 55 (Goblin, Hyena, Spider, Scarak...) ---\n");
         appendGroup(sb, F5, 5);
 
         sb.append("\n# --- 7 frags : XP 65 (Zombie, Skeleton, Wolf...) ---\n");
@@ -255,18 +255,24 @@ public class MobFragmentsConfig {
 
     /** 3 frags — XP 45 */
     private static final List<String> F3 = List.of(
-        "Spider", "Fen_Stalker", "Chicken_Undead", "Crawler_Void"
+        "Fen_Stalker", "Chicken_Undead", "Crawler_Void"
     );
 
     /** 5 frags — XP 55 */
     private static final List<String> F5 = List.of(
         "Goblin", "Hyena", "Leopard", "Snapdragon", "Moose",
-        "Klops", "Slug_Magma", "Armadillo", "Lizard_Sand", "Eye_Void"
+        "Klops", "Slug_Magma", "Armadillo", "Lizard_Sand", "Eye_Void",
+        "Tuluk_Fisherman", "Tuluk_King", "Tuluk_Merchant", "Tuluk_Pink",
+        "Grung_Hopling", "Grung_Hopling_Archer", "Grung_Hopling_Settled",
+        "Slothian_Monk", "Slothian_Scout", "Slothian_Warrior",
+        "Bramblekin_Berserker", "Bramblekin_Fighter", "Bramblekin_Shaman",
+        "Saurian_Hunter", "Saurian_Rogue", "Saurian_Warrior",
+        "Scarak", "Spider"
     );
 
     /** 7 frags — XP 65 */
     private static final List<String> F7 = List.of(
-        "Zombie", "Skeleton", "Wolf", "Trork", "Scarak",
+        "Zombie", "Skeleton", "Wolf", "Trork",
         "Spirit", "Pig_Undead", "Bramblekin", "Spectre_Void"
     );
 
@@ -274,11 +280,12 @@ public class MobFragmentsConfig {
     private static final List<String> F10 = List.of(
         "Bear", "Raptor", "Tiger", "Crocodile", "Scorpion",
         "Toad_Rhino", "Mosshorn", "Hound_Bleached", "Cow_Undead",
-        "Trillodon", "Outlander", "Spawn_Void",
+        "Trillodon", "Outlander", "Spawn_Void", "Grung_Elder",
+        "Endgame_Saurian_Hunter", "Endgame_Saurian_Rogue", "Endgame_Saurian_Warrior",
         "Goblin_Ogre",       // goblin prefix = 5
         "Skeleton_Burnt",    // skeleton prefix = 7
         "Zombie_Burnt",      // zombie prefix = 7
-        "Scarak_Broodmother" // scarak prefix = 7
+        "Scarak_Broodmother" // scarak prefix = 5 (hors Broodmother)
     );
 
     /** 15 frags — XP 130 */

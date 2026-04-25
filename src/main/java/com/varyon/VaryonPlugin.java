@@ -92,6 +92,7 @@ public class VaryonPlugin extends JavaPlugin {
     private DepositBlockManager depositBlockManager;
     private DepositUIManager depositUIManager;
     private DeathPointManager deathPointManager;
+    private ReturnCommand returnCommand;
 
     public VaryonPlugin(JavaPluginInit init) {
         super(init);
@@ -378,7 +379,8 @@ public class VaryonPlugin extends JavaPlugin {
             this.getCommandRegistry().registerCommand(new VaryonCommand(this, factionManager, depositBlockManager));
             this.getCommandRegistry().registerCommand(new ExtractCommand("extract"));
             this.getCommandRegistry().registerCommand(new ExtractCommand("ex"));
-            this.getCommandRegistry().registerCommand(new ReturnCommand());
+            this.returnCommand = new ReturnCommand();
+            this.getCommandRegistry().registerCommand(this.returnCommand);
             this.getCommandRegistry().registerCommand(new PointsCommand(essenceManager, factionManager));
             this.getCommandRegistry().registerCommand(new RtpzCommand());
             this.getCommandRegistry().registerCommand(new RtpvCommand());
@@ -489,6 +491,11 @@ public class VaryonPlugin extends JavaPlugin {
     
     public DeathPointManager getDeathPointManager() {
         return deathPointManager;
+    }
+
+    @Nullable
+    public ReturnCommand getReturnCommand() {
+        return returnCommand;
     }
 
     @Nullable

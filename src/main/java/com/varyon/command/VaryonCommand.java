@@ -74,7 +74,7 @@ public class VaryonCommand extends AbstractAsyncCommand {
             context.sendMessage(Message.raw("  /varyon extract : Invoque un portail d'extraction").color(Color.WHITE));
             context.sendMessage(Message.raw("  /varyon shop : Boutique (clés contre fragments)").color(Color.WHITE));
             context.sendMessage(Message.raw("  /varyon whois : Voir votre faction détectée").color(Color.WHITE));
-            context.sendMessage(Message.raw("  /return : Retour près de votre point de mort").color(Color.WHITE));
+            context.sendMessage(Message.raw("  /return : Menu de confirmation (retour près de votre point de mort)").color(Color.WHITE));
             context.sendMessage(Message.raw("  /points : Voir vos points de guilde").color(Color.WHITE));
             context.sendMessage(Message.raw("  /points top : Classement des points de guilde").color(Color.WHITE));
             context.sendMessage(Message.raw("  /points deposit <montant> : Déposer des points de guilde pour votre faction").color(Color.WHITE));
