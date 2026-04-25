@@ -255,26 +255,26 @@ public class MobFragmentsConfig {
 
     /** 3 frags — XP 45 */
     private static final List<String> F3 = List.of(
-        "Spider", "Fen_Stalker", "Chicken_Undead"
+        "Spider", "Fen_Stalker", "Chicken_Undead", "Crawler_Void"
     );
 
     /** 5 frags — XP 55 */
     private static final List<String> F5 = List.of(
         "Goblin", "Hyena", "Leopard", "Snapdragon", "Moose",
-        "Klops", "Slug_Magma", "Armadillo", "Lizard_Sand"
+        "Klops", "Slug_Magma", "Armadillo", "Lizard_Sand", "Eye_Void"
     );
 
     /** 7 frags — XP 65 */
     private static final List<String> F7 = List.of(
         "Zombie", "Skeleton", "Wolf", "Trork", "Scarak",
-        "Spirit", "Pig_Undead", "Bramblekin"
+        "Spirit", "Pig_Undead", "Bramblekin", "Spectre_Void"
     );
 
     /** 10 frags — XP 85 + surcharges cross-prefix */
     private static final List<String> F10 = List.of(
         "Bear", "Raptor", "Tiger", "Crocodile", "Scorpion",
         "Toad_Rhino", "Mosshorn", "Hound_Bleached", "Cow_Undead",
-        "Trillodon", "Outlander",
+        "Trillodon", "Outlander", "Spawn_Void",
         "Goblin_Ogre",       // goblin prefix = 5
         "Skeleton_Burnt",    // skeleton prefix = 7
         "Zombie_Burnt",      // zombie prefix = 7

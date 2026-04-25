@@ -267,6 +267,10 @@ public class EssenceRewardsConfig {
         mobRewards.put("void", 50.0);
         mobRewards.put("shadow_knight", 50.0);
         mobRewards.put("zombie_aberrant", 50.0);
+        mobRewards.put("crawler_void", 15.0);
+        mobRewards.put("eye_void", 25.0);
+        mobRewards.put("spawn_void", 35.0);
+        mobRewards.put("spectre_void", 30.0);
 
         // Boss elite (350-400 XP) -> 35 essence
         mobRewards.put("goblin_duke", 350.0);
