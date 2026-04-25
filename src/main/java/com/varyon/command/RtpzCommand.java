@@ -19,12 +19,11 @@ import com.hypixel.hytale.server.core.universe.world.worldgen.IWorldGen;
 import com.hypixel.hytale.server.worldgen.chunk.ChunkGenerator;
 import com.hypixel.hytale.server.worldgen.zone.Zone;
 import com.varyon.VaryonPlugin;
-import com.varyon.config.DifficultyZone;
 import com.varyon.config.MessagesConfig;
-import com.varyon.config.ZoneConfig;
 import com.varyon.teleport.RtpService;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.awt.Color;
 import java.util.ArrayList;
 import java.util.List;
@@ -88,12 +87,11 @@ public class RtpzCommand extends AbstractPlayerCommand {
         ChunkGenerator generator = (ChunkGenerator) worldGen;
         Zone[] zones = generator.getZonePatternProvider().getZones();
 
-        Zone targetZone = null;
-        Integer extractedZoneNumber = null;
-        
+        Zone zoneForTeleport = null;
+
         if (targetZonePrefix != null && !targetZonePrefix.isEmpty()) {
             String prefix = targetZonePrefix.toLowerCase();
-            
+
             List<Zone> matchingZones = new ArrayList<>();
             for (Zone zone : zones) {
                 String zoneName = zone.name().toLowerCase();
@@ -101,7 +99,7 @@ public class RtpzCommand extends AbstractPlayerCommand {
                     matchingZones.add(zone);
                 }
             }
-            
+
             if (matchingZones.isEmpty()) {
                 for (Zone zone : zones) {
                     if (zone.name().toLowerCase().startsWith(prefix)) {
@@ -109,7 +107,7 @@ public class RtpzCommand extends AbstractPlayerCommand {
                     }
                 }
             }
-            
+
             if (matchingZones.isEmpty()) {
                 StringBuilder availableZones = new StringBuilder(msg.availableZones + ": ");
                 for (int i = 0; i < zones.length; i++) {
@@ -120,24 +118,26 @@ public class RtpzCommand extends AbstractPlayerCommand {
                     .replace("{zone}", prefix) + " " + availableZones.toString()).color(Color.RED));
                 return;
             }
-            
-            targetZone = matchingZones.get(random.nextInt(matchingZones.size()));
-            
-            // Extraire le numéro de zone pour la vérification de permission
-            String zoneName = targetZone.name().toLowerCase();
-            if (zoneName.startsWith("zone") && zoneName.length() > 4) {
-                try {
-                    extractedZoneNumber = Integer.parseInt(zoneName.substring(4, 5));
-                } catch (NumberFormatException e) {
-                    // Pas un numéro, on ignore
-                }
+
+            zoneForTeleport = matchingZones.get(random.nextInt(matchingZones.size()));
+            String zoneDisplay = formatHytaleZoneLabel(zoneForTeleport.name());
+            LOGGER.at(Level.INFO).log("RTPZ vanilla: " + zoneForTeleport.name() + " (" + zoneDisplay + ") — "
+                + matchingZones.size() + " match(es) for prefix: " + prefix);
+        } else {
+            List<Zone> z1to4 = listHytaleZonesWithIndexInRange(zones, 1, 4);
+            if (z1to4.isEmpty()) {
+                context.sendMessage(Message.raw(
+                    "Aucune zone Hytale (zone1 à zone4) détectée pour ce monde."
+                ).color(Color.RED));
+                return;
             }
-            
-            String zoneDisplay = extractZoneNumber(targetZone.name());
-            LOGGER.at(Level.INFO).log("Selected zone: " + targetZone.name() + " (" + zoneDisplay + ") from " + matchingZones.size() + " matching zones for prefix: " + prefix);
+            zoneForTeleport = z1to4.get(random.nextInt(z1to4.size()));
+            LOGGER.at(Level.INFO).log("RTPZ vanilla (sans arg): " + zoneForTeleport.name());
         }
-        
-        // Vérifier la permission pour cette zone vanilla
+
+        final Integer extractedZoneNumber = parseZoneIndexFromHytaleName(zoneForTeleport.name());
+
+        // Vérifier la permission (numéro dérivé du nom de zone Hytale, pas des zones Varyon)
         if (extractedZoneNumber != null) {
             com.hypixel.hytale.server.core.entity.entities.Player player = 
                 (com.hypixel.hytale.server.core.entity.entities.Player) store.getComponent(ref, 
@@ -160,30 +160,17 @@ public class RtpzCommand extends AbstractPlayerCommand {
             }
         }
 
-        final Zone finalTargetZone = targetZone;
-        final Integer finalExtractedZoneNumber = extractedZoneNumber;
+        final Zone finalZoneForTeleport = zoneForTeleport;
         context.sendMessage(Message.raw(msg.teleporting).color(Color.GREEN));
 
         world.execute(() -> {
             try {
-                Vector3d safePosition;
-                if (finalTargetZone != null && finalExtractedZoneNumber != null) {
-                    ZoneConfig zoneConfig = VaryonPlugin.getStaticConfigManager().getZoneConfig();
-                    List<DifficultyZone> configZones = zoneConfig.getZones();
-                    int zoneIndex = finalExtractedZoneNumber - 1;
-                    double minDist = zoneIndex < configZones.size() ? configZones.get(zoneIndex).getRadiusStart() : 0;
-                    double maxDist = zoneIndex + 1 < configZones.size() ? configZones.get(zoneIndex + 1).getRadiusStart() : minDist + 5000;
-                    safePosition = rtpService.findSafePositionInRing(world, generator, minDist, maxDist, 0, 2 * Math.PI, RtpService.DEFAULT_RTP_MAX_ATTEMPTS, finalTargetZone);
-                } else {
-                    ZoneConfig zoneConfig = VaryonPlugin.getStaticConfigManager().getZoneConfig();
-                    List<DifficultyZone> configZones = zoneConfig.getZones();
-                    double maxDist = configZones.isEmpty() ? 25000 : configZones.get(configZones.size() - 1).getRadiusStart();
-                    safePosition = rtpService.findSafePositionInRing(world, generator, 0, maxDist, 0, 2 * Math.PI, RtpService.DEFAULT_RTP_MAX_ATTEMPTS);
-                }
+                Vector3d safePosition = rtpService.findSafePosition(
+                    world, generator, finalZoneForTeleport, RtpService.DEFAULT_RTP_MAX_ATTEMPTS);
 
                 if (safePosition != null) {
                     teleportPlayer(store, ref, world, safePosition);
-                    String zoneName = finalTargetZone != null ? extractZoneNumber(finalTargetZone.name()) : msg.randomZone;
+                    String zoneName = formatHytaleZoneLabel(finalZoneForTeleport.name());
                     context.sendMessage(Message.raw(msg.success
                         .replace("{zone}", zoneName)
                         .replace("{x}", String.valueOf((int)safePosition.x))
@@ -199,11 +186,51 @@ public class RtpzCommand extends AbstractPlayerCommand {
             }
         });
     }
-    
-    private String extractZoneNumber(String zoneName) {
-        if (zoneName.toLowerCase().startsWith("zone")) {
-            String num = zoneName.substring(4, 5);
-            return "Zone " + num;
+
+    private static List<Zone> listHytaleZonesWithIndexInRange(Zone[] zones, int minIncl, int maxIncl) {
+        List<Zone> out = new ArrayList<>();
+        for (Zone z : zones) {
+            Integer n = parseZoneIndexFromHytaleName(z.name());
+            if (n != null && n >= minIncl && n <= maxIncl) {
+                out.add(z);
+            }
+        }
+        return out;
+    }
+
+    @Nullable
+    private static Integer parseZoneIndexFromHytaleName(String raw) {
+        if (raw == null) {
+            return null;
+        }
+        String s = raw.toLowerCase().trim();
+        int idx = s.indexOf("zone");
+        if (idx < 0) {
+            return null;
+        }
+        int i = idx + 4;
+        while (i < s.length() && (s.charAt(i) == '_' || s.charAt(i) == ' ' || s.charAt(i) == '-')) {
+            i++;
+        }
+        if (i >= s.length() || !Character.isDigit(s.charAt(i))) {
+            return null;
+        }
+        int end = i;
+        while (end < s.length() && Character.isDigit(s.charAt(end))) {
+            end++;
+        }
+        try {
+            return Integer.parseInt(s.substring(i, end));
+        } catch (NumberFormatException e) {
+            return null;
+        }
+    }
+
+    @Nonnull
+    private static String formatHytaleZoneLabel(String zoneName) {
+        Integer n = parseZoneIndexFromHytaleName(zoneName);
+        if (n != null) {
+            return "Zone " + n;
         }
         return zoneName;
     }
