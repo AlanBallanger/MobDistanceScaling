@@ -4,17 +4,17 @@ Group {
   LayoutMode: Center;
 
   Group #ZoneHudRoot {
-    Anchor: (Width: 600, Top: 36);
+    Anchor: (Width: 594, Top: 36);
     LayoutMode: Top;
 
     Group #ZoneBar {
-      Anchor: (Width: 590, Height: 26, Left: 0, Top: 0);
+      Anchor: (Width: 584, Height: 26, Left: 0, Top: 0);
       Background: (Color: #202C3C);
-      LayoutMode: Center;
-      Padding: (Vertical: 0, Horizontal: 12);
+      LayoutMode: Left;
+      Padding: (Vertical: 0, Horizontal: 10);
 
       Group #InfoRow {
-        Anchor: (Height: 22);
+        Anchor: (Height: 22, Left: 0, Top: 0);
         LayoutMode: Left;
 
         Label #ZoneName {
@@ -23,9 +23,10 @@ Group {
             FontSize: 12,
             RenderBold: true,
             TextColor: #FFFFFF,
-            Alignment: Center
+            VerticalAlignment: Center,
+            HorizontalAlignment: Center
           );
-          Anchor: (Width: 150, Height: 22);
+          Anchor: (Width: 225, Height: 20, Top: 2);
         }
 
         Label #Separator1 {
@@ -33,20 +34,37 @@ Group {
           Style: (
             FontSize: 12,
             TextColor: #FFFFFF,
-            Alignment: Center
+            VerticalAlignment: Center,
+            HorizontalAlignment: Center
           );
-          Anchor: (Width: 18, Height: 22);
+          Anchor: (Width: 10, Height: 22);
         }
 
-        Label #Essence {
-          Text: "Essence: 0/1000";
-          Style: (
-            FontSize: 12,
-            RenderBold: true,
-            TextColor: #FFFF55,
-            Alignment: Center
-          );
-          Anchor: (Width: 130, Height: 22);
+        Group #EssenceGroup {
+          LayoutMode: Center;
+          Anchor: (Width: 125, Height: 22);
+          Group {
+            LayoutMode: Left;
+            Anchor: (Height: 22);
+            Group #PointsIcon {
+              Anchor: (Width: 16, Height: 16, Top: 5, Right: 3);
+              Background: "Faction_Point.png";
+            }
+            Group {
+              Anchor: (Width: 100, Height: 20, Top: 2);
+              Label #Essence {
+                Text: "Points : 0/1000";
+                Style: (
+                  FontSize: 12,
+                  RenderBold: true,
+                  TextColor: #FFFF55,
+                  VerticalAlignment: Center,
+                  HorizontalAlignment: Center
+                );
+                Anchor: (Width: 100, Height: 20, Top: 0);
+              }
+            }
+          }
         }
 
         Label #Separator2 {
@@ -54,19 +72,52 @@ Group {
           Style: (
             FontSize: 12,
             TextColor: #FFFFFF,
-            Alignment: Center
+            VerticalAlignment: Center,
+            HorizontalAlignment: Center
           );
-          Anchor: (Width: 18, Height: 22);
+          Anchor: (Width: 10, Height: 22);
         }
 
-        Label #HPMult {
-          Text: "";
-          Style: (
-            FontSize: 12,
-            TextColor: #FF5555,
-            Alignment: Center
-          );
-          Anchor: (Width: 70, Height: 22);
+        Group #HPCell {
+          LayoutMode: Center;
+          Anchor: (Width: 58, Height: 22);
+          Group {
+            LayoutMode: Left;
+            Anchor: (Height: 22);
+            Group {
+              LayoutMode: Center;
+              Anchor: (Width: 20, Height: 22, Right: 1);
+              Group {
+                Anchor: (Width: 16, Height: 16, Top: 5);
+                Group #HPIconPng {
+                  Anchor: (Width: 16, Height: 16);
+                  Background: "Health.png";
+                }
+                Group #HPIconPngPvp {
+                  Anchor: (Width: 16, Height: 16);
+                  Background: "PvP.png";
+                  Visible: false;
+                }
+              }
+              ItemIcon #HPIconItem {
+                Anchor: (Width: 18, Height: 18, Top: 4);
+                Visible: false;
+              }
+            }
+            Group {
+              Anchor: (Width: 35, Height: 20, Top: 2);
+              Label #HPMult {
+                Text: "";
+                Style: (
+                  FontSize: 12,
+                  TextColor: #FF5555,
+                  VerticalAlignment: Center,
+                  HorizontalAlignment: Center
+                );
+                Anchor: (Width: 35, Height: 20, Top: 0);
+              }
+            }
+          }
         }
 
         Label #Separator3 {
@@ -74,19 +125,44 @@ Group {
           Style: (
             FontSize: 12,
             TextColor: #FFFFFF,
-            Alignment: Center
+            VerticalAlignment: Center,
+            HorizontalAlignment: Center
           );
-          Anchor: (Width: 18, Height: 22);
+          Anchor: (Width: 10, Height: 22);
         }
 
-        Label #DMGMult {
-          Text: "";
-          Style: (
-            FontSize: 12,
-            TextColor: #FFAA55,
-            Alignment: Center
-          );
-          Anchor: (Width: 70, Height: 22);
+        Group #DMGCell {
+          LayoutMode: Center;
+          Anchor: (Width: 58, Height: 22);
+          Group {
+            LayoutMode: Left;
+            Anchor: (Height: 22);
+            Group {
+              LayoutMode: Center;
+              Anchor: (Width: 20, Height: 22, Right: 1);
+              Group #DMGIconPng {
+                Anchor: (Width: 16, Height: 16, Top: 5);
+                Background: "Damage.png";
+              }
+              ItemIcon #DMGIconItem {
+                Anchor: (Width: 18, Height: 18, Top: 4);
+                Visible: false;
+              }
+            }
+            Group {
+              Anchor: (Width: 35, Height: 20, Top: 2);
+              Label #DMGMult {
+                Text: "";
+                Style: (
+                  FontSize: 12,
+                  TextColor: #FFAA55,
+                  VerticalAlignment: Center,
+                  HorizontalAlignment: Center
+                );
+                Anchor: (Width: 35, Height: 20, Top: 0);
+              }
+            }
+          }
         }
 
         Label #Separator4 {
@@ -94,48 +170,83 @@ Group {
           Style: (
             FontSize: 12,
             TextColor: #FFFFFF,
-            Alignment: Center
+            VerticalAlignment: Center,
+            HorizontalAlignment: Center
           );
-          Anchor: (Width: 18, Height: 22);
+          Anchor: (Width: 10, Height: 22);
         }
 
-        Label #LootMult {
-          Text: "";
-          Style: (
-            FontSize: 12,
-            TextColor: #55FF55,
-            Alignment: Center
-          );
-          Anchor: (Width: 70, Height: 22);
+        Group #LootColumn {
+          LayoutMode: Center;
+          Anchor: (Width: 58, Height: 22);
+          Group #LootCell {
+            Anchor: (Width: 58, Height: 22);
+            Group #LootCellContent {
+              Anchor: (Width: 58, Height: 22, Left: 0, Top: 0);
+              Group {
+                LayoutMode: Left;
+                Anchor: (Height: 22);
+                Group {
+                  LayoutMode: Center;
+                  Anchor: (Width: 20, Height: 22, Right: 1);
+                  Group #LootIconPng {
+                    Anchor: (Width: 16, Height: 16, Top: 5);
+                    Background: "Damage.png";
+                    Visible: false;
+                  }
+                  ItemIcon #LootItemIcon {
+                    Anchor: (Width: 18, Height: 18, Top: 4);
+                  }
+                }
+                Group {
+                  Anchor: (Width: 35, Height: 20, Top: 2);
+                  Label #LootMult {
+                    Text: "";
+                    Style: (
+                      FontSize: 12,
+                      TextColor: #55FF55,
+                      VerticalAlignment: Center,
+                      HorizontalAlignment: Center
+                    );
+                    Anchor: (Width: 35, Height: 20, Top: 0);
+                  }
+                }
+              }
+            }
+            Group #LootCellSpacer {
+              Anchor: (Width: 58, Height: 22, Left: 0, Top: 0);
+              Visible: false;
+            }
+          }
         }
       }
     }
 
     Group #EssenceBarHost {
-      Anchor: (Width: 600, Height: 48, Left: 0, Top: 16);
+      Anchor: (Width: 594, Height: 48, Left: 0, Top: 16);
       LayoutMode: Center;
 
       Group #EssenceBarWrapper {
-        Anchor: (Width: 374, Height: 48);
+        Anchor: (Width: 370, Height: 48);
 
         Group #EssenceIconLeft {
-          Anchor: (Width: 18, Height: 18, Left: 5, Top: -5);
+          Anchor: (Width: 16, Height: 16, Left: 4, Top: -5);
           Background: "NoyauIcone.png";
         }
 
         Group #EssenceBarGroup {
-          Anchor: (Width: 320, Height: 48, Left: 27, Top: 0);
+          Anchor: (Width: 316, Height: 48, Left: 24, Top: 0);
 
           Group #EssenceBarBackground {
-            Anchor: (Width: 320, Height: 14, Left: 0, Top: 0);
+            Anchor: (Width: 316, Height: 14, Left: 0, Top: 0);
             Background: "NewEssenceBarBackground.png";
 
             Group #EssenceBarNoyau {
-              Anchor: (Width: 0, Height: 14, Left: 160, Top: 0);
+              Anchor: (Width: 0, Height: 14, Left: 158, Top: 0);
               Background: "NewEssenceBarFillNoyau.png";
             }
             Group #EssenceBarFracture {
-              Anchor: (Width: 0, Height: 14, Left: 160, Top: 0);
+              Anchor: (Width: 0, Height: 14, Left: 158, Top: 0);
               Background: "NewEssenceBarFillFracture.png";
             }
           }
@@ -146,14 +257,15 @@ Group {
               FontSize: 11,
               RenderBold: true,
               TextColor: #FFFFFF,
-              Alignment: Center
+              VerticalAlignment: Center,
+              HorizontalAlignment: Center
             );
             Anchor: (Width: 60, Height: 14, Top: 30);
           }
         }
 
         Group #EssenceIconRight {
-          Anchor: (Width: 18, Height: 18, Left: 355, Top: -5);
+          Anchor: (Width: 16, Height: 16, Left: 343, Top: -5);
           Background: "FractureIcon.png";
         }
       }

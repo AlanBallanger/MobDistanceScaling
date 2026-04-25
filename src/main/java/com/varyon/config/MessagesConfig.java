@@ -245,13 +245,13 @@ public class MessagesConfig {
 
             Toml essenceToml = toml.getTable("essence");
             EssenceMessages essence = new EssenceMessages(
-                essenceToml.getString("balanceInfo", "Essence: {current}/{max} | Faction: {faction} | Global: {global}"),
-                essenceToml.getString("given", "Donné {amount} essence à {player}"),
-                essenceToml.getString("taken", "Retiré {amount} essence de {player}"),
-                essenceToml.getString("maxSet", "Maximum d'essence de {player} défini à {max}"),
-                essenceToml.getString("deposited", "Déposé {amount} essence pour {faction}. Balance globale: {global}"),
+                essenceToml.getString("balanceInfo", "Points de guilde : {current}/{max} | Faction : {faction} | Global : {global}"),
+                essenceToml.getString("given", "Don de {amount} points de guilde à {player} effectué"),
+                essenceToml.getString("taken", "Retrait de {amount} points de guilde de {player} effectué"),
+                essenceToml.getString("maxSet", "Points de guilde de {player} : plafond fixé à {max}"),
+                essenceToml.getString("deposited", "Déposé {amount} points de guilde pour {faction}. Balance globale : {global}"),
                 essenceToml.getString("noFaction", "Vous devez rejoindre une faction d'abord (/varyon faction <nom>)"),
-                essenceToml.getString("notEnough", "Vous n'avez pas assez d'essence")
+                essenceToml.getString("notEnough", "Vous n'avez pas assez de points de guilde")
             );
 
             return new MessagesConfig(hud, extraction, returnMsg, safeZone, rtp, essence);
@@ -393,13 +393,13 @@ public class MessagesConfig {
         );
 
         EssenceMessages essence = new EssenceMessages(
-            "Essence: {current}/{max} | Faction: {faction} | Global: {global}",
-            "Donné {amount} essence à {player}",
-            "Retiré {amount} essence de {player}",
-            "Maximum d'essence de {player} défini à {max}",
-            "Déposé {amount} essence pour {faction}. Balance globale: {global}",
+            "Points de guilde : {current}/{max} | Faction : {faction} | Global : {global}",
+            "Don de {amount} points de guilde à {player} effectué",
+            "Retrait de {amount} points de guilde de {player} effectué",
+            "Points de guilde de {player} : plafond fixé à {max}",
+            "Déposé {amount} points de guilde pour {faction}. Balance globale : {global}",
             "Vous devez rejoindre une faction d'abord (/varyon faction <nom>)",
-            "Vous n'avez pas assez d'essence"
+            "Vous n'avez pas assez de points de guilde"
         );
 
         return new MessagesConfig(hud, extraction, returnMsg, safeZone, rtp, essence);

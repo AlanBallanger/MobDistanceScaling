@@ -74,7 +74,7 @@ public class DeathDetectionSystem extends DeathSystems.OnDeathSystem {
                 double loss = current * (deathConfig.getEssenceLossPercent() / 100.0);
                 if (loss > 0) {
                     essenceManager.addEssence(playerRef.getUuid(), playerRef.getUsername(), -loss);
-                    LOGGER.at(Level.INFO).log("Death: player " + playerRef.getUuid() + " lost " + String.format("%.1f", loss) + " essence (" + (int) deathConfig.getEssenceLossPercent() + "%)");
+                    LOGGER.at(Level.INFO).log("Death: player " + playerRef.getUuid() + " lost " + String.format("%.1f", loss) + " guild points (" + (int) deathConfig.getEssenceLossPercent() + "%)");
                 }
             }
         }

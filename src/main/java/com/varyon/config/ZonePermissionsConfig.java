@@ -150,9 +150,9 @@ public class ZonePermissionsConfig {
             sb.append(z).append(" = \"").append(permissionByZone.getOrDefault(z, "varyon.zone." + z)).append("\"\n");
         }
 
-        sb.append("\n# Max Essence Caps\n");
-        sb.append("# admin_base : default cap for players with varyon.admin (soft — grows with essence given by commands)\n");
-        sb.append("# zoneId = max_essence : hard cap for regular players based on their highest zone permission\n\n");
+        sb.append("\n# Plafonds de points de guilde (max_essence)\n");
+        sb.append("# admin_base : plafond par défaut pour varyon.admin (souple — suit les points ajoutés par commandes admin)\n");
+        sb.append("# zoneId = max_essence : plafond pour les joueurs selon la permission de zone la plus haute\n\n");
         sb.append("[").append(SECTION_MAX).append("]\n");
         sb.append("admin_base = ").append(adminBase).append("\n");
         for (int z = 1; z <= 10; z++) {

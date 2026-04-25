@@ -20,6 +20,9 @@ public class ZoneHUD extends CustomUIHud {
     private static final int PAGE_COUNT = 2;
     private static final int PAGE_ZONE = 0;
     private static final int PAGE_PVP = 1;
+    private static final int ESSENCE_BAR_TOTAL_WIDTH = 316;
+    private static final String LOOT_CHEST_ITEM_ID = "Furniture_Dungeon_Chest_Epic";
+    private static final String LOOT_KEY_ITEM_ID = "Key_Fragment1";
 
     @Nonnull
     private final MessagesConfig messagesConfig;
@@ -148,36 +151,36 @@ public class ZoneHUD extends CustomUIHud {
         
         int currentEssence = (int) Math.floor(playerEssence);
         int displayMax = Math.max(maxEssenceCap, currentEssence);
-        builder.set("#Essence.Text", "Essence: " + currentEssence + "/" + displayMax);
+        builder.set("#Essence.Text", "Points : " + currentEssence + "/" + displayMax);
         builder.set("#Essence.Style.TextColor", "#FFFF55");
 
-        if (inSafeZone) {
-            builder.set("#HPMult.Text", "PvP : OFF");
-            builder.set("#HPMult.Style.TextColor", "#55FF55");
-        } else {
-            builder.set("#HPMult.Text", "PvP : Actif");
-            builder.set("#HPMult.Style.TextColor", "#FF5555");
-        }
-
+        builder.set("#HPIconPng.Visible", true);
+        builder.set("#HPIconPngPvp.Visible", false);
+        builder.set("#HPIconItem.Visible", false);
+        builder.set("#DMGIconPng.Visible", true);
+        builder.set("#DMGIconItem.Visible", false);
         if (currentZone != null) {
-            builder.set("#DMGMult.Text", messagesConfig.getHud().labelHealth + ": x" + String.format("%.1f", currentZone.getHealthMultiplier()));
-            builder.set("#LootMult.Text", messagesConfig.getHud().labelDamage + ": x" + String.format("%.1f", currentZone.getDamageMultiplier()));
+            builder.set("#HPMult.Text", "x" + String.format("%.1f", currentZone.getHealthMultiplier()));
+            builder.set("#DMGMult.Text", "x" + String.format("%.1f", currentZone.getDamageMultiplier()));
+            builder.set("#LootMult.Text", "x" + String.format("%.1f", currentZone.getLootMultiplier()));
         } else {
+            builder.set("#HPMult.Text", "");
             builder.set("#DMGMult.Text", "");
             builder.set("#LootMult.Text", "");
         }
 
-        builder.set("#DMGMult.Style.TextColor", "#FFFFFF");
-        builder.set("#LootMult.Style.TextColor", "#FFAA55");
-        
-        // Réinitialiser la largeur de DMGMult à sa taille normale sur cette page
-        Anchor dmgAnchor = new Anchor();
-        dmgAnchor.setWidth(Value.of(70));
-        dmgAnchor.setHeight(Value.of(22));
-        builder.setObject("#DMGMult.Anchor", dmgAnchor);
-        
-        // Remettre le séparateur 4 visible sur cette page
+        builder.set("#HPMult.Style.TextColor", "#FFFFFF");
+        builder.set("#DMGMult.Style.TextColor", "#FFAA55");
+        builder.set("#LootMult.Style.TextColor", "#55FF55");
+
         builder.set("#Separator4.Text", "|");
+        builder.set("#Separator4.Visible", true);
+        builder.set("#LootColumn.Visible", true);
+        builder.set("#LootCellContent.Visible", true);
+        builder.set("#LootCellSpacer.Visible", false);
+        builder.set("#LootIconPng.Visible", false);
+        builder.set("#LootItemIcon.Visible", true);
+        builder.set("#LootItemIcon.ItemId", LOOT_CHEST_ITEM_ID);
 
         updateEssenceBar(builder);
     }
@@ -196,33 +199,37 @@ public class ZoneHUD extends CustomUIHud {
 
         int currentEssence = (int) Math.floor(playerEssence);
         int displayMax = Math.max(maxEssenceCap, currentEssence);
-        builder.set("#Essence.Text", "Essence: " + currentEssence + "/" + displayMax);
+        builder.set("#Essence.Text", "Points : " + currentEssence + "/" + displayMax);
         builder.set("#Essence.Style.TextColor", "#FFFF55");
 
-        if (currentZone != null) {
-            builder.set("#HPMult.Text", messagesConfig.getHud().labelLoot + ": x" + String.format("%.1f", currentZone.getLootMultiplier()));
+        builder.set("#HPIconPng.Visible", false);
+        builder.set("#HPIconPngPvp.Visible", true);
+        builder.set("#HPIconItem.Visible", false);
+        if (inSafeZone) {
+            builder.set("#HPMult.Text", "OFF");
             builder.set("#HPMult.Style.TextColor", "#55FF55");
         } else {
-            builder.set("#HPMult.Text", "");
-            builder.set("#HPMult.Style.TextColor", "#55FF55");
+            builder.set("#HPMult.Text", "ON");
+            builder.set("#HPMult.Style.TextColor", "#FF5555");
         }
+
+        builder.set("#DMGIconPng.Visible", false);
+        builder.set("#DMGIconItem.Visible", true);
+        builder.set("#DMGIconItem.ItemId", LOOT_KEY_ITEM_ID);
 
         if (lootSpecialActive) {
-            builder.set("#DMGMult.Text", "Loot spécial : Actif");
+            builder.set("#DMGMult.Text", "Actif");
             builder.set("#DMGMult.Style.TextColor", "#55FF55");
         } else {
-            builder.set("#DMGMult.Text", "Loot spécial : Inactif");
+            builder.set("#DMGMult.Text", "Inactif");
             builder.set("#DMGMult.Style.TextColor", "#FF5555");
         }
-        
-        // Étendre la largeur de DMGMult pour prendre l'espace de 2 zones + séparateur
-        Anchor dmgAnchor = new Anchor();
-        dmgAnchor.setWidth(Value.of(158)); // 70 + 18 + 70
-        dmgAnchor.setHeight(Value.of(22));
-        builder.setObject("#DMGMult.Anchor", dmgAnchor);
 
-        // Cacher le séparateur 4 et la zone LootMult sur cette page
-        builder.set("#Separator4.Text", "");
+        builder.set("#Separator4.Text", "|");
+        builder.set("#Separator4.Visible", true);
+        builder.set("#LootColumn.Visible", true);
+        builder.set("#LootCellContent.Visible", false);
+        builder.set("#LootCellSpacer.Visible", true);
         builder.set("#LootMult.Text", "");
 
         updateEssenceBar(builder);
@@ -234,7 +241,7 @@ public class ZoneHUD extends CustomUIHud {
     }
 
     private void updateEssenceBar(@Nonnull UICommandBuilder builder) {
-        int totalWidth = 320;
+        int totalWidth = ESSENCE_BAR_TOTAL_WIDTH;
         int halfWidth = totalWidth / 2;
         int clamped = Math.max(-10000, Math.min(10000, globalBalance));
         

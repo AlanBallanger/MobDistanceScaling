@@ -20,7 +20,7 @@ import com.hypixel.hytale.server.core.universe.world.World;
 import com.hypixel.hytale.server.core.universe.world.events.AddWorldEvent;
 import com.hypixel.hytale.server.core.universe.world.storage.EntityStore;
 import com.hypixel.hytale.server.core.universe.world.worldmap.provider.IWorldMapProvider;
-import com.varyon.command.EssenceCommand;
+import com.varyon.command.PointsCommand;
 import com.varyon.command.ExtractCommand;
 import com.varyon.command.JoinCommand;
 import com.varyon.command.VaryonCommand;
@@ -291,7 +291,7 @@ public class VaryonPlugin extends JavaPlugin {
                         // Charger l'essence du joueur depuis la base de donnÃ©es
                         essenceManager.loadPlayer(playerRef.getUuid());
                     } catch (Exception e) {
-                        LOGGER.at(Level.WARNING).log("Failed to load player essence: " + e.getMessage());
+                        LOGGER.at(Level.WARNING).log("Failed to load player guild points: " + e.getMessage());
                     }
                 });
                 
@@ -365,7 +365,7 @@ public class VaryonPlugin extends JavaPlugin {
             this.getCommandRegistry().registerCommand(new ExtractCommand("extract"));
             this.getCommandRegistry().registerCommand(new ExtractCommand("ex"));
             this.getCommandRegistry().registerCommand(new ReturnCommand());
-            this.getCommandRegistry().registerCommand(new EssenceCommand(essenceManager, factionManager));
+            this.getCommandRegistry().registerCommand(new PointsCommand(essenceManager, factionManager));
             this.getCommandRegistry().registerCommand(new RtpzCommand());
             this.getCommandRegistry().registerCommand(new RtpvCommand());
             this.getCommandRegistry().registerCommand(new RtphCommand());

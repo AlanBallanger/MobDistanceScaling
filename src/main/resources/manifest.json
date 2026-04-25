@@ -82,7 +82,7 @@
     },
     {
       "Permission": "varyon.deposit",
-      "Description": "Allow depositing essence",
+      "Description": "Allow depositing guild points (points de guilde)",
       "Default": false
     },
     {

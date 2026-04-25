@@ -40,7 +40,7 @@ public class EssenceManager {
         essenceCache.put(playerUuid, newAmount);
         database.setEssenceUncapped(playerUuid, playerName, newAmount);
         LOGGER.at(Level.FINE).log("Player " + playerName + " " + (amount > 0 ? "+" : "") +
-            String.format("%.2f", amount) + " essence (total: " + String.format("%.1f", newAmount) + ")");
+            String.format("%.2f", amount) + " points de guilde (total: " + String.format("%.1f", newAmount) + ")");
     }
 
     /**

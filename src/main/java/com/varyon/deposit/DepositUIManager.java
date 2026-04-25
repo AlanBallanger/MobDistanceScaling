@@ -40,7 +40,7 @@ public class DepositUIManager {
 
             int amount = essenceManager.getEssenceDisplay(playerRef.getUuid());
             if (amount <= 0) {
-                player.sendMessage(Message.raw("Vous n'avez pas d'essence à déposer.").color(Color.YELLOW));
+                player.sendMessage(Message.raw("Vous n'avez pas de points de guilde à déposer.").color(Color.YELLOW));
                 return;
             }
 
@@ -54,13 +54,13 @@ public class DepositUIManager {
             }
 
             int newBalance = essenceManager.getGlobalBalance();
-            player.sendMessage(Message.raw("Déposé " + amount + " essence dans " + faction.getDisplayName()).color(Color.GREEN));
+            player.sendMessage(Message.raw("Déposé " + amount + " points de guilde dans " + faction.getDisplayName()).color(Color.GREEN));
             player.sendMessage(Message.raw("Balance globale: " + newBalance + "/10000").color(Color.YELLOW));
 
             try {
                 EventTitleUtil.showEventTitleToPlayer(
                         playerRef,
-                        Message.raw("Vous avez déposé " + amount + " essence"),
+                        Message.raw("Vous avez déposé " + amount + " points de guilde"),
                         Message.raw(faction.getDisplayName()),
                         true);
             } catch (Exception ignored) {
