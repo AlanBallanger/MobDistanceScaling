@@ -46,7 +46,7 @@ public class PlaceOreListener extends EntityEventSystem<EntityStore, PlaceBlockE
             if (item == null) return;
 
             String itemId = item.getItemId().toLowerCase();
-            if (fragmentsConfig.getMiningFragments(itemId) <= 0 && rewardsConfig.getOreReward(itemId) <= 0) {
+            if (fragmentsConfig.getMiningFragmentWeight(itemId) <= 0 && rewardsConfig.getOreReward(itemId) <= 0) {
                 return;
             }
 

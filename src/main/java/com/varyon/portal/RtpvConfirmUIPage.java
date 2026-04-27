@@ -52,7 +52,8 @@ import javax.annotation.Nullable;
 public class RtpvConfirmUIPage extends InteractiveCustomUIPage<RtpvConfirmUIPage.EventDataClass> {
 
     private static final HytaleLogger LOGGER = HytaleLogger.forEnclosingClass();
-    private static final long CONFIRM_DELAY_MS = 5_000L;
+    private static final long POST_RETRY_CONFIRM_DELAY_MS = 5_000L;
+    private static final long SNOOZE_MENU_DELAY_MS = 15_000L;
     private static final double RETRY_COST_MULTIPLIER = 1.2;
     private static final Random RANDOM = new Random();
 
@@ -80,6 +81,7 @@ public class RtpvConfirmUIPage extends InteractiveCustomUIPage<RtpvConfirmUIPage
         @Nonnull Store<EntityStore> store
     ) {
         commandBuilder.append("RtpvConfirmMenu.ui");
+        commandBuilder.set("#TitleLabel.Text", "Téléportation aléatoire Varyon");
 
         RtpvConfig rtpvConfig = null;
         boolean economyEnabled = false;
@@ -95,13 +97,14 @@ public class RtpvConfirmUIPage extends InteractiveCustomUIPage<RtpvConfirmUIPage
             ? "Non, me re-téléporter pour " + retryCost + " Coins"
             : "Non, me re-téléporter";
         commandBuilder.set("#NoButtonLabel.Text", noLabel);
+        commandBuilder.set("#MaybeButtonLabel.Text", "Peut-être, laisse moi 15 secondes");
 
         eventBuilder.addEventBinding(
             CustomUIEventBindingType.Activating, "#YesButton", EventData.of("Action", "yes"));
         eventBuilder.addEventBinding(
-            CustomUIEventBindingType.Activating, "#NoButton", EventData.of("Action", "no"));
+            CustomUIEventBindingType.Activating, "#MaybeButton", EventData.of("Action", "maybe"));
         eventBuilder.addEventBinding(
-            CustomUIEventBindingType.Activating, "#CloseButton", EventData.of("Action", "close"));
+            CustomUIEventBindingType.Activating, "#NoButton", EventData.of("Action", "no"));
     }
 
     @Override
@@ -113,7 +116,7 @@ public class RtpvConfirmUIPage extends InteractiveCustomUIPage<RtpvConfirmUIPage
         Player player = store.getComponent(ref, Player.getComponentType());
         PlayerRef playerRefComp = store.getComponent(ref, PlayerRef.getComponentType());
 
-        if ("yes".equals(data.action) || "close".equals(data.action)) {
+        if ("yes".equals(data.action)) {
             if (player != null) {
                 player.getPageManager().setPage(ref, store, Page.None);
             }
@@ -123,6 +126,17 @@ public class RtpvConfirmUIPage extends InteractiveCustomUIPage<RtpvConfirmUIPage
                     mgr.cancelPendingMenu(playerRefComp.getUuid());
                 }
             }
+            return;
+        }
+
+        if ("maybe".equals(data.action) && player != null && playerRefComp != null) {
+            player.getPageManager().setPage(ref, store, Page.None);
+            RtpvConfirmManager mgr = RtpvConfirmManager.getInstance();
+            if (mgr != null) {
+                mgr.cancelPendingMenu(playerRefComp.getUuid());
+            }
+            World world = ((EntityStore) store.getExternalData()).getWorld();
+            scheduleSnoozedMenu(playerRefComp, world);
             return;
         }
 
@@ -241,7 +255,38 @@ public class RtpvConfirmUIPage extends InteractiveCustomUIPage<RtpvConfirmUIPage
                     new RtpvConfirmUIPage(playerRefComp, capturedZoneId, capturedPvpFilter, nextRetryCost)
                 );
             }),
-            CONFIRM_DELAY_MS,
+            POST_RETRY_CONFIRM_DELAY_MS,
+            TimeUnit.MILLISECONDS
+        );
+        mgr.schedulePendingMenu(playerRefComp.getUuid(), future);
+    }
+
+    private void scheduleSnoozedMenu(@Nonnull PlayerRef playerRefComp, @Nonnull World world) {
+        RtpvConfirmManager mgr = RtpvConfirmManager.getInstance();
+        if (mgr == null) {
+            return;
+        }
+        int capturedZoneId = zoneId;
+        Boolean capturedPvpFilter = pvpFilter;
+        int capturedRetryCost = retryCost;
+
+        ScheduledFuture<?> future = HytaleServer.SCHEDULED_EXECUTOR.schedule(
+            () -> world.execute(() -> {
+                Ref<EntityStore> liveRef = playerRefComp.getReference();
+                if (liveRef == null || !liveRef.isValid()) {
+                    return;
+                }
+                Store<EntityStore> liveStore = liveRef.getStore();
+                Player livePlayer = liveStore.getComponent(liveRef, Player.getComponentType());
+                if (livePlayer == null) {
+                    return;
+                }
+                livePlayer.getPageManager().openCustomPage(
+                    liveRef, liveStore,
+                    new RtpvConfirmUIPage(playerRefComp, capturedZoneId, capturedPvpFilter, capturedRetryCost)
+                );
+            }),
+            SNOOZE_MENU_DELAY_MS,
             TimeUnit.MILLISECONDS
         );
         mgr.schedulePendingMenu(playerRefComp.getUuid(), future);

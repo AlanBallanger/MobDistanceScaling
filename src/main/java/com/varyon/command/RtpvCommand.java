@@ -308,7 +308,7 @@ public class RtpvCommand extends AbstractPlayerCommand {
                     liveRef, liveStore,
                     new RtpvConfirmUIPage(playerRef, zoneNumber, pvpFilter, firstRetryCost));
             }),
-            5_000L,
+            1_000L,
             TimeUnit.MILLISECONDS);
         mgr.schedulePendingMenu(playerRef.getUuid(), future);
     }

@@ -120,7 +120,7 @@ public class EssenceRewardsConfig {
         oreRewards.put("ore_gold", 5.0);
         oreRewards.put("ore_cobalt", 5.0);
         oreRewards.put("ore_mithril", 7.0);
-        oreRewards.put("ore_adamantite", 10.0);
+        oreRewards.put("ore_adamantite", 7.0);
         oreRewards.put("ore_thorium", 13.0);
         oreRewards.put("ore_onyxium", 15.0);
         oreRewards.put("ore_prisma", 15.0);
@@ -132,7 +132,7 @@ public class EssenceRewardsConfig {
         oreRewards.put("rock_gem_diamond", 25.0);
         oreRewards.put("rock_gem_zephyr", 25.0);
         oreRewards.put("rock_gem_voidstone", 30.0);
-        oreRewards.put("rock_crystal", 4.0);
+        oreRewards.put("rock_crystal", 1.0);
 
         // Critters (5 XP) -> 1 essence
         mobRewards.put("frog", 1.0);
@@ -150,6 +150,7 @@ public class EssenceRewardsConfig {
         // Petits (8 XP) -> 1 essence
         mobRewards.put("meerkat", 1.5);
         mobRewards.put("larva_silk", 1.5);
+        mobRewards.put("larva_void", 15.0);
         mobRewards.put("chicken", 1.5);
         mobRewards.put("turkey", 1.5);
         mobRewards.put("skrill", 1.5);

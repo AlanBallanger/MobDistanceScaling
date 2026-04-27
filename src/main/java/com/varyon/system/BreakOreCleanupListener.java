@@ -40,7 +40,7 @@ public class BreakOreCleanupListener extends EntityEventSystem<EntityStore, Brea
             if (event.getBlockType() == null) return;
             String blockId = event.getBlockType().getId().toLowerCase();
 
-            if (fragmentsConfig.getMiningFragments(blockId) <= 0 && rewardsConfig.getOreReward(blockId) <= 0) {
+            if (fragmentsConfig.getMiningFragmentWeight(blockId) <= 0 && rewardsConfig.getOreReward(blockId) <= 0) {
                 return;
             }
 

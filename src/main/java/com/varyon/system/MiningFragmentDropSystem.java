@@ -75,7 +75,7 @@ public class MiningFragmentDropSystem extends EntityEventSystem<EntityStore, Bre
             if (!configManager.getZoneConfig().isWorldEnabled(world)) return;
 
             String blockId = event.getBlockType().getId().toLowerCase();
-            int fragments = mobFragmentsConfig.getMiningFragments(blockId);
+            int fragments = mobFragmentsConfig.rollMiningFragmentDrops(blockId);
             if (fragments <= 0) return;
 
             if (event.getTargetBlock() != null) {

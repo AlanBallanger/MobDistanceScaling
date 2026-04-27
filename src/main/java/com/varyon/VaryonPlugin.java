@@ -39,12 +39,14 @@ import com.varyon.deposit.DepositBlockInteractionSystem;
 import com.varyon.portal.VoidPortalInteractionSystem;
 import com.varyon.rtpv.RtpvConfirmManager;
 import com.varyon.rtpv.RtpvCooldownStore;
+import com.varyon.util.VaryonWorldAccess;
 import com.varyon.rtpv.RtpvJoinManager;
 import com.varyon.deposit.DepositBlockManager;
 import com.varyon.deposit.DepositUIManager;
 import com.varyon.essence.EssenceKillSystem;
 import com.varyon.essence.EssenceManager;
 import com.varyon.essence.GlobalRewardsManager;
+import com.varyon.essence.GuildPointsVaryonExitHelper;
 import com.varyon.extraction.ExtractionPortalManager;
 import com.varyon.system.ExtractionPortalTickSystem;
 import com.varyon.essence.EssenceMiningSystem;
@@ -56,6 +58,7 @@ import com.varyon.safezone.SafeZoneNotificationSystem;
 import com.varyon.safezone.SafeZonePvpSystem;
 import com.varyon.system.BreakOreCleanupListener;
 import com.varyon.system.MobDamageScalingSystem;
+import com.varyon.system.MiningLootScalingSystem;
 import com.varyon.system.MobLootScalingSystem;
 import com.varyon.system.MobScalingRefSystem;
 import com.varyon.system.PlaceOreListener;
@@ -218,6 +221,8 @@ public class VaryonPlugin extends JavaPlugin {
                 placedOreTracker);
             this.getEntityStoreRegistry().registerSystem(miningFragmentDropSystem);
 
+            this.getEntityStoreRegistry().registerSystem(new MiningLootScalingSystem(configManager, placedOreTracker));
+
             this.getEntityStoreRegistry().registerSystem(new BreakOreCleanupListener(placedOreTracker, configManager.getMobFragmentsConfig(), essenceRewardsConfig));
             LOGGER.at(Level.INFO).log("Essence reward systems registered");
 
@@ -335,6 +340,9 @@ public class VaryonPlugin extends JavaPlugin {
                 this.getEventRegistry().registerGlobal(DrainPlayerFromWorldEvent.class, event -> {
                     try {
                         PlayerRef playerRef = event.getHolder().getComponent(PlayerRef.getComponentType());
+                        if (playerRef != null && VaryonWorldAccess.isVaryonEnabledWorld(event.getWorld())) {
+                            GuildPointsVaryonExitHelper.applyOnLeavingVaryonWorld(playerRef, essenceManager);
+                        }
                         if (playerRef != null) {
                             hudManager.removePlayer(playerRef.getUuid());
                         }
@@ -357,6 +365,20 @@ public class VaryonPlugin extends JavaPlugin {
 
                 this.getEventRegistry().registerGlobal(PlayerDisconnectEvent.class, event -> {
                     PlayerRef playerRef = event.getPlayerRef();
+                    try {
+                        Ref<EntityStore> ref = playerRef.getReference();
+                        if (ref != null && ref.isValid()) {
+                            Store<EntityStore> store = ref.getStore();
+                            if (store != null && store.getExternalData() instanceof EntityStore entityStore) {
+                                World w = entityStore.getWorld();
+                                if (VaryonWorldAccess.isVaryonEnabledWorld(w)) {
+                                    GuildPointsVaryonExitHelper.applyOnLeavingVaryonWorld(playerRef, essenceManager);
+                                }
+                            }
+                        }
+                    } catch (Exception e) {
+                        LOGGER.at(Level.WARNING).log("Guild points strip on disconnect: " + e.getMessage());
+                    }
                     hudManager.removePlayer(playerRef.getUuid());
                     RtpvJoinManager joinMgr = RtpvJoinManager.getInstance();
                     if (joinMgr != null) joinMgr.onPlayerDisconnect(playerRef.getUuid());
