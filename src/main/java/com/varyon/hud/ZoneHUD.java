@@ -20,7 +20,10 @@ public class ZoneHUD extends CustomUIHud {
     private static final int PAGE_COUNT = 2;
     private static final int PAGE_ZONE = 0;
     private static final int PAGE_PVP = 1;
-    private static final int ESSENCE_BAR_TOTAL_WIDTH = 316;
+    private static final int ESSENCE_FILL_TRACK_HALF = 199;
+    private static final int ESSENCE_BAR_TRACK_LEFT = 36;
+    private static final int ESSENCE_BAR_CENTER_X = ESSENCE_BAR_TRACK_LEFT + ESSENCE_FILL_TRACK_HALF;
+    private static final int ESSENCE_BAR_LABEL_AREA_WIDTH = 470;
     private static final String LOOT_CHEST_ITEM_ID = "Furniture_Dungeon_Chest_Epic";
     private static final String LOOT_KEY_ITEM_ID = "Key_Fragment1";
 
@@ -241,69 +244,61 @@ public class ZoneHUD extends CustomUIHud {
     }
 
     private void updateEssenceBar(@Nonnull UICommandBuilder builder) {
-        int totalWidth = ESSENCE_BAR_TOTAL_WIDTH;
-        int halfWidth = totalWidth / 2;
+        int halfFill = ESSENCE_FILL_TRACK_HALF;
         int clamped = Math.max(-10000, Math.min(10000, globalBalance));
         
         if (clamped >= 0) {
-            // Balance positive - barre Fracture (droite)
-            int width = (int) Math.round(clamped / 10000.0 * halfWidth);
+            int width = (int) Math.round(clamped / 10000.0 * halfFill);
             
             Anchor fractureAnchor = new Anchor();
-            fractureAnchor.setLeft(Value.of(halfWidth));
+            fractureAnchor.setLeft(Value.of(halfFill));
             fractureAnchor.setWidth(Value.of(width));
-            fractureAnchor.setHeight(Value.of(14));
+            fractureAnchor.setHeight(Value.of(11));
             builder.setObject("#EssenceBarFracture.Anchor", fractureAnchor);
             
-            // Cache la barre Noyau
             Anchor noyauAnchor = new Anchor();
-            noyauAnchor.setLeft(Value.of(halfWidth));
+            noyauAnchor.setLeft(Value.of(halfFill));
             noyauAnchor.setWidth(Value.of(0));
-            noyauAnchor.setHeight(Value.of(14));
+            noyauAnchor.setHeight(Value.of(11));
             builder.setObject("#EssenceBarNoyau.Anchor", noyauAnchor);
         } else {
-            // Balance négative - barre Noyau (gauche)
-            int width = (int) Math.round(Math.abs(clamped) / 10000.0 * halfWidth);
-            int left = halfWidth - width;
+            int width = (int) Math.round(Math.abs(clamped) / 10000.0 * halfFill);
+            int left = halfFill - width;
             
             Anchor noyauAnchor = new Anchor();
             noyauAnchor.setLeft(Value.of(left));
             noyauAnchor.setWidth(Value.of(width));
-            noyauAnchor.setHeight(Value.of(14));
+            noyauAnchor.setHeight(Value.of(11));
             builder.setObject("#EssenceBarNoyau.Anchor", noyauAnchor);
             
-            // Cache la barre Fracture
             Anchor fractureAnchor = new Anchor();
-            fractureAnchor.setLeft(Value.of(halfWidth));
+            fractureAnchor.setLeft(Value.of(halfFill));
             fractureAnchor.setWidth(Value.of(0));
-            fractureAnchor.setHeight(Value.of(14));
+            fractureAnchor.setHeight(Value.of(11));
             builder.setObject("#EssenceBarFracture.Anchor", fractureAnchor);
         }
 
-        // Position du label au centre de la barre active
-        int labelWidth = 80;
+        int labelWidth = 56;
         int labelLeft;
         
         if (clamped >= 0) {
-            int width = (int) Math.round(clamped / 10000.0 * halfWidth);
-            int barEnd = halfWidth + width;
+            int width = (int) Math.round(clamped / 10000.0 * halfFill);
+            int barEnd = ESSENCE_BAR_CENTER_X + width;
             labelLeft = barEnd - (labelWidth / 2);
         } else {
-            int width = (int) Math.round(Math.abs(clamped) / 10000.0 * halfWidth);
-            int barStart = halfWidth - width;
-            labelLeft = barStart + width - (labelWidth / 2);
+            labelLeft = ESSENCE_BAR_CENTER_X - (labelWidth / 2);
         }
         
         if (labelLeft < 0) {
             labelLeft = 0;
-        } else if (labelLeft > totalWidth - labelWidth) {
-            labelLeft = totalWidth - labelWidth;
+        } else if (labelLeft > ESSENCE_BAR_LABEL_AREA_WIDTH - labelWidth) {
+            labelLeft = ESSENCE_BAR_LABEL_AREA_WIDTH - labelWidth;
         }
 
         Anchor labelAnchor = new Anchor();
         labelAnchor.setLeft(Value.of(labelLeft));
         labelAnchor.setWidth(Value.of(labelWidth));
-        labelAnchor.setHeight(Value.of(14));
+        labelAnchor.setHeight(Value.of(12));
         builder.setObject("#EssenceValue.Anchor", labelAnchor);
         builder.set("#EssenceValue.Text", String.valueOf(Math.abs(clamped)));
     }
