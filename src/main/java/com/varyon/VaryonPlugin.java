@@ -193,6 +193,7 @@ public class VaryonPlugin extends JavaPlugin {
                 configManager.getZonePermissionsConfig(),
                 configManager);
             this.getEntityStoreRegistry().registerSystem(mobFragmentDropSystem.createTracker());
+            this.getEntityStoreRegistry().registerSystem(mobFragmentDropSystem.createPlayerDamageTagger());
             this.getEntityStoreRegistry().registerSystem(mobFragmentDropSystem.createDropSystem());
 
             EssenceKillSystem essenceKillSystem = new EssenceKillSystem(essenceManager, configManager, essenceRewardsConfig, configManager.getZonePermissionsConfig());

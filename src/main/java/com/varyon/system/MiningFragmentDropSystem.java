@@ -95,16 +95,15 @@ public class MiningFragmentDropSystem extends EntityEventSystem<EntityStore, Bre
             }
             int zoneId = zone != null ? zone.getZoneId() : 1;
 
-            // Permission check
             Player player = (Player) store.getComponent(ref, Player.getComponentType());
-            if (player != null && !zonePermsConfig.canAccessZone(player, zoneId)) {
-                LOGGER.at(Level.FINE).log("Mining drop skipped: no zone " + zoneId + " permission for " + playerRef.getUsername());
-                return;
+            int lootZoneId = zoneId;
+            if (player != null) {
+                lootZoneId = Math.min(zoneId, zonePermsConfig.getMaxAccessibleZone(player));
             }
 
-            String itemId = zoneConfig.getItemForZone(zoneId);
+            String itemId = zoneConfig.getItemForZone(lootZoneId);
             if (itemId == null || itemId.isBlank()) {
-                itemId = "Key_Fragment" + zoneId;
+                itemId = "Key_Fragment" + lootZoneId;
             }
 
             // Drop at player's position (same pattern as MobFragmentDropSystem)
@@ -119,7 +118,7 @@ public class MiningFragmentDropSystem extends EntityEventSystem<EntityStore, Bre
             commandBuffer.addEntities(drops, AddReason.SPAWN);
 
             LOGGER.at(Level.FINE).log("Mining: " + playerRef.getUsername() + " mined " + blockId
-                + " → +" + fragments + "x " + itemId + " (zone " + zoneId + ")");
+                + " → +" + fragments + "x " + itemId + " (loot zone " + lootZoneId + ", pos zone " + zoneId + ")");
 
         } catch (Exception e) {
             LOGGER.at(Level.WARNING).log("Error in MiningFragmentDropSystem: " + e.getMessage());
