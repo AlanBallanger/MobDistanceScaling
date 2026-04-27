@@ -245,10 +245,12 @@ public class ZoneHUD extends CustomUIHud {
 
     private void updateEssenceBar(@Nonnull UICommandBuilder builder) {
         int halfFill = ESSENCE_FILL_TRACK_HALF;
-        int clamped = Math.max(-10000, Math.min(10000, globalBalance));
+        EssenceManager essenceManager = VaryonPlugin.getStaticEssenceManager();
+        int absMax = essenceManager != null ? Math.max(1, essenceManager.getGuildGaugeAbsMax()) : 10000;
+        int clamped = Math.max(-absMax, Math.min(absMax, globalBalance));
         
         if (clamped >= 0) {
-            int width = (int) Math.round(clamped / 10000.0 * halfFill);
+            int width = (int) Math.round(clamped / (double) absMax * halfFill);
             
             Anchor fractureAnchor = new Anchor();
             fractureAnchor.setLeft(Value.of(halfFill));
@@ -262,7 +264,7 @@ public class ZoneHUD extends CustomUIHud {
             noyauAnchor.setHeight(Value.of(11));
             builder.setObject("#EssenceBarNoyau.Anchor", noyauAnchor);
         } else {
-            int width = (int) Math.round(Math.abs(clamped) / 10000.0 * halfFill);
+            int width = (int) Math.round(Math.abs(clamped) / (double) absMax * halfFill);
             int left = halfFill - width;
             
             Anchor noyauAnchor = new Anchor();
@@ -282,7 +284,7 @@ public class ZoneHUD extends CustomUIHud {
         int labelLeft;
         
         if (clamped >= 0) {
-            int width = (int) Math.round(clamped / 10000.0 * halfFill);
+            int width = (int) Math.round(clamped / (double) absMax * halfFill);
             int barEnd = ESSENCE_BAR_CENTER_X + width;
             labelLeft = barEnd - (labelWidth / 2);
         } else {

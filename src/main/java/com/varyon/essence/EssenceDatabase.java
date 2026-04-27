@@ -193,7 +193,7 @@ public class EssenceDatabase {
     public void setGlobalBalance(int balance) {
         String update = "UPDATE global_balance SET balance = ? WHERE id = 1";
         try (PreparedStatement stmt = connection.prepareStatement(update)) {
-            stmt.setInt(1, Math.max(-10000, Math.min(10000, balance)));
+            stmt.setInt(1, balance);
             stmt.executeUpdate();
         } catch (SQLException e) {
             LOGGER.at(Level.WARNING).log("Failed to set global balance: " + e.getMessage());

@@ -1,6 +1,10 @@
 package com.varyon.essence;
 
 import com.hypixel.hytale.logger.HytaleLogger;
+import com.hypixel.hytale.server.core.HytaleServer;
+import com.hypixel.hytale.server.core.universe.PlayerRef;
+import com.hypixel.hytale.server.core.universe.Universe;
+import com.varyon.VaryonPlugin;
 
 import javax.annotation.Nonnull;
 import java.io.File;
@@ -8,17 +12,32 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 
 public class EssenceManager {
     private static final HytaleLogger LOGGER = HytaleLogger.forEnclosingClass();
+    private static final int GAUGE_HOLD_AFTER_MAX_MINUTES = 10;
+
     private final EssenceDatabase database;
     private final Map<UUID, Double> essenceCache = new ConcurrentHashMap<>();
+    private final GuildGaugePlayerWindow guildGaugePlayerWindow = new GuildGaugePlayerWindow();
+    private final Object globalBalanceLock = new Object();
+    private volatile ScheduledFuture<?> guildGaugeSampler;
+    private volatile ScheduledFuture<?> gaugeHoldResetTask;
+    private boolean gaugeHoldActive;
+    private Integer gaugeHoldPinnedBalance;
     private GlobalRewardsManager rewardsManager;
 
     public EssenceManager(@Nonnull File pluginFolder) {
         this.database = new EssenceDatabase(pluginFolder);
         this.database.initialize();
+        this.guildGaugeSampler = HytaleServer.SCHEDULED_EXECUTOR.scheduleAtFixedRate(
+                () -> guildGaugePlayerWindow.recordSample(countOnlinePlayersRaw()),
+                0,
+                GuildGaugePlayerWindow.SAMPLE_INTERVAL_MS,
+                TimeUnit.MILLISECONDS);
     }
     
     public void setRewardsManager(GlobalRewardsManager rewardsManager) {
@@ -89,29 +108,111 @@ public class EssenceManager {
     }
 
     public void shutdown() {
+        ScheduledFuture<?> sampler = this.guildGaugeSampler;
+        if (sampler != null) {
+            sampler.cancel(false);
+        }
+        synchronized (globalBalanceLock) {
+            cancelGaugeHoldTaskLocked();
+            gaugeHoldActive = false;
+            gaugeHoldPinnedBalance = null;
+        }
+        guildGaugePlayerWindow.clear();
         saveAll();
         database.close();
     }
 
     public int getGlobalBalance() {
-        return database.getGlobalBalance();
+        synchronized (globalBalanceLock) {
+            if (gaugeHoldActive && gaugeHoldPinnedBalance != null) {
+                return gaugeHoldPinnedBalance;
+            }
+        }
+        int raw = database.getGlobalBalance();
+        return GuildGaugeScale.clamp(raw, getGuildGaugeAbsMax());
+    }
+
+    public int getGuildGaugeAbsMax() {
+        int n = guildGaugePlayerWindow.effectivePlayerCount(this::countOnlinePlayersRaw);
+        return GuildGaugeScale.maxAbsForOnlineCount(n);
+    }
+
+    private int countOnlinePlayersRaw() {
+        try {
+            int n = 0;
+            for (PlayerRef ignored : Universe.get().getPlayers()) {
+                n++;
+            }
+            return n;
+        } catch (Exception e) {
+            return 0;
+        }
     }
 
     public void addToGlobalBalance(int amount) {
-        database.addToGlobalBalance(amount);
-        
-        // Vérifier les récompenses après changement de balance
-        if (rewardsManager != null) {
-            rewardsManager.checkAndDistributeRewards();
+        synchronized (globalBalanceLock) {
+            if (gaugeHoldActive) {
+                return;
+            }
+            int max = getGuildGaugeAbsMax();
+            int current = GuildGaugeScale.clamp(database.getGlobalBalance(), max);
+            int written = GuildGaugeScale.clamp(current + amount, max);
+            database.setGlobalBalance(written);
+            if (rewardsManager != null) {
+                rewardsManager.checkAndDistributeRewards();
+            }
+            if (written == max || written == -max) {
+                startGaugeHoldLocked(written);
+            }
         }
     }
-    
+
     public void setGlobalBalance(int amount) {
-        database.setGlobalBalance(amount);
-        
-        // Vérifier les récompenses après changement de balance
-        if (rewardsManager != null) {
-            rewardsManager.checkAndDistributeRewards();
+        synchronized (globalBalanceLock) {
+            cancelGaugeHoldTaskLocked();
+            gaugeHoldActive = false;
+            gaugeHoldPinnedBalance = null;
+            int max = getGuildGaugeAbsMax();
+            int written = GuildGaugeScale.clamp(amount, max);
+            database.setGlobalBalance(written);
+            if (rewardsManager != null) {
+                rewardsManager.checkAndDistributeRewards();
+            }
+            if (written == max || written == -max) {
+                startGaugeHoldLocked(written);
+            }
         }
+    }
+
+    private void cancelGaugeHoldTaskLocked() {
+        ScheduledFuture<?> t = gaugeHoldResetTask;
+        if (t != null) {
+            t.cancel(false);
+            gaugeHoldResetTask = null;
+        }
+    }
+
+    private void startGaugeHoldLocked(int pinnedBalance) {
+        if (gaugeHoldActive) {
+            return;
+        }
+        gaugeHoldActive = true;
+        gaugeHoldPinnedBalance = pinnedBalance;
+        cancelGaugeHoldTaskLocked();
+        gaugeHoldResetTask = HytaleServer.SCHEDULED_EXECUTOR.schedule(() -> {
+            synchronized (globalBalanceLock) {
+                gaugeHoldActive = false;
+                gaugeHoldPinnedBalance = null;
+                gaugeHoldResetTask = null;
+                database.setGlobalBalance(0);
+            }
+            try {
+                VaryonPlugin plugin = VaryonPlugin.getInstance();
+                if (plugin != null && plugin.getHudManager() != null) {
+                    plugin.getHudManager().broadcastBalanceUpdate();
+                }
+            } catch (Exception ignored) {
+            }
+        }, GAUGE_HOLD_AFTER_MAX_MINUTES, TimeUnit.MINUTES);
     }
 }

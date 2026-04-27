@@ -229,8 +229,9 @@ public class PointsCommand extends AbstractAsyncCommand {
             }
 
             int newBalance = essenceManager.getGlobalBalance();
+            int gaugeMax = essenceManager.getGuildGaugeAbsMax();
             context.sendMessage(Message.raw("Déposé " + amount + " points de guilde dans " + faction.getDisplayName()).color(Color.GREEN));
-            context.sendMessage(Message.raw("Balance globale : " + newBalance + "/10000").color(Color.YELLOW));
+            context.sendMessage(Message.raw("Balance globale : " + newBalance + "/" + gaugeMax).color(Color.YELLOW));
 
             VaryonPlugin plugin = VaryonPlugin.getInstance();
             if (plugin != null && plugin.getHudManager() != null) {

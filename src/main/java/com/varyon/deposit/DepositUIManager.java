@@ -54,8 +54,9 @@ public class DepositUIManager {
             }
 
             int newBalance = essenceManager.getGlobalBalance();
+            int gaugeMax = essenceManager.getGuildGaugeAbsMax();
             player.sendMessage(Message.raw("Déposé " + amount + " points de guilde dans " + faction.getDisplayName()).color(Color.GREEN));
-            player.sendMessage(Message.raw("Balance globale: " + newBalance + "/10000").color(Color.YELLOW));
+            player.sendMessage(Message.raw("Balance globale: " + newBalance + "/" + gaugeMax).color(Color.YELLOW));
 
             try {
                 EventTitleUtil.showEventTitleToPlayer(
