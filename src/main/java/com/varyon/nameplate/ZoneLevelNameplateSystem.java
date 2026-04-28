@@ -25,7 +25,7 @@ import java.util.logging.Level;
  * Tick system that pushes the Varyon monster tier (1–10) to NameplateBuilder.
  *
  * Resolution order:
- *   1. Look up the NPC role name in mob_special_rates.toml → tier 1–10
+ *   1. Look up the NPC role name in key_fragment_rates.toml → tier 1–10
  *   2. If not found (unknown mob), fall back to the zone ID where the NPC stands
  *
  * Segment : "monster_level"

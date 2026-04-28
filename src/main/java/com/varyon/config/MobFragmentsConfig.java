@@ -16,7 +16,8 @@ import java.util.logging.Level;
 
 public class MobFragmentsConfig {
     private static final HytaleLogger LOGGER = HytaleLogger.forEnclosingClass();
-    private static final String FILENAME         = "mob_special_rates.toml";
+    private static final String FILENAME         = "key_fragment_rates.toml";
+    private static final String LEGACY_FILENAME  = "mob_special_rates.toml";
     private static final String SECTION_MOBS     = "mob_special_rates";
     private static final String SECTION_MINING   = "mining";
 
@@ -74,17 +75,35 @@ public class MobFragmentsConfig {
         if (exact != null) {
             return exact;
         }
-        for (Map.Entry<String, Double> entry : miningFragments.entrySet()) {
-            if (id.startsWith(entry.getKey())) {
-                return entry.getValue();
+        String bestKey = null;
+        for (String key : miningFragments.keySet()) {
+            if (id.startsWith(key)) {
+                if (bestKey == null || key.length() > bestKey.length()) {
+                    bestKey = key;
+                }
             }
         }
-        return null;
+        return bestKey != null ? miningFragments.get(bestKey) : null;
     }
 
     @Nonnull
     public static MobFragmentsConfig load(@Nonnull Path dataFolder) {
-        File file = dataFolder.resolve(FILENAME).toFile();
+        java.nio.file.Path newPath = dataFolder.resolve(FILENAME);
+        java.nio.file.Path legacyPath = dataFolder.resolve(LEGACY_FILENAME);
+        if (!java.nio.file.Files.exists(newPath) && java.nio.file.Files.exists(legacyPath)) {
+            try {
+                java.nio.file.Files.move(legacyPath, newPath);
+                LOGGER.at(Level.INFO).log("Renamed {0} to {1}", LEGACY_FILENAME, FILENAME);
+            } catch (java.io.IOException e) {
+                LOGGER.at(Level.WARNING).log("Could not rename " + LEGACY_FILENAME + " to " + FILENAME + ": " + e.getMessage());
+            }
+        }
+        File file = newPath.toFile();
+        boolean loadedFromLegacy = false;
+        if (!file.exists() && legacyPath.toFile().exists()) {
+            file = legacyPath.toFile();
+            loadedFromLegacy = true;
+        }
         if (!file.exists()) {
             MobFragmentsConfig def = createDefault();
             def.save(dataFolder);
@@ -114,10 +133,18 @@ public class MobFragmentsConfig {
                 }
             }
 
-            LOGGER.at(Level.INFO).log("Loaded {0}: {1} mobs, {2} mining entries", FILENAME, mobs.size(), mining.size());
-            return new MobFragmentsConfig(mobs, mining);
+            LOGGER.at(Level.INFO).log("Loaded {0}: {1} mobs, {2} mining entries", file.getName(), mobs.size(), mining.size());
+            MobFragmentsConfig cfg = new MobFragmentsConfig(mobs, mining);
+            if (loadedFromLegacy) {
+                cfg.save(dataFolder);
+                try {
+                    java.nio.file.Files.deleteIfExists(legacyPath);
+                } catch (java.io.IOException ignored) {
+                }
+            }
+            return cfg;
         } catch (Exception e) {
-            LOGGER.at(Level.SEVERE).log("Failed to load " + FILENAME + ", using defaults", e);
+            LOGGER.at(Level.SEVERE).log("Failed to load " + file.getName() + ", using defaults", e);
             return createDefault();
         }
     }
@@ -195,7 +222,15 @@ public class MobFragmentsConfig {
         sb.append("ore_mithril    = 1\n");
         sb.append("ore_onyxium    = 1\n");
         sb.append("ore_prisma     = 1\n");
-        sb.append("rock_crystal   = 0.5\n");
+        sb.append("\n# --- Rock crystals ---\n");
+        sb.append("rock_crystal_blue   = 0.3\n");
+        sb.append("rock_crystal_yellow = 0.3\n");
+        sb.append("rock_crystal_red    = 0.3\n");
+        sb.append("rock_crystal_cyan   = 0.3\n");
+        sb.append("rock_crystal_purple = 0.5\n");
+        sb.append("rock_crystal_white  = 1\n");
+        sb.append("rock_crystal_green  = 0.5\n");
+        sb.append("rock_crystal_pink   = 0.3\n");
         sb.append("\n# --- Gemmes ---\n");
         sb.append("rock_gem_diamond   = 20\n");
         sb.append("rock_gem_emerald   = 8\n");
@@ -240,7 +275,14 @@ public class MobFragmentsConfig {
         mining.put("ore_mithril",         1.0);
         mining.put("ore_onyxium",         1.0);
         mining.put("ore_prisma",          1.0);
-        mining.put("rock_crystal",        0.5);
+        mining.put("rock_crystal_blue",   0.3);
+        mining.put("rock_crystal_yellow", 0.3);
+        mining.put("rock_crystal_red",    0.3);
+        mining.put("rock_crystal_cyan",   0.3);
+        mining.put("rock_crystal_purple", 0.5);
+        mining.put("rock_crystal_white",  1.0);
+        mining.put("rock_crystal_green",  0.5);
+        mining.put("rock_crystal_pink",   0.3);
         mining.put("rock_gem_diamond",   20.0);
         mining.put("rock_gem_emerald",    8.0);
         mining.put("rock_gem_ruby",      12.0);
