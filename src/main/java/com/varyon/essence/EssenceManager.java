@@ -149,10 +149,33 @@ public class EssenceManager {
         }
     }
 
-    public void addToGlobalBalance(int amount) {
+
+    public boolean canApplyGuildContribution(int signedContribution) {
+        if (signedContribution == 0) {
+            return true;
+        }
         synchronized (globalBalanceLock) {
-            if (gaugeHoldActive) {
-                return;
+            if (!gaugeHoldActive || gaugeHoldPinnedBalance == null) {
+                return true;
+            }
+            int p = gaugeHoldPinnedBalance;
+            return !((p > 0 && signedContribution > 0) || (p < 0 && signedContribution < 0));
+        }
+    }
+
+    public void addToGlobalBalance(int amount) {
+        if (amount == 0) {
+            return;
+        }
+        synchronized (globalBalanceLock) {
+            if (gaugeHoldActive && gaugeHoldPinnedBalance != null) {
+                int p = gaugeHoldPinnedBalance;
+                if ((p > 0 && amount > 0) || (p < 0 && amount < 0)) {
+                    return;
+                }
+                cancelGaugeHoldTaskLocked();
+                gaugeHoldActive = false;
+                gaugeHoldPinnedBalance = null;
             }
             int max = getGuildGaugeAbsMax();
             int current = GuildGaugeScale.clamp(database.getGlobalBalance(), max);

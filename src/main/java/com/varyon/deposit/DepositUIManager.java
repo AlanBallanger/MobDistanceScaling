@@ -44,8 +44,13 @@ public class DepositUIManager {
                 return;
             }
 
-            essenceManager.addEssence(playerRef.getUuid(), playerRef.getUsername(), -amount);
             int contribution = amount * faction.getBalanceMultiplier();
+            if (!essenceManager.canApplyGuildContribution(contribution)) {
+                player.sendMessage(Message.raw("Impossible de déposer : la jauge est verrouillée à cet extrême (contribution de votre faction refusée).").color(Color.RED));
+                return;
+            }
+
+            essenceManager.addEssence(playerRef.getUuid(), playerRef.getUsername(), -amount);
             essenceManager.addToGlobalBalance(contribution);
 
             GlobalRewardsManager rewardsManager = VaryonPlugin.getStaticGlobalRewardsManager();

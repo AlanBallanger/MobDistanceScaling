@@ -100,24 +100,43 @@ public class GlobalRewardsManager {
 
     public void checkAndDistributeRewards() {
         int globalBalance = essenceManager.getGlobalBalance();
+        int gaugeAbsMax = Math.max(1, essenceManager.getGuildGaugeAbsMax());
+        int referenceMax = tierGaugeReferenceMax();
         long cooldownMs = config.getCooldownMinutes() * 60_000L;
 
         for (int i = 0; i < config.getTiers().size(); i++) {
             FactionRewardsConfig.RewardTier tier = config.getTiers().get(i);
-            TierState state = tierStates.get(i);
+            TierState state = tierStates.computeIfAbsent(i, k -> new TierState());
+            int scaledThreshold = scaledTierThreshold(tier.getThreshold(), gaugeAbsMax, referenceMax);
 
-            if (globalBalance >= tier.getThreshold() && state.canRewardPositive(cooldownMs)) {
-                LOGGER.at(Level.INFO).log("Tier " + (i + 1) + " reached (+" + tier.getThreshold() + ") — rewarding Fracture");
+            if (globalBalance >= scaledThreshold && state.canRewardPositive(cooldownMs)) {
+                LOGGER.at(Level.INFO).log("Tier " + (i + 1) + " reached (+" + scaledThreshold + " scaled, raw " + tier.getThreshold() + "/" + referenceMax + " ref, gauge max " + gaugeAbsMax + ") — rewarding Fracture");
                 distributeFactionReward(FactionManager.Faction.FRACTURE, tier, i + 1);
                 state.markPositiveRewarded();
             }
 
-            if (globalBalance <= -tier.getThreshold() && state.canRewardNegative(cooldownMs)) {
-                LOGGER.at(Level.INFO).log("Tier " + (i + 1) + " reached (-" + tier.getThreshold() + ") — rewarding Noyau");
+            if (globalBalance <= -scaledThreshold && state.canRewardNegative(cooldownMs)) {
+                LOGGER.at(Level.INFO).log("Tier " + (i + 1) + " reached (-" + scaledThreshold + " scaled, raw " + tier.getThreshold() + "/" + referenceMax + " ref, gauge max " + gaugeAbsMax + ") — rewarding Noyau");
                 distributeFactionReward(FactionManager.Faction.NOYAU, tier, i + 1);
                 state.markNegativeRewarded();
             }
         }
+    }
+
+    private int tierGaugeReferenceMax() {
+        int maxT = 0;
+        for (FactionRewardsConfig.RewardTier t : config.getTiers()) {
+            maxT = Math.max(maxT, t.getThreshold());
+        }
+        return Math.max(1, maxT);
+    }
+
+    private static int scaledTierThreshold(int rawConfiguredThreshold, int gaugeAbsMax, int referenceMax) {
+        long scaled = Math.round(rawConfiguredThreshold * (double) gaugeAbsMax / (double) referenceMax);
+        int s = (int) scaled;
+        if (s < 1) s = 1;
+        if (s > gaugeAbsMax) s = gaugeAbsMax;
+        return s;
     }
 
     private void distributeFactionReward(@Nonnull FactionManager.Faction faction,

@@ -219,8 +219,13 @@ public class PointsCommand extends AbstractAsyncCommand {
                 return CompletableFuture.completedFuture(null);
             }
 
-            essenceManager.addEssence(playerRef.getUuid(), playerRef.getUsername(), -amount);
             int contribution = amount * faction.getBalanceMultiplier();
+            if (!essenceManager.canApplyGuildContribution(contribution)) {
+                context.sendMessage(Message.raw("Impossible de déposer : la jauge est verrouillée à cet extrême (contribution de votre faction refusée).").color(Color.RED));
+                return CompletableFuture.completedFuture(null);
+            }
+
+            essenceManager.addEssence(playerRef.getUuid(), playerRef.getUsername(), -amount);
             essenceManager.addToGlobalBalance(contribution);
 
             GlobalRewardsManager rewardsManager = VaryonPlugin.getStaticGlobalRewardsManager();
