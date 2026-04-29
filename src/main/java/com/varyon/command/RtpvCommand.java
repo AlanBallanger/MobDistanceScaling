@@ -30,6 +30,7 @@ import com.varyon.config.ZoneConfig;
 import com.varyon.config.ZonePermissionsConfig;
 import com.varyon.safezone.SafeZoneManager;
 import com.varyon.safezone.SafeZoneQuadrant;
+import com.varyon.teleport.FirstSpawnStyleParticleFx;
 import com.varyon.teleport.RtpService;
 import net.cfh.vault.VaultUnlockedServicesManager;
 import net.milkbowl.vault2.economy.Economy;
@@ -189,7 +190,7 @@ public class RtpvCommand extends AbstractPlayerCommand {
                 Vector3d safePosition = rtpService.findSafePositionInRing(world, generator, minDist, maxDist, angleRange[0], angleRange[1], RtpService.DEFAULT_RTP_MAX_ATTEMPTS);
 
                 if (safePosition != null) {
-                    teleportPlayer(store, ref, world, safePosition);
+                    teleportPlayer(store, ref, world, safePosition, rtpvConfig.getJoinDurationSeconds());
 
                     if (rtpvConfig.isEconomyEnabled()) {
                         try {
@@ -202,7 +203,8 @@ public class RtpvCommand extends AbstractPlayerCommand {
                     RtpvJoinManager joinMgr = RtpvJoinManager.getInstance();
                     if (joinMgr != null) {
                         long expireAt = System.currentTimeMillis() + rtpvConfig.getJoinDurationSeconds() * 1000L;
-                        joinMgr.markJoinable(playerRef.getUuid(), zoneNumber, world.getName(), expireAt);
+                        joinMgr.markJoinable(playerRef.getUuid(), zoneNumber, world.getName(), expireAt,
+                            safePosition.x, safePosition.y, safePosition.z, 0f, 0f, 0f);
                     }
 
                     context.sendMessage(Message.raw("Téléporté vers " + targetZone.getName() + pvpLabel +
@@ -275,9 +277,11 @@ public class RtpvCommand extends AbstractPlayerCommand {
         };
     }
 
-    private void teleportPlayer(Store<EntityStore> store, Ref<EntityStore> ref, World world, Vector3d position) {
+    private void teleportPlayer(Store<EntityStore> store, Ref<EntityStore> ref, World world, Vector3d position,
+                                int joinDurationSeconds) {
         Teleport teleport = Teleport.createForPlayer(world, position, new Vector3f(0, 0, 0));
         store.addComponent(ref, Teleport.getComponentType(), teleport);
+        FirstSpawnStyleParticleFx.playAt(world, position, ref, store, joinDurationSeconds);
     }
 
     private void scheduleConfirmMenu(
@@ -308,7 +312,7 @@ public class RtpvCommand extends AbstractPlayerCommand {
                     liveRef, liveStore,
                     new RtpvConfirmUIPage(playerRef, zoneNumber, pvpFilter, paidCost, firstRetryOrdinal));
             }),
-            1_000L,
+            2_000L,
             TimeUnit.MILLISECONDS);
         mgr.schedulePendingMenu(playerRef.getUuid(), future);
     }

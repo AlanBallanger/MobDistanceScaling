@@ -33,6 +33,7 @@ import com.varyon.rtpv.RtpvJoinManager;
 import com.varyon.rtpv.RtpvRetryPricing;
 import com.varyon.safezone.SafeZoneManager;
 import com.varyon.safezone.SafeZoneQuadrant;
+import com.varyon.teleport.FirstSpawnStyleParticleFx;
 import com.varyon.teleport.RtpService;
 import net.cfh.vault.VaultUnlockedServicesManager;
 import net.milkbowl.vault2.economy.Economy;
@@ -207,6 +208,8 @@ public class RtpvConfirmUIPage extends InteractiveCustomUIPage<RtpvConfirmUIPage
 
                 Teleport teleport = Teleport.createForPlayer(world, safePos, new Vector3f(0, 0, 0));
                 store.addComponent(ref, Teleport.getComponentType(), teleport);
+                FirstSpawnStyleParticleFx.playAt(world, safePos, ref, store,
+                    rtpvConfig != null ? rtpvConfig.getJoinDurationSeconds() : 0);
 
                 if (finalRetryCost > 0) {
                     try {
@@ -219,7 +222,8 @@ public class RtpvConfirmUIPage extends InteractiveCustomUIPage<RtpvConfirmUIPage
                 RtpvJoinManager joinMgr = RtpvJoinManager.getInstance();
                 if (joinMgr != null && rtpvConfig != null) {
                     long expireAt = System.currentTimeMillis() + rtpvConfig.getJoinDurationSeconds() * 1000L;
-                    joinMgr.markJoinable(playerRefComp.getUuid(), zoneId, world.getName(), expireAt);
+                    joinMgr.markJoinable(playerRefComp.getUuid(), zoneId, world.getName(), expireAt,
+                        safePos.x, safePos.y, safePos.z, 0f, 0f, 0f);
                 }
 
                 String pvpLabel = pvpFilter == null ? "" : (pvpFilter ? " (PvP)" : " (Hors PvP)");
