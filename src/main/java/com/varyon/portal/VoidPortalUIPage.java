@@ -30,6 +30,8 @@ import javax.annotation.Nullable;
 public class VoidPortalUIPage extends InteractiveCustomUIPage<VoidPortalUIPage.EventDataClass> {
 
     private static final String ECON_PRICE_PREFIX = "\u00A4 ";
+    private static final String RANDOM_LABEL = "Al\u00e9atoire";
+    private static final String RANDOM_WITH_COST_PREFIX = "Al\u00e9atoire * ";
 
     public VoidPortalUIPage(@Nonnull PlayerRef playerRef) {
         super(playerRef, CustomPageLifetime.CanDismiss, EventDataClass.CODEC);
@@ -60,6 +62,7 @@ public class VoidPortalUIPage extends InteractiveCustomUIPage<VoidPortalUIPage.E
                       @Nonnull UIEventBuilder eventBuilder,
                       @Nonnull Store<EntityStore> store) {
         commandBuilder.append("VoidPortalMenu.ui");
+        commandBuilder.set("#MenuTitle.Text", "T\u00e9l\u00e9portation zones Varyon");
 
         RtpvConfig rtpvConfig = null;
         List<DifficultyZone> zones = null;
@@ -94,7 +97,7 @@ public class VoidPortalUIPage extends InteractiveCustomUIPage<VoidPortalUIPage.E
                 commandBuilder.set("#ZonePvP" + i + ".Disabled", true);
                 commandBuilder.set("#ZoneSafe" + i + ".Disabled", true);
                 commandBuilder.set("#ZoneRadius" + i + ".Visible", false);
-                commandBuilder.set("#ZoneMainPriceRow" + i + ".Visible", false);
+                commandBuilder.set("#ZoneMainLine" + i + ".Text", "");
                 commandBuilder.set("#ZonePvPPriceRow" + i + ".Visible", false);
                 commandBuilder.set("#ZoneSafePriceRow" + i + ".Visible", false);
                 continue;
@@ -108,14 +111,13 @@ public class VoidPortalUIPage extends InteractiveCustomUIPage<VoidPortalUIPage.E
             int safeCost = (int) Math.ceil(baseCost * safeMultiplier);
 
             if (economyEnabled) {
-                commandBuilder.set("#ZoneMainPriceRow" + i + ".Visible", true);
+                commandBuilder.set("#ZoneMainLine" + i + ".Text", RANDOM_WITH_COST_PREFIX + baseCost);
                 commandBuilder.set("#ZonePvPPriceRow" + i + ".Visible", true);
                 commandBuilder.set("#ZoneSafePriceRow" + i + ".Visible", true);
-                commandBuilder.set("#ZoneMainPrice" + i + ".Text", ECON_PRICE_PREFIX + baseCost);
                 commandBuilder.set("#ZonePvPPrice" + i + ".Text", ECON_PRICE_PREFIX + baseCost);
                 commandBuilder.set("#ZoneSafePrice" + i + ".Text", ECON_PRICE_PREFIX + safeCost);
             } else {
-                commandBuilder.set("#ZoneMainPriceRow" + i + ".Visible", false);
+                commandBuilder.set("#ZoneMainLine" + i + ".Text", RANDOM_LABEL);
                 commandBuilder.set("#ZonePvPPriceRow" + i + ".Visible", false);
                 commandBuilder.set("#ZoneSafePriceRow" + i + ".Visible", false);
             }
