@@ -1405,20 +1405,33 @@ $C.@PageOverlay {
 
       }
 
-      Group #TpCooldownBanner {
+      Group #HowItWorksBanner {
         Padding: (Left: 22, Right: 22);
         LayoutMode: Top;
         Anchor: (Top: 8);
         Group {
-          LayoutMode: Middle;
-          Anchor: (Height: 90);
+          LayoutMode: Top;
+          Anchor: (Height: 92);
           Background: (Color: #201a36);
           OutlineColor: #3d3458;
           OutlineSize: 3;
-          Padding: (Left: 4, Right: 4, Top: 4, Bottom: 4);
-          Label #TpCooldownLine {
-            Text: "Prochain TP disponible dans : 00:10";
-            Style: (FontSize: 18, RenderBold: true, TextColor: #efe8ff, HorizontalAlignment: Center, VerticalAlignment: Center);
+          Padding: (Left: 12, Right: 8, Top: 12, Bottom: 6);
+          Group {
+            LayoutMode: Left;
+            Anchor: (Height: 22, Bottom: 5);
+            Group {
+              Anchor: (Width: 18, Height: 18, Right: 6);
+              Background: "Icons/Info.png";
+            }
+            Label #HowItWorksTitle {
+              FlexWeight: 1;
+              Text: "COMMENT ÇA MARCHE ?";
+              Style: (FontSize: 14, RenderBold: true, TextColor: #7ec8e8, VerticalAlignment: Center, HorizontalAlignment: Start);
+            }
+          }
+          Label #HowItWorksBody {
+            Text: "Choisis une zone pour t'y téléporter aléatoirement dans le rayon indiqué. Les coûts augmentent avec la difficulté de chaque zone.";
+            Style: (FontSize: 12, TextColor: #9eb8d0, HorizontalAlignment: Start, Wrap: true);
           }
         }
       }
