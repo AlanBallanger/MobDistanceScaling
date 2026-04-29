@@ -1405,6 +1405,24 @@ $C.@PageOverlay {
 
       }
 
+      Group #TpCooldownBanner {
+        Padding: (Left: 22, Right: 22);
+        LayoutMode: Top;
+        Anchor: (Top: 8);
+        Group {
+          LayoutMode: Middle;
+          Anchor: (Height: 90);
+          Background: (Color: #201a36);
+          OutlineColor: #3d3458;
+          OutlineSize: 3;
+          Padding: (Left: 4, Right: 4, Top: 4, Bottom: 4);
+          Label #TpCooldownLine {
+            Text: "Prochain TP disponible dans : 00:10";
+            Style: (FontSize: 18, RenderBold: true, TextColor: #efe8ff, HorizontalAlignment: Center, VerticalAlignment: Center);
+          }
+        }
+      }
+
     }
   }
 }
