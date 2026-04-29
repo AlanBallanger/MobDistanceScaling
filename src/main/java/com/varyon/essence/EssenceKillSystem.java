@@ -21,7 +21,6 @@ import com.varyon.component.MobScalingComponent;
 import com.varyon.config.ConfigManager;
 import com.varyon.config.DifficultyZone;
 import com.varyon.config.EssenceRewardsConfig;
-import com.varyon.config.ZonePermissionsConfig;
 import com.varyon.safezone.SafeZoneManager;
 import com.varyon.util.ZoneCalculator;
 
@@ -44,19 +43,16 @@ public class EssenceKillSystem extends EntityEventSystem<EntityStore, KillFeedEv
     private final EssenceManager        essenceManager;
     private final ConfigManager         configManager;
     private final EssenceRewardsConfig  rewardsConfig;
-    private final ZonePermissionsConfig zonePermsConfig;
 
     private volatile Method cachedNameMethod;
     private volatile String cachedNameSource;
 
     public EssenceKillSystem(@Nonnull EssenceManager essenceManager, @Nonnull ConfigManager configManager,
-                             @Nonnull EssenceRewardsConfig rewardsConfig,
-                             @Nonnull ZonePermissionsConfig zonePermsConfig) {
+                             @Nonnull EssenceRewardsConfig rewardsConfig) {
         super(KillFeedEvent.KillerMessage.class);
         this.essenceManager  = essenceManager;
         this.configManager   = configManager;
         this.rewardsConfig   = rewardsConfig;
-        this.zonePermsConfig = zonePermsConfig;
     }
 
     @Override
@@ -112,7 +108,7 @@ public class EssenceKillSystem extends EntityEventSystem<EntityStore, KillFeedEv
             try { player = (Player) store.getComponent(killerRef, Player.getComponentType()); } catch (Exception ignored) {}
             if (player != null) {
                 double current = essenceManager.getEssence(playerUuid);
-                int cap = zonePermsConfig.getEffectiveCap(player, current);
+                int cap = configManager.getZonePermissionsConfig().getEffectiveCap(player, current);
                 essenceManager.addEssenceCapped(playerUuid, playerUuid.toString(), essenceGained, cap);
             } else {
                 essenceManager.addEssence(playerUuid, playerUuid.toString(), essenceGained);

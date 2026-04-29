@@ -2,6 +2,7 @@ package com.varyon.config;
 
 import com.hypixel.hytale.logger.HytaleLogger;
 import com.moandjiezana.toml.Toml;
+import com.varyon.util.MiningOreBlockIds;
 
 import javax.annotation.Nonnull;
 import java.io.File;
@@ -13,7 +14,8 @@ import java.util.logging.Level;
 
 public class EssenceRewardsConfig {
     private static final HytaleLogger LOGGER = HytaleLogger.forEnclosingClass();
-    private static final String FILE_NAME = "essence_rewards.toml";
+    private static final String FILE_NAME = "guild_points.toml";
+    private static final double GUILD_POINTS_SCALE = 1.5;
 
     private final Map<String, Double> oreRewards = new ConcurrentHashMap<>();
     private final Map<String, Double> mobRewards = new ConcurrentHashMap<>();
@@ -27,7 +29,7 @@ public class EssenceRewardsConfig {
         File file = dataDir.resolve(FILE_NAME).toFile();
         if (!file.exists()) {
             save(file);
-            LOGGER.at(Level.INFO).log("Created default essence_rewards.toml");
+            LOGGER.at(Level.INFO).log("Created default " + FILE_NAME);
             return;
         }
         try {
@@ -59,20 +61,28 @@ public class EssenceRewardsConfig {
                 }
             }
 
-            LOGGER.at(Level.INFO).log("Loaded essence rewards: " + oreRewards.size() + " ores, " + mobRewards.size() + " mobs, multiplier=" + globalMultiplier);
+            LOGGER.at(Level.INFO).log(
+                "Loaded guild points (" + FILE_NAME + "): " + oreRewards.size() + " ores, " + mobRewards.size()
+                    + " mobs, multiplier=" + globalMultiplier + ", output scale=" + GUILD_POINTS_SCALE
+            );
         } catch (Exception e) {
-            LOGGER.at(Level.WARNING).log("Failed to load essence_rewards.toml: " + e.getMessage());
+            LOGGER.at(Level.WARNING).log("Failed to load " + FILE_NAME + ": " + e.getMessage());
         }
     }
 
     public double getPvpEssenceMultiplier() {
-        return pvpEssenceMultiplier;
+        return pvpEssenceMultiplier * GUILD_POINTS_SCALE;
     }
 
     public double getOreReward(@Nonnull String blockId) {
+        if (MiningOreBlockIds.isExcludedFromVaryonOreRewards(blockId)) {
+            return 0.0;
+        }
         String id = blockId.toLowerCase();
         Double exact = oreRewards.get(id);
-        if (exact != null) return exact * globalMultiplier;
+        if (exact != null) {
+            return exact * globalMultiplier * GUILD_POINTS_SCALE;
+        }
         String bestKey = null;
         double bestVal = 0;
         for (Map.Entry<String, Double> entry : oreRewards.entrySet()) {
@@ -83,14 +93,18 @@ public class EssenceRewardsConfig {
                 }
             }
         }
-        if (bestKey != null) return bestVal * globalMultiplier;
-        return defaultOreReward * globalMultiplier;
+        if (bestKey != null) {
+            return bestVal * globalMultiplier * GUILD_POINTS_SCALE;
+        }
+        return defaultOreReward * globalMultiplier * GUILD_POINTS_SCALE;
     }
 
     public double getMobReward(@Nonnull String mobId) {
         String id = mobId.toLowerCase();
         Double exact = mobRewards.get(id);
-        if (exact != null) return exact * globalMultiplier;
+        if (exact != null) {
+            return exact * globalMultiplier * GUILD_POINTS_SCALE;
+        }
         String bestKey = null;
         double bestVal = 0;
         for (Map.Entry<String, Double> entry : mobRewards.entrySet()) {
@@ -101,8 +115,10 @@ public class EssenceRewardsConfig {
                 }
             }
         }
-        if (bestKey != null) return bestVal * globalMultiplier;
-        return defaultMobReward * globalMultiplier;
+        if (bestKey != null) {
+            return bestVal * globalMultiplier * GUILD_POINTS_SCALE;
+        }
+        return defaultMobReward * globalMultiplier * GUILD_POINTS_SCALE;
     }
 
     private void loadDefaults() {
@@ -186,6 +202,7 @@ public class EssenceRewardsConfig {
         mobRewards.put("camel", 3.5);
         mobRewards.put("warthog", 3.5);
         mobRewards.put("horse", 3.5);
+        mobRewards.put("horse_skeleton", 30.0);
         mobRewards.put("ram", 3.5);
         mobRewards.put("bison", 4.0);
         mobRewards.put("archaeopteryx", 4.0);
@@ -305,6 +322,8 @@ public class EssenceRewardsConfig {
 
         // Boss final (500 XP) -> 50 essence
         mobRewards.put("dragon", 500.0);
+        mobRewards.put("fire_dragon", 420.0);
+        mobRewards.put("endgame_fire_dragon", 460.0);
         mobRewards.put("boss", 500.0);
     }
 
@@ -336,7 +355,7 @@ public class EssenceRewardsConfig {
             writer.flush();
             writer.close();
         } catch (Exception e) {
-            LOGGER.at(Level.WARNING).log("Failed to save essence_rewards.toml: " + e.getMessage());
+            LOGGER.at(Level.WARNING).log("Failed to save " + FILE_NAME + ": " + e.getMessage());
         }
     }
 

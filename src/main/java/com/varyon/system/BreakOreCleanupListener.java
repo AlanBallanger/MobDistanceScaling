@@ -10,6 +10,7 @@ import com.hypixel.hytale.math.vector.Vector3i;
 import com.hypixel.hytale.server.core.event.events.ecs.BreakBlockEvent;
 import com.hypixel.hytale.server.core.universe.PlayerRef;
 import com.hypixel.hytale.server.core.universe.world.storage.EntityStore;
+import com.varyon.config.ConfigManager;
 import com.varyon.config.EssenceRewardsConfig;
 import com.varyon.config.MobFragmentsConfig;
 
@@ -20,15 +21,15 @@ public class BreakOreCleanupListener extends EntityEventSystem<EntityStore, Brea
     private static final HytaleLogger LOGGER = HytaleLogger.forEnclosingClass();
 
     private final PlacedOreTracker tracker;
-    private final MobFragmentsConfig fragmentsConfig;
+    private final ConfigManager configManager;
     private final EssenceRewardsConfig rewardsConfig;
 
     public BreakOreCleanupListener(@Nonnull PlacedOreTracker tracker,
-                                   @Nonnull MobFragmentsConfig fragmentsConfig,
+                                   @Nonnull ConfigManager configManager,
                                    @Nonnull EssenceRewardsConfig rewardsConfig) {
         super(BreakBlockEvent.class);
         this.tracker = tracker;
-        this.fragmentsConfig = fragmentsConfig;
+        this.configManager = configManager;
         this.rewardsConfig = rewardsConfig;
     }
 
@@ -40,6 +41,7 @@ public class BreakOreCleanupListener extends EntityEventSystem<EntityStore, Brea
             if (event.getBlockType() == null) return;
             String blockId = event.getBlockType().getId().toLowerCase();
 
+            MobFragmentsConfig fragmentsConfig = configManager.getMobFragmentsConfig();
             if (fragmentsConfig.getMiningFragmentWeight(blockId) <= 0 && rewardsConfig.getOreReward(blockId) <= 0) {
                 return;
             }

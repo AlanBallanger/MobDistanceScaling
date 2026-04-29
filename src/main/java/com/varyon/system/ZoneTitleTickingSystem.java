@@ -17,8 +17,6 @@ import com.hypixel.hytale.server.core.util.EventTitleUtil;
 import com.varyon.config.ConfigManager;
 import com.varyon.config.DifficultyZone;
 import com.varyon.config.ZoneConfig;
-import com.varyon.essence.EssenceManager;
-import com.varyon.hud.ZoneHUDManager;
 import com.varyon.util.ZoneCalculator;
 
 import org.checkerframework.checker.nullness.compatqual.NonNullDecl;
@@ -31,14 +29,10 @@ import java.util.concurrent.ConcurrentHashMap;
 
 public class ZoneTitleTickingSystem extends EntityTickingSystem<EntityStore> {
     private final ConfigManager configManager;
-    private final EssenceManager essenceManager;
     private final Map<UUID, Integer> playerLastZoneId = new ConcurrentHashMap<>();
-    private final ZoneHUDManager hudManager;
 
-    public ZoneTitleTickingSystem(ConfigManager configManager, EssenceManager essenceManager) {
+    public ZoneTitleTickingSystem(ConfigManager configManager) {
         this.configManager = configManager;
-        this.essenceManager = essenceManager;
-        this.hudManager = new ZoneHUDManager(configManager.getZoneConfig(), configManager.getMessagesConfig(), configManager.getZonePermissionsConfig());
     }
 
     @Override
@@ -122,7 +116,6 @@ public class ZoneTitleTickingSystem extends EntityTickingSystem<EntityStore> {
 
     public void removePlayer(UUID playerId) {
         playerLastZoneId.remove(playerId);
-        hudManager.removePlayer(playerId);
     }
 
     @NullableDecl

@@ -291,7 +291,7 @@ public class RtpvCommand extends AbstractPlayerCommand {
         if (mgr == null) {
             return;
         }
-        int firstRetryCost = (int) Math.ceil(paidCost * 1.2);
+        int firstRetryOrdinal = 1;
 
         ScheduledFuture<?> future = HytaleServer.SCHEDULED_EXECUTOR.schedule(
             () -> world.execute(() -> {
@@ -306,7 +306,7 @@ public class RtpvCommand extends AbstractPlayerCommand {
                 }
                 livePlayer.getPageManager().openCustomPage(
                     liveRef, liveStore,
-                    new RtpvConfirmUIPage(playerRef, zoneNumber, pvpFilter, firstRetryCost));
+                    new RtpvConfirmUIPage(playerRef, zoneNumber, pvpFilter, paidCost, firstRetryOrdinal));
             }),
             1_000L,
             TimeUnit.MILLISECONDS);

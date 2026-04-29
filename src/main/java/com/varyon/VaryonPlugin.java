@@ -190,47 +190,39 @@ public class VaryonPlugin extends JavaPlugin {
             MobLootScalingSystem mobLootScalingSystem = new MobLootScalingSystem();
             this.getEntityStoreRegistry().registerSystem(mobLootScalingSystem);
 
-            MobFragmentDropSystem mobFragmentDropSystem = new MobFragmentDropSystem(
-                configManager.getMobFragmentsConfig(),
-                configManager.getZoneLootConfig(),
-                configManager.getZonePermissionsConfig(),
-                configManager);
+            MobFragmentDropSystem mobFragmentDropSystem = new MobFragmentDropSystem(configManager);
             this.getEntityStoreRegistry().registerSystem(mobFragmentDropSystem.createTracker());
             this.getEntityStoreRegistry().registerSystem(mobFragmentDropSystem.createPlayerDamageTagger());
             this.getEntityStoreRegistry().registerSystem(mobFragmentDropSystem.createDropSystem());
 
-            EssenceKillSystem essenceKillSystem = new EssenceKillSystem(essenceManager, configManager, essenceRewardsConfig, configManager.getZonePermissionsConfig());
+            EssenceKillSystem essenceKillSystem = new EssenceKillSystem(essenceManager, configManager, essenceRewardsConfig);
             this.getEntityStoreRegistry().registerSystem(essenceKillSystem);
 
             PlacedOreTracker placedOreTracker = new PlacedOreTracker(this.getDataDirectory());
 
             this.getEntityStoreRegistry().registerSystem(new PlaceOreListener(
                 placedOreTracker,
-                configManager.getMobFragmentsConfig(),
+                configManager,
                 essenceRewardsConfig));
             this.getEntityStoreRegistry().registerSystem(new VaryonBedPlaceBlockSystem());
 
-            EssenceMiningSystem essenceMiningSystem = new EssenceMiningSystem(essenceManager, configManager, essenceRewardsConfig, configManager.getZonePermissionsConfig(), placedOreTracker);
+            EssenceMiningSystem essenceMiningSystem = new EssenceMiningSystem(essenceManager, configManager, essenceRewardsConfig, placedOreTracker);
             this.getEntityStoreRegistry().registerSystem(essenceMiningSystem);
 
             com.varyon.system.MiningFragmentDropSystem miningFragmentDropSystem = new com.varyon.system.MiningFragmentDropSystem(
-                configManager.getMobFragmentsConfig(),
-                configManager.getZoneLootConfig(),
-                configManager.getZonePermissionsConfig(),
                 configManager,
                 placedOreTracker);
             this.getEntityStoreRegistry().registerSystem(miningFragmentDropSystem);
 
             this.getEntityStoreRegistry().registerSystem(new MiningLootScalingSystem(configManager, placedOreTracker));
 
-            this.getEntityStoreRegistry().registerSystem(new BreakOreCleanupListener(placedOreTracker, configManager.getMobFragmentsConfig(), essenceRewardsConfig));
+            this.getEntityStoreRegistry().registerSystem(new BreakOreCleanupListener(placedOreTracker, configManager, essenceRewardsConfig));
             LOGGER.at(Level.INFO).log("Essence reward systems registered");
 
             // NameplateBuilder â€” zone level tick system (optional, skipped if mod absent)
             try {
                 ZoneLevelNameplateSystem zoneLevelNameplateSystem = new ZoneLevelNameplateSystem(
                         com.frotty27.nameplatebuilder.api.NameplateAPI.getComponentType(),
-                        configManager.getMobFragmentsConfig(),
                         configManager);
                 this.getEntityStoreRegistry().registerSystem(zoneLevelNameplateSystem);
                 LOGGER.at(Level.INFO).log("NameplateBuilder zone_level system registered");
@@ -295,7 +287,7 @@ public class VaryonPlugin extends JavaPlugin {
                 LOGGER.at(Level.INFO).log("Safe zone rotation system enabled");
             }
 
-            ZoneTitleTickingSystem zoneTitleSystem = new ZoneTitleTickingSystem(configManager, essenceManager);
+            ZoneTitleTickingSystem zoneTitleSystem = new ZoneTitleTickingSystem(configManager);
             this.getEntityStoreRegistry().registerSystem(zoneTitleSystem);
 
             if (configManager.getZoneConfig().isMinimapEnabled()) {
@@ -477,6 +469,35 @@ public class VaryonPlugin extends JavaPlugin {
         world.getWorldMapManager().addMarkerProvider("extraction_portal", new com.varyon.extraction.ExtractionPortalMarkerProvider());
         
         LOGGER.at(Level.INFO).log("Set Varyon minimap for world: {0}", world.getName());
+    }
+
+    public void onConfigurationReloaded() {
+        essenceRewardsConfig.load(this.getDataDirectory());
+        if (extractionPortalManager != null) {
+            extractionPortalManager.setConfig(configManager.getExtractionConfig());
+        }
+        if (globalRewardsManager != null) {
+            globalRewardsManager.applyReloadedConfigs(
+                configManager.getFactionRewardsConfig(),
+                configManager.getZonePermissionsConfig());
+        }
+        if (hudManager != null) {
+            hudManager.applyReloadedConfigs(configManager);
+        }
+        if (safeZoneManager != null) {
+            safeZoneManager.applyReloadedConfigs(configManager.getSafeZoneConfig(), configManager.getZoneConfig());
+        }
+        if (safeZoneNotificationSystem != null) {
+            safeZoneNotificationSystem.applyReloadedConfigs(
+                configManager.getSafeZoneConfig(),
+                configManager.getZoneConfig(),
+                configManager.getMessagesConfig());
+        }
+        if (configManager.getZoneConfig().isMinimapEnabled()) {
+            for (World world : Universe.get().getWorlds().values()) {
+                applyMinimapToWorld(world);
+            }
+        }
     }
 
     public ConfigManager getConfigManager() {

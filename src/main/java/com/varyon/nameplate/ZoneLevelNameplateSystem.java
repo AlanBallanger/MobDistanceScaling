@@ -14,7 +14,6 @@ import com.hypixel.hytale.server.npc.entities.NPCEntity;
 import com.varyon.component.MobScalingComponent;
 import com.varyon.config.ConfigManager;
 import com.varyon.config.DifficultyZone;
-import com.varyon.config.MobFragmentsConfig;
 import com.varyon.util.ZoneCalculator;
 
 import javax.annotation.Nonnull;
@@ -37,16 +36,13 @@ public class ZoneLevelNameplateSystem extends EntityTickingSystem<EntityStore> {
 
     private final ComponentType<EntityStore, NPCEntity>     npcType;
     private final ComponentType<EntityStore, NameplateData> nameplateDataType;
-    private final MobFragmentsConfig                        mobFragmentsConfig;
     private final ConfigManager                             configManager;
 
     public ZoneLevelNameplateSystem(
             @Nonnull ComponentType<EntityStore, NameplateData> nameplateDataType,
-            @Nonnull MobFragmentsConfig mobFragmentsConfig,
             @Nonnull ConfigManager configManager) {
         this.npcType           = NPCEntity.getComponentType();
         this.nameplateDataType = nameplateDataType;
-        this.mobFragmentsConfig = mobFragmentsConfig;
         this.configManager     = configManager;
     }
 

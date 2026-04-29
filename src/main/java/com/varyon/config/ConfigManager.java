@@ -178,6 +178,8 @@ public class ConfigManager {
         sb.append("soundPitch = ").append(zoneConfig.getZoneSoundPitch()).append("\n");
         sb.append("hudEnabled = ").append(zoneConfig.isZoneHudEnabled()).append("\n\n");
 
+        sb.append("# extraction: min/max = fallback if zoneRanges empty or player zone unknown (zone id <= 0).\n");
+        sb.append("# zoneRanges = anchors (zoneId ascending); linear blend between consecutive anchors.\n");
         sb.append("[extraction]\n");
         sb.append("enabled = ").append(extractionConfig.isEnabled()).append("\n");
         sb.append("minDistance = ").append(extractionConfig.getMinDistance()).append("\n");
@@ -297,7 +299,7 @@ public class ConfigManager {
                 double essenceMultiplier = zoneToml.getDouble("essenceMultiplier", 1.0);
                 int radiusStart = zoneToml.getLong("radiusStart", 0L).intValue();
                 String name = zoneToml.getString("name", "Zone " + id);
-                int teleportCost = zoneToml.getLong("teleportCost", (long)(id * 100)).intValue();
+                int teleportCost = zoneToml.getLong("teleportCost", (long)(id * 50)).intValue();
                 zones.add(new DifficultyZone(id, color, healthMultiplier, damageMultiplier,
                         lootMultiplier, essenceMultiplier, radiusStart, name, teleportCost));
             }

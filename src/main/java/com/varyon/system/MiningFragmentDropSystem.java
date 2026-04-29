@@ -22,9 +22,7 @@ import com.hypixel.hytale.server.core.universe.PlayerRef;
 import com.hypixel.hytale.server.core.universe.world.storage.EntityStore;
 import com.varyon.config.ConfigManager;
 import com.varyon.config.DifficultyZone;
-import com.varyon.config.MobFragmentsConfig;
-import com.varyon.config.ZoneLootConfig;
-import com.varyon.config.ZonePermissionsConfig;
+import com.varyon.util.MiningOreBlockIds;
 import com.varyon.util.ZoneCalculator;
 import com.varyon.system.PlacedOreTracker;
 
@@ -35,21 +33,12 @@ import java.util.logging.Level;
 public class MiningFragmentDropSystem extends EntityEventSystem<EntityStore, BreakBlockEvent> {
     private static final HytaleLogger LOGGER = HytaleLogger.forEnclosingClass();
 
-    private final MobFragmentsConfig    mobFragmentsConfig;
-    private final ZoneLootConfig        zoneConfig;
-    private final ZonePermissionsConfig zonePermsConfig;
     private final ConfigManager         configManager;
     private final PlacedOreTracker      placedOreTracker;
 
-    public MiningFragmentDropSystem(@Nonnull MobFragmentsConfig mobFragmentsConfig,
-                                    @Nonnull ZoneLootConfig zoneConfig,
-                                    @Nonnull ZonePermissionsConfig zonePermsConfig,
-                                    @Nonnull ConfigManager configManager,
+    public MiningFragmentDropSystem(@Nonnull ConfigManager configManager,
                                     @Nonnull PlacedOreTracker placedOreTracker) {
         super(BreakBlockEvent.class);
-        this.mobFragmentsConfig = mobFragmentsConfig;
-        this.zoneConfig         = zoneConfig;
-        this.zonePermsConfig    = zonePermsConfig;
         this.configManager      = configManager;
         this.placedOreTracker   = placedOreTracker;
     }
@@ -75,7 +64,10 @@ public class MiningFragmentDropSystem extends EntityEventSystem<EntityStore, Bre
             if (!configManager.getZoneConfig().isWorldEnabled(world)) return;
 
             String blockId = event.getBlockType().getId().toLowerCase();
-            int fragments = mobFragmentsConfig.rollMiningFragmentDrops(blockId);
+            if (MiningOreBlockIds.isExcludedFromVaryonOreRewards(blockId)) {
+                return;
+            }
+            int fragments = configManager.getMobFragmentsConfig().rollMiningFragmentDrops(blockId);
             if (fragments <= 0) return;
 
             if (event.getTargetBlock() != null) {
@@ -98,10 +90,10 @@ public class MiningFragmentDropSystem extends EntityEventSystem<EntityStore, Bre
             Player player = (Player) store.getComponent(ref, Player.getComponentType());
             int lootZoneId = zoneId;
             if (player != null) {
-                lootZoneId = Math.min(zoneId, zonePermsConfig.getMaxAccessibleZone(player));
+                lootZoneId = Math.min(zoneId, configManager.getZonePermissionsConfig().getMaxAccessibleZone(player));
             }
 
-            String itemId = zoneConfig.getItemForZone(lootZoneId);
+            String itemId = configManager.getZoneLootConfig().getItemForZone(lootZoneId);
             if (itemId == null || itemId.isBlank()) {
                 itemId = "Key_Fragment" + lootZoneId;
             }

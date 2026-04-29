@@ -30,6 +30,7 @@ import com.varyon.config.RtpvConfig;
 import com.varyon.config.ZoneConfig;
 import com.varyon.rtpv.RtpvConfirmManager;
 import com.varyon.rtpv.RtpvJoinManager;
+import com.varyon.rtpv.RtpvRetryPricing;
 import com.varyon.safezone.SafeZoneManager;
 import com.varyon.safezone.SafeZoneQuadrant;
 import com.varyon.teleport.RtpService;
@@ -54,23 +55,29 @@ public class RtpvConfirmUIPage extends InteractiveCustomUIPage<RtpvConfirmUIPage
     private static final HytaleLogger LOGGER = HytaleLogger.forEnclosingClass();
     private static final long POST_RETRY_CONFIRM_DELAY_MS = 5_000L;
     private static final long SNOOZE_MENU_DELAY_MS = 15_000L;
-    private static final double RETRY_COST_MULTIPLIER = 1.2;
     private static final Random RANDOM = new Random();
 
     private final int zoneId;
     @Nullable private final Boolean pvpFilter;
-    private final int retryCost;
+    private final int chainBase;
+    private final int retryOrdinal;
 
     public RtpvConfirmUIPage(
         @Nonnull PlayerRef playerRef,
         int zoneId,
         @Nullable Boolean pvpFilter,
-        int retryCost
+        int chainBase,
+        int retryOrdinal
     ) {
         super(playerRef, CustomPageLifetime.CanDismiss, EventDataClass.CODEC);
         this.zoneId = zoneId;
         this.pvpFilter = pvpFilter;
-        this.retryCost = retryCost;
+        this.chainBase = chainBase;
+        this.retryOrdinal = retryOrdinal;
+    }
+
+    private int currentRetryPrice() {
+        return RtpvRetryPricing.retryCost(chainBase, retryOrdinal);
     }
 
     @Override
@@ -94,7 +101,7 @@ public class RtpvConfirmUIPage extends InteractiveCustomUIPage<RtpvConfirmUIPage
         }
 
         String noLabel = economyEnabled
-            ? "Non, me re-téléporter pour " + retryCost + " Coins"
+            ? "Non, me re-téléporter pour " + currentRetryPrice() + " Coins"
             : "Non, me re-téléporter";
         commandBuilder.set("#NoButtonLabel.Text", noLabel);
         commandBuilder.set("#MaybeButtonLabel.Text", "Peut-être, laisse moi 15 secondes");
@@ -153,12 +160,13 @@ public class RtpvConfirmUIPage extends InteractiveCustomUIPage<RtpvConfirmUIPage
         boolean economyEnabled = rtpvConfig != null && rtpvConfig.isEconomyEnabled();
 
         if (economyEnabled) {
-            BigDecimal costBD = BigDecimal.valueOf(retryCost);
+            int price = currentRetryPrice();
+            BigDecimal costBD = BigDecimal.valueOf(price);
             try {
                 if (!hasEnoughBalance(playerRefComp, costBD)) {
                     BigDecimal balance = getBalance(playerRefComp);
                     playerRefComp.sendMessage(Message.raw(
-                        "Coins insuffisants pour la re-téléportation. Coût : " + retryCost +
+                        "Coins insuffisants pour la re-téléportation. Coût : " + price +
                             " | Solde : " + balance.intValue()
                     ).color(Color.RED));
                     return;
@@ -174,7 +182,7 @@ public class RtpvConfirmUIPage extends InteractiveCustomUIPage<RtpvConfirmUIPage
         DifficultyZone targetZone = zones.get(zoneId - 1);
         double minDist = targetZone.getRadiusStart();
         double maxDist = (zoneId < zones.size()) ? zones.get(zoneId).getRadiusStart() : minDist + 5000;
-        final int finalRetryCost = economyEnabled ? retryCost : 0;
+        final int finalRetryCost = economyEnabled ? currentRetryPrice() : 0;
 
         world.execute(() -> {
             try {
@@ -235,9 +243,10 @@ public class RtpvConfirmUIPage extends InteractiveCustomUIPage<RtpvConfirmUIPage
             return;
         }
 
-        int nextRetryCost = (int) Math.ceil(retryCost * RETRY_COST_MULTIPLIER);
+        int nextOrdinal = retryOrdinal + 1;
         int capturedZoneId = zoneId;
         Boolean capturedPvpFilter = pvpFilter;
+        int capturedChainBase = chainBase;
 
         ScheduledFuture<?> future = HytaleServer.SCHEDULED_EXECUTOR.schedule(
             () -> world.execute(() -> {
@@ -252,7 +261,7 @@ public class RtpvConfirmUIPage extends InteractiveCustomUIPage<RtpvConfirmUIPage
                 }
                 livePlayer.getPageManager().openCustomPage(
                     liveRef, liveStore,
-                    new RtpvConfirmUIPage(playerRefComp, capturedZoneId, capturedPvpFilter, nextRetryCost)
+                    new RtpvConfirmUIPage(playerRefComp, capturedZoneId, capturedPvpFilter, capturedChainBase, nextOrdinal)
                 );
             }),
             POST_RETRY_CONFIRM_DELAY_MS,
@@ -268,7 +277,8 @@ public class RtpvConfirmUIPage extends InteractiveCustomUIPage<RtpvConfirmUIPage
         }
         int capturedZoneId = zoneId;
         Boolean capturedPvpFilter = pvpFilter;
-        int capturedRetryCost = retryCost;
+        int capturedOrdinal = retryOrdinal;
+        int capturedChainBase = chainBase;
 
         ScheduledFuture<?> future = HytaleServer.SCHEDULED_EXECUTOR.schedule(
             () -> world.execute(() -> {
@@ -283,7 +293,7 @@ public class RtpvConfirmUIPage extends InteractiveCustomUIPage<RtpvConfirmUIPage
                 }
                 livePlayer.getPageManager().openCustomPage(
                     liveRef, liveStore,
-                    new RtpvConfirmUIPage(playerRefComp, capturedZoneId, capturedPvpFilter, capturedRetryCost)
+                    new RtpvConfirmUIPage(playerRefComp, capturedZoneId, capturedPvpFilter, capturedChainBase, capturedOrdinal)
                 );
             }),
             SNOOZE_MENU_DELAY_MS,

@@ -17,8 +17,8 @@ import com.varyon.VaryonPlugin;
 import com.varyon.config.ConfigManager;
 import com.varyon.config.DifficultyZone;
 import com.varyon.config.EssenceRewardsConfig;
-import com.varyon.config.ZonePermissionsConfig;
 import com.varyon.safezone.SafeZoneManager;
+import com.varyon.util.MiningOreBlockIds;
 import com.varyon.util.ZoneCalculator;
 import com.varyon.system.PlacedOreTracker;
 
@@ -35,18 +35,15 @@ public class EssenceMiningSystem extends EntityEventSystem<EntityStore, BreakBlo
     private final EssenceManager        essenceManager;
     private final ConfigManager         configManager;
     private final EssenceRewardsConfig  rewardsConfig;
-    private final ZonePermissionsConfig zonePermsConfig;
     private final PlacedOreTracker      placedOreTracker;
 
     public EssenceMiningSystem(@Nonnull EssenceManager essenceManager, @Nonnull ConfigManager configManager,
                                @Nonnull EssenceRewardsConfig rewardsConfig,
-                               @Nonnull ZonePermissionsConfig zonePermsConfig,
                                @Nonnull PlacedOreTracker placedOreTracker) {
         super(BreakBlockEvent.class);
         this.essenceManager  = essenceManager;
         this.configManager   = configManager;
         this.rewardsConfig   = rewardsConfig;
-        this.zonePermsConfig = zonePermsConfig;
         this.placedOreTracker = placedOreTracker;
     }
 
@@ -65,6 +62,9 @@ public class EssenceMiningSystem extends EntityEventSystem<EntityStore, BreakBlo
             if (!configManager.getZoneConfig().isWorldEnabled(world)) return;
 
             String blockId = event.getBlockType().getId().toLowerCase();
+            if (MiningOreBlockIds.isExcludedFromVaryonOreRewards(blockId)) {
+                return;
+            }
 
             double baseReward = rewardsConfig.getOreReward(blockId);
             if (baseReward <= 0) {
@@ -102,7 +102,7 @@ public class EssenceMiningSystem extends EntityEventSystem<EntityStore, BreakBlo
             try { player = (Player) store.getComponent(minerRef, Player.getComponentType()); } catch (Exception ignored) {}
             if (player != null) {
                 double current = essenceManager.getEssence(playerUuid);
-                int cap = zonePermsConfig.getEffectiveCap(player, current);
+                int cap = configManager.getZonePermissionsConfig().getEffectiveCap(player, current);
                 essenceManager.addEssenceCapped(playerUuid, playerUuid.toString(), essenceGained, cap);
             } else {
                 essenceManager.addEssence(playerUuid, playerUuid.toString(), essenceGained);

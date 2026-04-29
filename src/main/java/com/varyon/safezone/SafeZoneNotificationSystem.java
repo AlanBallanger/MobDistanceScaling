@@ -27,9 +27,9 @@ public class SafeZoneNotificationSystem extends EntityTickingSystem<EntityStore>
     private static final HytaleLogger LOGGER = HytaleLogger.forEnclosingClass();
     private static SafeZoneManager safeZoneManager;
     private final Map<UUID, Boolean> playerInSafeZone = new ConcurrentHashMap<>();
-    private final SafeZoneConfig config;
-    private final ZoneConfig zoneConfig;
-    private final MessagesConfig messagesConfig;
+    private SafeZoneConfig config;
+    private ZoneConfig zoneConfig;
+    private MessagesConfig messagesConfig;
 
     public SafeZoneNotificationSystem(@Nonnull SafeZoneConfig config, @Nonnull ZoneConfig zoneConfig,
                                       @Nonnull MessagesConfig messagesConfig) {
@@ -40,6 +40,14 @@ public class SafeZoneNotificationSystem extends EntityTickingSystem<EntityStore>
 
     public static void setSafeZoneManager(@Nonnull SafeZoneManager manager) {
         safeZoneManager = manager;
+    }
+
+    public void applyReloadedConfigs(@Nonnull SafeZoneConfig safeZoneConfig,
+                                     @Nonnull ZoneConfig zoneConfig,
+                                     @Nonnull MessagesConfig messagesConfig) {
+        this.config = safeZoneConfig;
+        this.zoneConfig = zoneConfig;
+        this.messagesConfig = messagesConfig;
     }
 
     @Override

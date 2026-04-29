@@ -2,6 +2,7 @@ package com.varyon.config;
 
 import com.hypixel.hytale.logger.HytaleLogger;
 import com.moandjiezana.toml.Toml;
+import com.varyon.util.MiningOreBlockIds;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -71,6 +72,9 @@ public class MobFragmentsConfig {
 
     @Nullable
     private Double resolveMiningWeight(@Nonnull String id) {
+        if (MiningOreBlockIds.isExcludedFromVaryonOreRewards(id)) {
+            return null;
+        }
         Double exact = miningFragments.get(id);
         if (exact != null) {
             return exact;
@@ -173,7 +177,7 @@ public class MobFragmentsConfig {
         sb.append("# --- Passifs (0 frags) ---\n");
         appendGroup(sb, PASSIVE, 0);
 
-        sb.append("\n# --- 1 frag : XP 8-20 (Rat, Scarab, Vulture...) ---\n");
+        sb.append("\n# --- 1 frag : XP 8-20 (Rat, Scarab, Trilobite, Vulture...) ---\n");
         appendGroup(sb, F1, 1);
 
         sb.append("\n# --- 1 frag : XP 35 (Snake, Snail, Cactee...) ---\n");
@@ -182,22 +186,22 @@ public class MobFragmentsConfig {
         sb.append("\n# --- 2 frags : XP 45 (Fen_Stalker, Chicken_Undead, Crawler_Void) ---\n");
         appendGroup(sb, F3, 2);
 
-        sb.append("\n# --- 4 frags : XP 55 (Goblin, Hyena, Spider, Scarak...) ---\n");
+        sb.append("\n# --- 4 frags : XP 55 (Goblin, Horse_Skeleton, Toad_Minion, Raptor...) ---\n");
         appendGroup(sb, F5, 4);
 
         sb.append("\n# --- 5 frags : XP 65 (Zombie, Bear, Tiger...) ---\n");
         appendGroup(sb, F7, 5);
 
-        sb.append("\n# --- 8 frags : XP 85 (Raptor, Outlander... + surcharges) ---\n");
+        sb.append("\n# --- 8 frags : XP 85 (Crocodile, Scorpion, Spawn_Void... + surcharges) ---\n");
         appendGroup(sb, F10, 8);
 
-        sb.append("\n# --- 12 frags : XP 130 (Yeti, Emberwulf, Golem, Wraith...) ---\n");
+        sb.append("\n# --- 12 frags : XP 130 (Yeti, Ghoul, Endgame_Ghoul, Emberwulf, Golem, Wraith...) ---\n");
         appendGroup(sb, F15, 12);
 
         sb.append("\n# --- 20 frags : XP 175 (Werewolf, Hedera, Rex_Cave) ---\n");
         appendGroup(sb, F22, 20);
 
-        sb.append("\n# --- 25 frags : XP 250 (Void, Shadow_Knight, Zombie_Aberrant) ---\n");
+        sb.append("\n# --- 25 frags : XP 250 (Void, Fire_Dragon, Endgame_Fire_Dragon, KF_Fire_Queen...) ---\n");
         appendGroup(sb, F30, 25);
 
         sb.append("\n# --- 50 frags : XP 350-500 (Dragon, Goblin_Duke, Golem_Guardian...) ---\n");
@@ -214,22 +218,22 @@ public class MobFragmentsConfig {
         sb.append("ore_iron   = 1\n");
         sb.append("ore_silver = 1\n");
         sb.append("ore_gold   = 1\n");
-        sb.append("\n# --- Tier 2 (1 fragment) ---\n");
-        sb.append("ore_cobalt  = 1\n");
+        sb.append("\n# --- Tier 2 ---\n");
+        sb.append("ore_cobalt  = 2\n");
         sb.append("ore_thorium = 1\n");
-        sb.append("\n# --- Tier 3 (1 fragment) ---\n");
-        sb.append("ore_adamantite = 1\n");
-        sb.append("ore_mithril    = 1\n");
-        sb.append("ore_onyxium    = 1\n");
-        sb.append("ore_prisma     = 1\n");
+        sb.append("\n# --- Tier 3 ---\n");
+        sb.append("ore_adamantite = 2\n");
+        sb.append("ore_mithril    = 2\n");
+        sb.append("ore_onyxium    = 2\n");
+        sb.append("ore_prisma     = 2\n");
         sb.append("\n# --- Rock crystals ---\n");
         sb.append("rock_crystal_blue   = 0.3\n");
         sb.append("rock_crystal_yellow = 0.3\n");
         sb.append("rock_crystal_red    = 0.3\n");
         sb.append("rock_crystal_cyan   = 0.3\n");
-        sb.append("rock_crystal_purple = 0.5\n");
-        sb.append("rock_crystal_white  = 1\n");
-        sb.append("rock_crystal_green  = 0.5\n");
+        sb.append("rock_crystal_purple = 0.3\n");
+        sb.append("rock_crystal_white  = 0.3\n");
+        sb.append("rock_crystal_green  = 0.3\n");
         sb.append("rock_crystal_pink   = 0.3\n");
         sb.append("\n# --- Gemmes ---\n");
         sb.append("rock_gem_diamond   = 20\n");
@@ -269,19 +273,19 @@ public class MobFragmentsConfig {
         mining.put("ore_iron",            1.0);
         mining.put("ore_silver",          1.0);
         mining.put("ore_gold",            1.0);
-        mining.put("ore_cobalt",          1.0);
+        mining.put("ore_cobalt",          2.0);
         mining.put("ore_thorium",         1.0);
-        mining.put("ore_adamantite",      1.0);
-        mining.put("ore_mithril",         1.0);
-        mining.put("ore_onyxium",         1.0);
-        mining.put("ore_prisma",          1.0);
+        mining.put("ore_adamantite",      2.0);
+        mining.put("ore_mithril",         2.0);
+        mining.put("ore_onyxium",         2.0);
+        mining.put("ore_prisma",          2.0);
         mining.put("rock_crystal_blue",   0.3);
         mining.put("rock_crystal_yellow", 0.3);
         mining.put("rock_crystal_red",    0.3);
         mining.put("rock_crystal_cyan",   0.3);
-        mining.put("rock_crystal_purple", 0.5);
-        mining.put("rock_crystal_white",  1.0);
-        mining.put("rock_crystal_green",  0.5);
+        mining.put("rock_crystal_purple", 0.3);
+        mining.put("rock_crystal_white",  0.3);
+        mining.put("rock_crystal_green",  0.3);
         mining.put("rock_crystal_pink",   0.3);
         mining.put("rock_gem_diamond",   20.0);
         mining.put("rock_gem_emerald",    8.0);
@@ -314,7 +318,7 @@ public class MobFragmentsConfig {
 
     /** 1 frag — XP 8-20 */
     private static final List<String> F1 = List.of(
-        "Rat", "Larva_Silk", "Larva_Void", "Molerat", "Scarab", "Vulture"
+        "Rat", "Larva_Silk", "Larva_Void", "Molerat", "Scarab", "Trilobite", "Vulture"
     );
 
     /** 1 frag — XP 35 */
@@ -339,7 +343,10 @@ public class MobFragmentsConfig {
         "Saurian_Hunter", "Saurian_Rogue", "Saurian_Warrior",
         "Scarak", "Spider",
         "Skeleton", "Wolf", "Trork",
-        "Mosshorn", "Cow_Undead"
+        "Mosshorn", "Cow_Undead",
+        "Horse_Skeleton",
+        "Outlander", "Raptor", "Trillodon",
+        "Toad_Minion"
     );
 
     /** 5 frags — XP 65 */
@@ -350,9 +357,9 @@ public class MobFragmentsConfig {
 
     /** 8 frags — XP 85 + surcharges cross-prefix */
     private static final List<String> F10 = List.of(
-        "Raptor", "Crocodile", "Scorpion",
+        "Crocodile", "Scorpion",
         "Toad_Rhino", "Hound_Bleached",
-        "Trillodon", "Outlander", "Spawn_Void", "Grung_Elder",
+        "Spawn_Void", "Grung_Elder",
         "Endgame_Saurian_Hunter", "Endgame_Saurian_Rogue", "Endgame_Saurian_Warrior",
         "Goblin_Ogre",       // goblin prefix = 5
         "Skeleton_Burnt",    // skeleton prefix = 7
@@ -363,7 +370,7 @@ public class MobFragmentsConfig {
     /** 12 frags — XP 130 */
     private static final List<String> F15 = List.of(
         "Yeti",
-        "Emberwulf", "Golem", "Slothian", "Ghoul", "Wraith",
+        "Emberwulf", "Golem", "Slothian", "Ghoul", "Endgame_Ghoul", "Wraith",
         "Spirit_Thunder"     // spirit prefix = 7
     );
 
@@ -375,7 +382,9 @@ public class MobFragmentsConfig {
     /** 25 frags — XP 250 */
     private static final List<String> F30 = List.of(
         "Void", "Shadow_Knight",
-        "Zombie_Aberrant"    // zombie prefix = 7
+        "Zombie_Aberrant", "Endgame_Zombie_Aberrant",
+        "KF_Fire_Queen",
+        "Fire_Dragon", "Endgame_Fire_Dragon"
     );
 
     /** 50 frags — XP 350-500 */

@@ -30,9 +30,6 @@ import com.hypixel.hytale.server.npc.entities.NPCEntity;
 import com.varyon.component.MobScalingComponent;
 import com.varyon.config.ConfigManager;
 import com.varyon.config.DifficultyZone;
-import com.varyon.config.MobFragmentsConfig;
-import com.varyon.config.ZoneLootConfig;
-import com.varyon.config.ZonePermissionsConfig;
 import com.varyon.util.ZoneCalculator;
 
 import javax.annotation.Nonnull;
@@ -57,18 +54,9 @@ public class MobFragmentDropSystem {
      */
     private final ConcurrentHashMap<Integer, Boolean> victimDamagedByPlayer = new ConcurrentHashMap<>();
 
-    private final MobFragmentsConfig mobConfig;
-    private final ZoneLootConfig zoneConfig;
-    private final ZonePermissionsConfig zonePermsConfig;
     private final ConfigManager configManager;
 
-    public MobFragmentDropSystem(@Nonnull MobFragmentsConfig mobConfig,
-                                 @Nonnull ZoneLootConfig zoneConfig,
-                                 @Nonnull ZonePermissionsConfig zonePermsConfig,
-                                 @Nonnull ConfigManager configManager) {
-        this.mobConfig = mobConfig;
-        this.zoneConfig = zoneConfig;
-        this.zonePermsConfig = zonePermsConfig;
+    public MobFragmentDropSystem(@Nonnull ConfigManager configManager) {
         this.configManager = configManager;
     }
 
@@ -114,7 +102,7 @@ public class MobFragmentDropSystem {
                 Player killerPlayer = (Player) store.getComponent(killerRef, Player.getComponentType());
                 if (killerPlayer == null) return;
 
-                int maxUnlocked = zonePermsConfig.getMaxAccessibleZone(killerPlayer);
+                int maxUnlocked = configManager.getZonePermissionsConfig().getMaxAccessibleZone(killerPlayer);
                 int lootZone = Math.min(zoneId, maxUnlocked);
                 killFragmentZoneByVictim.put(victimId, lootZone);
 
@@ -214,10 +202,10 @@ public class MobFragmentDropSystem {
                 String roleName = npc.getRoleName();
                 if (roleName == null || roleName.isBlank()) return;
 
-                int fragments = mobConfig.getFragments(roleName.toLowerCase(Locale.ROOT));
+                int fragments = configManager.getMobFragmentsConfig().getFragments(roleName.toLowerCase(Locale.ROOT));
                 if (fragments <= 0) return;
 
-                String itemId = zoneConfig.getItemForZone(lootZone);
+                String itemId = configManager.getZoneLootConfig().getItemForZone(lootZone);
                 if (itemId == null || itemId.isBlank()) return;
 
                 TransformComponent transform = (TransformComponent) store.getComponent(ref, TransformComponent.getComponentType());

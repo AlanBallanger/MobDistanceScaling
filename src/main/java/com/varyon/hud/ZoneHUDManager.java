@@ -8,6 +8,7 @@ import com.hypixel.hytale.server.core.universe.PlayerRef;
 import com.hypixel.hytale.server.core.universe.Universe;
 import com.hypixel.hytale.server.core.universe.world.World;
 import com.varyon.VaryonPlugin;
+import com.varyon.config.ConfigManager;
 import com.varyon.config.DifficultyZone;
 import com.varyon.config.MessagesConfig;
 import com.varyon.config.ZoneConfig;
@@ -32,9 +33,9 @@ public class ZoneHUDManager {
 
     private final Map<UUID, ZoneHUD> playerHuds = new ConcurrentHashMap<>();
     private final Map<UUID, Player> playerCache = new ConcurrentHashMap<>();
-    private final ZoneConfig zoneConfig;
-    private final MessagesConfig messagesConfig;
-    private final ZonePermissionsConfig zonePermsConfig;
+    private ZoneConfig zoneConfig;
+    private MessagesConfig messagesConfig;
+    private ZonePermissionsConfig zonePermsConfig;
     private ScheduledFuture<?> updateTask;
     private int tickCounter = 0;
 
@@ -45,6 +46,12 @@ public class ZoneHUDManager {
         this.zonePermsConfig = zonePermsConfig;
         LOGGER.at(Level.INFO).log("ZoneHUDManager initialized");
         startUpdateTask();
+    }
+
+    public void applyReloadedConfigs(@Nonnull ConfigManager configManager) {
+        this.zoneConfig = configManager.getZoneConfig();
+        this.messagesConfig = configManager.getMessagesConfig();
+        this.zonePermsConfig = configManager.getZonePermissionsConfig();
     }
 
     private void startUpdateTask() {

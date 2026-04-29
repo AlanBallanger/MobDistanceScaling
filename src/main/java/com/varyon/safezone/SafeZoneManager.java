@@ -17,8 +17,8 @@ public class SafeZoneManager {
     private static final HytaleLogger LOGGER = HytaleLogger.forEnclosingClass();
     private static final String STATE_FILE = "safezone_state.dat";
     
-    private final SafeZoneConfig config;
-    private final com.varyon.config.ZoneConfig zoneConfig;
+    private SafeZoneConfig config;
+    private com.varyon.config.ZoneConfig zoneConfig;
     private final Path dataDirectory;
     private final Random random = new Random();
     
@@ -48,6 +48,12 @@ public class SafeZoneManager {
             startAnnouncementTask();
             LOGGER.at(Level.INFO).log("SafeZone system initialized - Current safe zone: " + currentQuadrant.getDisplayName());
         }
+    }
+
+    public void applyReloadedConfigs(@Nonnull SafeZoneConfig safeZoneConfig,
+                                     @Nonnull com.varyon.config.ZoneConfig zoneConfig) {
+        this.config = safeZoneConfig;
+        this.zoneConfig = zoneConfig;
     }
 
     private long getRandomRotationDuration() {

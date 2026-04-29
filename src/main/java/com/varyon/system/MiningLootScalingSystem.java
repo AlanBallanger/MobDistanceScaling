@@ -24,6 +24,7 @@ import com.hypixel.hytale.server.core.universe.PlayerRef;
 import com.hypixel.hytale.server.core.universe.world.storage.EntityStore;
 import com.varyon.config.ConfigManager;
 import com.varyon.config.DifficultyZone;
+import com.varyon.util.MiningOreBlockIds;
 import com.varyon.util.ZoneCalculator;
 
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
@@ -60,6 +61,11 @@ public class MiningLootScalingSystem extends EntityEventSystem<EntityStore, Brea
 
         BlockType blockType = event.getBlockType();
         if (blockType == null) {
+            return;
+        }
+
+        String blockTypeId = blockType.getId();
+        if (blockTypeId != null && MiningOreBlockIds.isExcludedFromVaryonOreRewards(blockTypeId)) {
             return;
         }
 

@@ -14,6 +14,7 @@ import com.hypixel.hytale.server.core.event.events.ecs.BreakBlockEvent;
 import com.hypixel.hytale.server.core.event.events.ecs.PlaceBlockEvent;
 import com.hypixel.hytale.server.core.inventory.ItemStack;
 import com.hypixel.hytale.server.core.universe.world.storage.EntityStore;
+import com.varyon.config.ConfigManager;
 import com.varyon.config.EssenceRewardsConfig;
 import com.varyon.config.MobFragmentsConfig;
 
@@ -25,15 +26,15 @@ public class PlaceOreListener extends EntityEventSystem<EntityStore, PlaceBlockE
     private static final HytaleLogger LOGGER = HytaleLogger.forEnclosingClass();
 
     private final PlacedOreTracker tracker;
-    private final MobFragmentsConfig fragmentsConfig;
+    private final ConfigManager configManager;
     private final EssenceRewardsConfig rewardsConfig;
 
     public PlaceOreListener(@Nonnull PlacedOreTracker tracker,
-                            @Nonnull MobFragmentsConfig fragmentsConfig,
+                            @Nonnull ConfigManager configManager,
                             @Nonnull EssenceRewardsConfig rewardsConfig) {
         super(PlaceBlockEvent.class);
         this.tracker = tracker;
-        this.fragmentsConfig = fragmentsConfig;
+        this.configManager = configManager;
         this.rewardsConfig = rewardsConfig;
     }
 
@@ -46,6 +47,7 @@ public class PlaceOreListener extends EntityEventSystem<EntityStore, PlaceBlockE
             if (item == null) return;
 
             String itemId = item.getItemId().toLowerCase();
+            MobFragmentsConfig fragmentsConfig = configManager.getMobFragmentsConfig();
             if (fragmentsConfig.getMiningFragmentWeight(itemId) <= 0 && rewardsConfig.getOreReward(itemId) <= 0) {
                 return;
             }

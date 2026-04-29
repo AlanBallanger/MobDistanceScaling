@@ -28,10 +28,10 @@ import java.util.logging.Level;
 public class GlobalRewardsManager {
     private static final HytaleLogger LOGGER = HytaleLogger.forEnclosingClass();
 
-    private final FactionRewardsConfig config;
+    private FactionRewardsConfig config;
     private final EssenceManager essenceManager;
     private final FactionManager factionManager;
-    private final ZonePermissionsConfig zonePermsConfig;
+    private ZonePermissionsConfig zonePermsConfig;
     private final PendingRewardsStore pendingStore;
 
     /**
@@ -77,6 +77,17 @@ public class GlobalRewardsManager {
         for (int i = 0; i < config.getTiers().size(); i++) {
             tierStates.put(i, new TierState());
         }
+    }
+
+    public synchronized void applyReloadedConfigs(@Nonnull FactionRewardsConfig factionRewards,
+                                                  @Nonnull ZonePermissionsConfig zonePerms) {
+        this.config = factionRewards;
+        this.zonePermsConfig = zonePerms;
+        int n = config.getTiers().size();
+        for (int i = 0; i < n; i++) {
+            tierStates.computeIfAbsent(i, k -> new TierState());
+        }
+        tierStates.keySet().removeIf(k -> k >= n);
     }
 
     /**

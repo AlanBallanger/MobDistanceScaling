@@ -148,6 +148,7 @@ public class VaryonCommand extends AbstractAsyncCommand {
             try {
                 ConfigManager configManager = plugin.getConfigManager();
                 configManager.reload();
+                plugin.onConfigurationReloaded();
 
                 int zoneCount = configManager.getZoneConfig().getZones().size();
                 context.sendMessage(Message.raw("Configuration rechargée! (" + zoneCount + " zones)").color(Color.GREEN));

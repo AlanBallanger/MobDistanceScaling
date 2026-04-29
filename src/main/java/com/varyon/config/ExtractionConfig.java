@@ -3,6 +3,8 @@ package com.varyon.config;
 import javax.annotation.Nonnull;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
 
 public class ExtractionConfig {
     private boolean enabled;
@@ -42,26 +44,64 @@ public class ExtractionConfig {
     }
 
     public int getEffectiveMinDistance(int zoneId) {
-        for (ExtractionZoneDistance z : zoneRanges) {
-            if (z.zoneId() == zoneId) {
-                return z.minDistance();
-            }
-        }
-        return minDistance;
+        return resolveDistance(zoneId, true);
     }
 
     public int getEffectiveMaxDistance(int zoneId) {
-        for (ExtractionZoneDistance z : zoneRanges) {
-            if (z.zoneId() == zoneId) {
-                return z.maxDistance();
+        return resolveDistance(zoneId, false);
+    }
+
+    private int resolveDistance(int zoneId, boolean useMin) {
+        if (zoneId <= 0) {
+            return useMin ? minDistance : maxDistance;
+        }
+        List<ExtractionZoneDistance> anchors = sortedUniqueAnchors();
+        if (anchors.isEmpty()) {
+            return useMin ? minDistance : maxDistance;
+        }
+        if (anchors.size() == 1) {
+            ExtractionZoneDistance a = anchors.get(0);
+            if (zoneId == a.zoneId()) {
+                return useMin ? a.minDistance() : a.maxDistance();
+            }
+            return useMin ? minDistance : maxDistance;
+        }
+        ExtractionZoneDistance first = anchors.get(0);
+        ExtractionZoneDistance last = anchors.get(anchors.size() - 1);
+        if (zoneId <= first.zoneId()) {
+            return useMin ? first.minDistance() : first.maxDistance();
+        }
+        if (zoneId >= last.zoneId()) {
+            return useMin ? last.minDistance() : last.maxDistance();
+        }
+        for (int i = 0; i < anchors.size() - 1; i++) {
+            int zLo = anchors.get(i).zoneId();
+            int zHi = anchors.get(i + 1).zoneId();
+            if (zoneId >= zLo && zoneId <= zHi) {
+                if (zHi == zLo) {
+                    return useMin ? anchors.get(i).minDistance() : anchors.get(i).maxDistance();
+                }
+                double t = (zoneId - zLo) / (double) (zHi - zLo);
+                int vLo = useMin ? anchors.get(i).minDistance() : anchors.get(i).maxDistance();
+                int vHi = useMin ? anchors.get(i + 1).minDistance() : anchors.get(i + 1).maxDistance();
+                return (int) Math.round(vLo + t * (vHi - vLo));
             }
         }
-        return maxDistance;
+        return useMin ? minDistance : maxDistance;
+    }
+
+    @Nonnull
+    private List<ExtractionZoneDistance> sortedUniqueAnchors() {
+        Map<Integer, ExtractionZoneDistance> byId = new TreeMap<>();
+        for (ExtractionZoneDistance z : zoneRanges) {
+            byId.put(z.zoneId(), z);
+        }
+        return new ArrayList<>(byId.values());
     }
 
     public static void applyDefaultZoneRangesForNewConfig(@Nonnull ExtractionConfig config) {
         config.setZoneRanges(List.of(
-            new ExtractionZoneDistance(1, 20, 50),
+            new ExtractionZoneDistance(1, 100, 200),
             new ExtractionZoneDistance(10, 400, 500)
         ));
     }

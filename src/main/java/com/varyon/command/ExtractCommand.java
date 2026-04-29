@@ -23,7 +23,6 @@ import com.varyon.config.ExtractionConfig;
 import com.varyon.config.MessagesConfig;
 import com.varyon.config.ZoneConfig;
 import com.varyon.extraction.ExtractionPortalManager;
-import com.varyon.util.VaryonWorldAccess;
 import com.varyon.util.ZoneCalculator;
 
 import javax.annotation.Nonnull;
@@ -67,7 +66,7 @@ public class ExtractCommand extends AbstractPlayerCommand {
             return;
         }
 
-        if (!VaryonWorldAccess.isVaryonEnabledWorld(world)) {
+        if (!isVaryonWorldForExtract(world)) {
             context.sendMessage(Message.raw("Cette commande n'est disponible que sur les mondes Varyon.").color(Color.RED));
             return;
         }
@@ -144,6 +143,15 @@ public class ExtractCommand extends AbstractPlayerCommand {
                 context.sendMessage(Message.raw(msg.error).color(Color.RED));
             }
         });
+    }
+
+    private static boolean isVaryonWorldForExtract(@Nullable World world) {
+        if (world == null) {
+            return false;
+        }
+        ZoneConfig zoneConfig = VaryonPlugin.getStaticConfigManager() != null
+            ? VaryonPlugin.getStaticConfigManager().getZoneConfig() : null;
+        return zoneConfig != null && zoneConfig.isWorldEnabled(world.getName());
     }
 
     @Nullable

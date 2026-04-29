@@ -139,16 +139,16 @@ public class ZoneConfig {
         config.zoneSoundPitch = 1.0f;
         config.zoneHudEnabled = true;
 
-        config.addZone(new DifficultyZone(1,  "#55FF55", 1.0,  1.0,  1.0,  1.0,  0,     "Facile",          100));
-        config.addZone(new DifficultyZone(2,  "#55FFAA", 1.5,  1.5,  1.25, 1.2,  5000,  "Normale",         200));
-        config.addZone(new DifficultyZone(3,  "#E6FF33", 2.0,  2.25, 1.6,  1.4,  7500,  "Intermédiaire",   300));
-        config.addZone(new DifficultyZone(4,  "#FFC533", 3.0,  3.5,  1.8,  1.6,  10000, "Avancée",        400));
-        config.addZone(new DifficultyZone(5,  "#FF7A1A", 4.25, 5.0,  2.0,  1.8,  12500, "Difficile",      500));
-        config.addZone(new DifficultyZone(6,  "#FF3030", 5.5,  6.5,  2.25, 2.0,  15000, "Très difficile", 600));
-        config.addZone(new DifficultyZone(7,  "#C0003A", 7.0,  8.5,  2.5,  2.2,  17500, "Extreme",        700));
-        config.addZone(new DifficultyZone(8,  "#8A2BFF", 8.5,  11.0, 2.75, 2.4,  20000, "Cauchemar",      800));
-        config.addZone(new DifficultyZone(9,  "#05000A", 11.0, 15.0, 3.0,  2.6,  22500, "Enfer",          900));
-        config.addZone(new DifficultyZone(10, "#3D0000", 13.0, 20.0, 3.25, 2.8,  25000, "Abysse",        1000));
+        config.addZone(new DifficultyZone(1,  "#55FF55", 1.0,  1.0,  1.0,  1.0,  0,     "Facile",          50));
+        config.addZone(new DifficultyZone(2,  "#55FFAA", 1.5,  1.5,  1.25, 1.2,  5000,  "Normale",         100));
+        config.addZone(new DifficultyZone(3,  "#E6FF33", 2.0,  2.25, 1.6,  1.4,  7500,  "Intermédiaire",   150));
+        config.addZone(new DifficultyZone(4,  "#FFC533", 3.0,  3.5,  1.8,  1.6,  10000, "Avancée",        200));
+        config.addZone(new DifficultyZone(5,  "#FF7A1A", 4.25, 5.0,  2.0,  1.8,  12500, "Difficile",      250));
+        config.addZone(new DifficultyZone(6,  "#FF3030", 5.5,  6.5,  2.25, 2.0,  15000, "Très difficile", 300));
+        config.addZone(new DifficultyZone(7,  "#C0003A", 7.0,  8.5,  2.5,  2.2,  17500, "Extreme",        350));
+        config.addZone(new DifficultyZone(8,  "#8A2BFF", 8.5,  11.0, 2.75, 2.4,  20000, "Cauchemar",      400));
+        config.addZone(new DifficultyZone(9,  "#05000A", 11.0, 15.0, 3.0,  2.6,  22500, "Enfer",          450));
+        config.addZone(new DifficultyZone(10, "#3D0000", 13.0, 20.0, 3.25, 2.8,  25000, "Abysse",        500));
 
         config.addInstanceZonePattern("instance-portals_henges", 1);
         config.addInstanceZonePattern("instance-portals_oasis", 1);
