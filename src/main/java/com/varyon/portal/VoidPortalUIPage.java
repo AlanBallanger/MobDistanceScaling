@@ -29,8 +29,29 @@ import javax.annotation.Nullable;
 
 public class VoidPortalUIPage extends InteractiveCustomUIPage<VoidPortalUIPage.EventDataClass> {
 
+    private static final String ECON_PRICE_PREFIX = "\u00A4 ";
+
     public VoidPortalUIPage(@Nonnull PlayerRef playerRef) {
         super(playerRef, CustomPageLifetime.CanDismiss, EventDataClass.CODEC);
+    }
+
+    @Nonnull
+    private static String radiusSubtitleLine(@Nullable List<DifficultyZone> zones, int indexOneBased) {
+        if (zones == null || zones.isEmpty() || indexOneBased < 1 || indexOneBased > zones.size()) {
+            return "";
+        }
+        if (indexOneBased == 1) {
+            if (zones.size() < 2) {
+                return "";
+            }
+            return "Moins de " + zones.get(1).getRadiusStart() + " blocs";
+        }
+        DifficultyZone cur = zones.get(indexOneBased - 1);
+        if (indexOneBased == zones.size()) {
+            return cur.getRadiusStart() + " - infini blocs";
+        }
+        DifficultyZone next = zones.get(indexOneBased);
+        return cur.getRadiusStart() + " - " + next.getRadiusStart() + " blocs";
     }
 
     @Override
@@ -72,19 +93,32 @@ public class VoidPortalUIPage extends InteractiveCustomUIPage<VoidPortalUIPage.E
                 commandBuilder.set("#ZoneMain" + i + ".Disabled", true);
                 commandBuilder.set("#ZonePvP" + i + ".Disabled", true);
                 commandBuilder.set("#ZoneSafe" + i + ".Disabled", true);
+                commandBuilder.set("#ZoneRadius" + i + ".Visible", false);
+                commandBuilder.set("#ZoneMainPriceRow" + i + ".Visible", false);
+                commandBuilder.set("#ZonePvPPriceRow" + i + ".Visible", false);
+                commandBuilder.set("#ZoneSafePriceRow" + i + ".Visible", false);
                 continue;
             }
+
+            commandBuilder.set("#ZoneRadius" + i + ".Visible", true);
+            commandBuilder.set("#ZoneRadiusValue" + i + ".Text", radiusSubtitleLine(zones, i));
 
             DifficultyZone zone = zones != null ? zones.get(i - 1) : null;
             int baseCost = zone != null ? zone.getTeleportCost() : 0;
             int safeCost = (int) Math.ceil(baseCost * safeMultiplier);
 
-            String basePrice = economyEnabled ? "(" + baseCost + " coins)" : "";
-            String safePrice = economyEnabled ? "(" + safeCost + " coins)" : "";
-
-            commandBuilder.set("#ZoneMainPrice" + i + ".Text", basePrice);
-            commandBuilder.set("#ZonePvPPrice" + i + ".Text", basePrice);
-            commandBuilder.set("#ZoneSafePrice" + i + ".Text", safePrice);
+            if (economyEnabled) {
+                commandBuilder.set("#ZoneMainPriceRow" + i + ".Visible", true);
+                commandBuilder.set("#ZonePvPPriceRow" + i + ".Visible", true);
+                commandBuilder.set("#ZoneSafePriceRow" + i + ".Visible", true);
+                commandBuilder.set("#ZoneMainPrice" + i + ".Text", ECON_PRICE_PREFIX + baseCost);
+                commandBuilder.set("#ZonePvPPrice" + i + ".Text", ECON_PRICE_PREFIX + baseCost);
+                commandBuilder.set("#ZoneSafePrice" + i + ".Text", ECON_PRICE_PREFIX + safeCost);
+            } else {
+                commandBuilder.set("#ZoneMainPriceRow" + i + ".Visible", false);
+                commandBuilder.set("#ZonePvPPriceRow" + i + ".Visible", false);
+                commandBuilder.set("#ZoneSafePriceRow" + i + ".Visible", false);
+            }
 
             int zoneId = i;
             eventBuilder.addEventBinding(CustomUIEventBindingType.Activating, "#ZoneMain" + i,

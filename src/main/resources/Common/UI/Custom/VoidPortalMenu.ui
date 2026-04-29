@@ -4,6 +4,7 @@ $C.@PageOverlay {
 
   $C.@DecoratedContainer {
     Anchor: (Width: 980, Height: 670);
+    Background: (Color: #16102a);
 
     #Title {
       Group {
@@ -12,15 +13,15 @@ $C.@PageOverlay {
         Label #MenuTitle {
           FlexWeight: 1;
           Text: "Téléportation zones Varyon";
-          Style: (FontSize: 20, RenderBold: true, TextColor: #ffffff, VerticalAlignment: Center, HorizontalAlignment: Center);
+          Style: (FontSize: 20, RenderBold: true, TextColor: #f2ecff, VerticalAlignment: Center, HorizontalAlignment: Center);
         }
 
         TextButton #CloseButton {
           Text: "X";
           Anchor: (Width: 30, Height: 30, Top: 2, Right: 10);
           Style: TextButtonStyle(
-            Default: (LabelStyle: (FontSize: 18, TextColor: #ffffff, RenderBold: true, HorizontalAlignment: Center, VerticalAlignment: Center)),
-            Hovered: (Background: (Color: #cc4444), LabelStyle: (FontSize: 18, TextColor: #ffffff, RenderBold: true, HorizontalAlignment: Center, VerticalAlignment: Center))
+            Default: (LabelStyle: (FontSize: 18, TextColor: #f2ecff, RenderBold: true, HorizontalAlignment: Center, VerticalAlignment: Center)),
+            Hovered: (Background: (Color: #7a3448), LabelStyle: (FontSize: 18, TextColor: #ffffff, RenderBold: true, HorizontalAlignment: Center, VerticalAlignment: Center))
           );
         }
       }
@@ -29,85 +30,116 @@ $C.@PageOverlay {
     #Content {
       Padding: (Top: 12, Bottom: 12, Left: 12, Right: 12);
       LayoutMode: Top;
+      Background: (Color: #1a142e);
 
       Group #Row1 {
         LayoutMode: Left;
-        Anchor: (Height: 195, Bottom: 8);
+        Anchor: (Height: 244, Bottom: 8);
 
         Group #ZoneCard1 {
           FlexWeight: 1;
           Anchor: (Right: 6);
-          Background: (Color: #0b1624);
-          OutlineColor: #2a3a4a;
+          Background: (Color: #201a36);
+          OutlineColor: #3d3458;
           OutlineSize: 2;
           LayoutMode: Top;
 
-          Group #ZoneImg1 {
-            Anchor: (Height: 92);
-            Background: "varyon_zones.png";
-            Padding: (Top: 5, Left: 7);
+          Group {
+            Anchor: (Height: 26);
+            Background: (Color: #2a2448);
+            Padding: (Left: 8, Right: 8);
+            LayoutMode: Middle;
             Label {
               Text: "Zone 1";
-              Style: (FontSize: 14, RenderBold: true, TextColor: #ffffff);
+              Style: (FontSize: 13, RenderBold: true, TextColor: #efe8ff, HorizontalAlignment: Center, VerticalAlignment: Center);
+            }
+          }
+
+          Group #ZoneImg1 {
+            Anchor: (Height: 88);
+            Background: "varyon_zones.png";
+          }
+
+          Group #ZoneRadius1 {
+            Anchor: (Height: 40);
+            Background: (Color: #2a2440);
+            Padding: (Left: 6, Right: 6, Top: 4, Bottom: 4);
+            LayoutMode: Top;
+            Label #ZoneRadiusTitle1 {
+              Text: "RAYON";
+              Style: (FontSize: 10, RenderBold: true, TextColor: #c4b8e8, HorizontalAlignment: Center);
+            }
+            Label #ZoneRadiusValue1 {
+              Text: "";
+              Style: (FontSize: 11, TextColor: #f0ecf8, HorizontalAlignment: Center, Wrap: true);
             }
           }
 
           Group {
-            Padding: (Left: 5, Right: 5, Top: 5, Bottom: 5);
+            Padding: (Left: 5, Right: 5, Top: 6, Bottom: 6);
             LayoutMode: Top;
-
-            Button #ZoneMain1 {
-              Anchor: (Height: 46, Bottom: 4);
-              Style: ButtonStyle(
-                Default: (Background: (Color: #1a5a9a)),
-                Hovered: (Background: (Color: #2a6aaa)),
-                Pressed: (Background: (Color: #104878))
-              );
-              OutlineColor: #0a3060;
-              OutlineSize: 1;
-              Group {
-                LayoutMode: Middle;
-                Group {
-                  LayoutMode: Top;
-                  Label #ZoneMainTitle1 {
-                    Anchor: (Bottom: 1);
-                    Text: "TP aleatoirement dans la zone 1";
-                    Style: (FontSize: 11, RenderBold: true, TextColor: #ffffff, HorizontalAlignment: Center);
-                  }
-                  Label #ZoneMainPrice1 {
-                    Text: "";
-                    Style: (FontSize: 10, TextColor: #7a8a9a, HorizontalAlignment: Center);
-                  }
-                }
-              }
-            }
 
             Group {
               LayoutMode: Left;
-              Anchor: (Height: 38);
+              Anchor: (Height: 72);
+
+              Button #ZoneMain1 {
+                FlexWeight: 1;
+                Anchor: (Right: 4);
+                Style: ButtonStyle(
+                  Default: (Background: (Color: #242038)),
+                  Hovered: (Background: (Color: #2e2a48)),
+                  Pressed: (Background: (Color: #18162a))
+                );
+                OutlineColor: #141228;
+                OutlineSize: 1;
+                Group {
+                  LayoutMode: Top;
+                  Padding: (Top: 4, Bottom: 4, Left: 3, Right: 3);
+                  Group {
+                    LayoutMode: Middle;
+                    Label #ZoneMainTitle1 {
+                      Text: "Aléatoire";
+                      Style: (FontSize: 11, RenderBold: true, TextColor: #c8c2e0, HorizontalAlignment: Center, VerticalAlignment: Center, Wrap: false);
+                    }
+                  }
+                  Group #ZoneMainPriceRow1 {
+                    LayoutMode: Middle;
+                    Anchor: (Top: 6);
+                                        Label #ZoneMainPrice1 {
+                      Text: "";
+                      Style: (FontSize: 10, TextColor: #dcd4f0, HorizontalAlignment: Center, VerticalAlignment: Center, Wrap: false);
+                    }
+                  }
+                }
+              }
 
               Button #ZonePvP1 {
                 FlexWeight: 1;
-                Anchor: (Right: 3);
+                Anchor: (Right: 4);
                 Style: ButtonStyle(
-                  Default: (Background: (Color: #6a1818)),
-                  Hovered: (Background: (Color: #7a2828)),
-                  Pressed: (Background: (Color: #550f0f))
+                  Default: (Background: (Color: #521420)),
+                  Hovered: (Background: (Color: #621a28)),
+                  Pressed: (Background: (Color: #3a0c14))
                 );
-                OutlineColor: #3a0808;
+                OutlineColor: #300810;
                 OutlineSize: 1;
                 Group {
-                  LayoutMode: Middle;
+                  LayoutMode: Top;
+                  Padding: (Top: 4, Bottom: 4, Left: 3, Right: 3);
                   Group {
-                    LayoutMode: Top;
+                    LayoutMode: Middle;
                     Label {
-                      Anchor: (Bottom: 1);
-                      Text: "Choix PvP actif";
-                      Style: (FontSize: 10, RenderBold: true, TextColor: #ffaaaa, HorizontalAlignment: Center);
+                      Text: "PvP actif";
+                      Style: (FontSize: 11, RenderBold: true, TextColor: #e09090, HorizontalAlignment: Center, VerticalAlignment: Center, Wrap: false);
                     }
-                    Label #ZonePvPPrice1 {
+                  }
+                  Group #ZonePvPPriceRow1 {
+                    LayoutMode: Middle;
+                    Anchor: (Top: 6);
+                                        Label #ZonePvPPrice1 {
                       Text: "";
-                      Style: (FontSize: 9, TextColor: #7a8a9a, HorizontalAlignment: Center);
+                      Style: (FontSize: 10, TextColor: #e8d0d0, HorizontalAlignment: Center, VerticalAlignment: Center, Wrap: false);
                     }
                   }
                 }
@@ -116,24 +148,28 @@ $C.@PageOverlay {
               Button #ZoneSafe1 {
                 FlexWeight: 1;
                 Style: ButtonStyle(
-                  Default: (Background: (Color: #185a28)),
-                  Hovered: (Background: (Color: #286a38)),
-                  Pressed: (Background: (Color: #0f4018))
+                  Default: (Background: (Color: #1e5c2e)),
+                  Hovered: (Background: (Color: #2a7038)),
+                  Pressed: (Background: (Color: #144522))
                 );
-                OutlineColor: #083818;
+                OutlineColor: #0c3818;
                 OutlineSize: 1;
                 Group {
-                  LayoutMode: Middle;
+                  LayoutMode: Top;
+                  Padding: (Top: 4, Bottom: 4, Left: 3, Right: 3);
                   Group {
-                    LayoutMode: Top;
+                    LayoutMode: Middle;
                     Label {
-                      Anchor: (Bottom: 1);
-                      Text: "Choix PvP inactif";
-                      Style: (FontSize: 10, RenderBold: true, TextColor: #aaffaa, HorizontalAlignment: Center);
+                      Text: "PvP inactif";
+                      Style: (FontSize: 11, RenderBold: true, TextColor: #a8e8a8, HorizontalAlignment: Center, VerticalAlignment: Center, Wrap: false);
                     }
-                    Label #ZoneSafePrice1 {
+                  }
+                  Group #ZoneSafePriceRow1 {
+                    LayoutMode: Middle;
+                    Anchor: (Top: 6);
+                                        Label #ZoneSafePrice1 {
                       Text: "";
-                      Style: (FontSize: 9, TextColor: #7a8a9a, HorizontalAlignment: Center);
+                      Style: (FontSize: 10, TextColor: #d0ead8, HorizontalAlignment: Center, VerticalAlignment: Center, Wrap: false);
                     }
                   }
                 }
@@ -141,80 +177,111 @@ $C.@PageOverlay {
             }
           }
         }
+
         Group #ZoneCard2 {
           FlexWeight: 1;
           Anchor: (Right: 6);
-          Background: (Color: #0b1624);
-          OutlineColor: #2a3a4a;
+          Background: (Color: #201a36);
+          OutlineColor: #3d3458;
           OutlineSize: 2;
           LayoutMode: Top;
 
-          Group #ZoneImg2 {
-            Anchor: (Height: 92);
-            Background: "varyon_zones.png";
-            Padding: (Top: 5, Left: 7);
+          Group {
+            Anchor: (Height: 26);
+            Background: (Color: #2a2448);
+            Padding: (Left: 8, Right: 8);
+            LayoutMode: Middle;
             Label {
               Text: "Zone 2";
-              Style: (FontSize: 14, RenderBold: true, TextColor: #ffffff);
+              Style: (FontSize: 13, RenderBold: true, TextColor: #efe8ff, HorizontalAlignment: Center, VerticalAlignment: Center);
+            }
+          }
+
+          Group #ZoneImg2 {
+            Anchor: (Height: 88);
+            Background: "varyon_zones.png";
+          }
+
+          Group #ZoneRadius2 {
+            Anchor: (Height: 40);
+            Background: (Color: #2a2440);
+            Padding: (Left: 6, Right: 6, Top: 4, Bottom: 4);
+            LayoutMode: Top;
+            Label #ZoneRadiusTitle2 {
+              Text: "RAYON";
+              Style: (FontSize: 10, RenderBold: true, TextColor: #c4b8e8, HorizontalAlignment: Center);
+            }
+            Label #ZoneRadiusValue2 {
+              Text: "";
+              Style: (FontSize: 11, TextColor: #f0ecf8, HorizontalAlignment: Center, Wrap: true);
             }
           }
 
           Group {
-            Padding: (Left: 5, Right: 5, Top: 5, Bottom: 5);
+            Padding: (Left: 5, Right: 5, Top: 6, Bottom: 6);
             LayoutMode: Top;
-
-            Button #ZoneMain2 {
-              Anchor: (Height: 46, Bottom: 4);
-              Style: ButtonStyle(
-                Default: (Background: (Color: #1a5a9a)),
-                Hovered: (Background: (Color: #2a6aaa)),
-                Pressed: (Background: (Color: #104878))
-              );
-              OutlineColor: #0a3060;
-              OutlineSize: 1;
-              Group {
-                LayoutMode: Middle;
-                Group {
-                  LayoutMode: Top;
-                  Label #ZoneMainTitle2 {
-                    Anchor: (Bottom: 1);
-                    Text: "TP aleatoirement dans la zone 2";
-                    Style: (FontSize: 11, RenderBold: true, TextColor: #ffffff, HorizontalAlignment: Center);
-                  }
-                  Label #ZoneMainPrice2 {
-                    Text: "";
-                    Style: (FontSize: 10, TextColor: #7a8a9a, HorizontalAlignment: Center);
-                  }
-                }
-              }
-            }
 
             Group {
               LayoutMode: Left;
-              Anchor: (Height: 38);
+              Anchor: (Height: 72);
+
+              Button #ZoneMain2 {
+                FlexWeight: 1;
+                Anchor: (Right: 4);
+                Style: ButtonStyle(
+                  Default: (Background: (Color: #242038)),
+                  Hovered: (Background: (Color: #2e2a48)),
+                  Pressed: (Background: (Color: #18162a))
+                );
+                OutlineColor: #141228;
+                OutlineSize: 1;
+                Group {
+                  LayoutMode: Top;
+                  Padding: (Top: 4, Bottom: 4, Left: 3, Right: 3);
+                  Group {
+                    LayoutMode: Middle;
+                    Label #ZoneMainTitle2 {
+                      Text: "Aléatoire";
+                      Style: (FontSize: 11, RenderBold: true, TextColor: #c8c2e0, HorizontalAlignment: Center, VerticalAlignment: Center, Wrap: false);
+                    }
+                  }
+                  Group #ZoneMainPriceRow2 {
+                    LayoutMode: Middle;
+                    Anchor: (Top: 6);
+                                        Label #ZoneMainPrice2 {
+                      Text: "";
+                      Style: (FontSize: 10, TextColor: #dcd4f0, HorizontalAlignment: Center, VerticalAlignment: Center, Wrap: false);
+                    }
+                  }
+                }
+              }
 
               Button #ZonePvP2 {
                 FlexWeight: 1;
-                Anchor: (Right: 3);
+                Anchor: (Right: 4);
                 Style: ButtonStyle(
-                  Default: (Background: (Color: #6a1818)),
-                  Hovered: (Background: (Color: #7a2828)),
-                  Pressed: (Background: (Color: #550f0f))
+                  Default: (Background: (Color: #521420)),
+                  Hovered: (Background: (Color: #621a28)),
+                  Pressed: (Background: (Color: #3a0c14))
                 );
-                OutlineColor: #3a0808;
+                OutlineColor: #300810;
                 OutlineSize: 1;
                 Group {
-                  LayoutMode: Middle;
+                  LayoutMode: Top;
+                  Padding: (Top: 4, Bottom: 4, Left: 3, Right: 3);
                   Group {
-                    LayoutMode: Top;
+                    LayoutMode: Middle;
                     Label {
-                      Anchor: (Bottom: 1);
-                      Text: "Choix PvP actif";
-                      Style: (FontSize: 10, RenderBold: true, TextColor: #ffaaaa, HorizontalAlignment: Center);
+                      Text: "PvP actif";
+                      Style: (FontSize: 11, RenderBold: true, TextColor: #e09090, HorizontalAlignment: Center, VerticalAlignment: Center, Wrap: false);
                     }
-                    Label #ZonePvPPrice2 {
+                  }
+                  Group #ZonePvPPriceRow2 {
+                    LayoutMode: Middle;
+                    Anchor: (Top: 6);
+                                        Label #ZonePvPPrice2 {
                       Text: "";
-                      Style: (FontSize: 9, TextColor: #7a8a9a, HorizontalAlignment: Center);
+                      Style: (FontSize: 10, TextColor: #e8d0d0, HorizontalAlignment: Center, VerticalAlignment: Center, Wrap: false);
                     }
                   }
                 }
@@ -223,24 +290,28 @@ $C.@PageOverlay {
               Button #ZoneSafe2 {
                 FlexWeight: 1;
                 Style: ButtonStyle(
-                  Default: (Background: (Color: #185a28)),
-                  Hovered: (Background: (Color: #286a38)),
-                  Pressed: (Background: (Color: #0f4018))
+                  Default: (Background: (Color: #1e5c2e)),
+                  Hovered: (Background: (Color: #2a7038)),
+                  Pressed: (Background: (Color: #144522))
                 );
-                OutlineColor: #083818;
+                OutlineColor: #0c3818;
                 OutlineSize: 1;
                 Group {
-                  LayoutMode: Middle;
+                  LayoutMode: Top;
+                  Padding: (Top: 4, Bottom: 4, Left: 3, Right: 3);
                   Group {
-                    LayoutMode: Top;
+                    LayoutMode: Middle;
                     Label {
-                      Anchor: (Bottom: 1);
-                      Text: "Choix PvP inactif";
-                      Style: (FontSize: 10, RenderBold: true, TextColor: #aaffaa, HorizontalAlignment: Center);
+                      Text: "PvP inactif";
+                      Style: (FontSize: 11, RenderBold: true, TextColor: #a8e8a8, HorizontalAlignment: Center, VerticalAlignment: Center, Wrap: false);
                     }
-                    Label #ZoneSafePrice2 {
+                  }
+                  Group #ZoneSafePriceRow2 {
+                    LayoutMode: Middle;
+                    Anchor: (Top: 6);
+                                        Label #ZoneSafePrice2 {
                       Text: "";
-                      Style: (FontSize: 9, TextColor: #7a8a9a, HorizontalAlignment: Center);
+                      Style: (FontSize: 10, TextColor: #d0ead8, HorizontalAlignment: Center, VerticalAlignment: Center, Wrap: false);
                     }
                   }
                 }
@@ -248,80 +319,111 @@ $C.@PageOverlay {
             }
           }
         }
+
         Group #ZoneCard3 {
           FlexWeight: 1;
           Anchor: (Right: 6);
-          Background: (Color: #0b1624);
-          OutlineColor: #2a3a4a;
+          Background: (Color: #201a36);
+          OutlineColor: #3d3458;
           OutlineSize: 2;
           LayoutMode: Top;
 
-          Group #ZoneImg3 {
-            Anchor: (Height: 92);
-            Background: "varyon_zones.png";
-            Padding: (Top: 5, Left: 7);
+          Group {
+            Anchor: (Height: 26);
+            Background: (Color: #2a2448);
+            Padding: (Left: 8, Right: 8);
+            LayoutMode: Middle;
             Label {
               Text: "Zone 3";
-              Style: (FontSize: 14, RenderBold: true, TextColor: #ffffff);
+              Style: (FontSize: 13, RenderBold: true, TextColor: #efe8ff, HorizontalAlignment: Center, VerticalAlignment: Center);
+            }
+          }
+
+          Group #ZoneImg3 {
+            Anchor: (Height: 88);
+            Background: "varyon_zones.png";
+          }
+
+          Group #ZoneRadius3 {
+            Anchor: (Height: 40);
+            Background: (Color: #2a2440);
+            Padding: (Left: 6, Right: 6, Top: 4, Bottom: 4);
+            LayoutMode: Top;
+            Label #ZoneRadiusTitle3 {
+              Text: "RAYON";
+              Style: (FontSize: 10, RenderBold: true, TextColor: #c4b8e8, HorizontalAlignment: Center);
+            }
+            Label #ZoneRadiusValue3 {
+              Text: "";
+              Style: (FontSize: 11, TextColor: #f0ecf8, HorizontalAlignment: Center, Wrap: true);
             }
           }
 
           Group {
-            Padding: (Left: 5, Right: 5, Top: 5, Bottom: 5);
+            Padding: (Left: 5, Right: 5, Top: 6, Bottom: 6);
             LayoutMode: Top;
-
-            Button #ZoneMain3 {
-              Anchor: (Height: 46, Bottom: 4);
-              Style: ButtonStyle(
-                Default: (Background: (Color: #1a5a9a)),
-                Hovered: (Background: (Color: #2a6aaa)),
-                Pressed: (Background: (Color: #104878))
-              );
-              OutlineColor: #0a3060;
-              OutlineSize: 1;
-              Group {
-                LayoutMode: Middle;
-                Group {
-                  LayoutMode: Top;
-                  Label #ZoneMainTitle3 {
-                    Anchor: (Bottom: 1);
-                    Text: "TP aleatoirement dans la zone 3";
-                    Style: (FontSize: 11, RenderBold: true, TextColor: #ffffff, HorizontalAlignment: Center);
-                  }
-                  Label #ZoneMainPrice3 {
-                    Text: "";
-                    Style: (FontSize: 10, TextColor: #7a8a9a, HorizontalAlignment: Center);
-                  }
-                }
-              }
-            }
 
             Group {
               LayoutMode: Left;
-              Anchor: (Height: 38);
+              Anchor: (Height: 72);
+
+              Button #ZoneMain3 {
+                FlexWeight: 1;
+                Anchor: (Right: 4);
+                Style: ButtonStyle(
+                  Default: (Background: (Color: #242038)),
+                  Hovered: (Background: (Color: #2e2a48)),
+                  Pressed: (Background: (Color: #18162a))
+                );
+                OutlineColor: #141228;
+                OutlineSize: 1;
+                Group {
+                  LayoutMode: Top;
+                  Padding: (Top: 4, Bottom: 4, Left: 3, Right: 3);
+                  Group {
+                    LayoutMode: Middle;
+                    Label #ZoneMainTitle3 {
+                      Text: "Aléatoire";
+                      Style: (FontSize: 11, RenderBold: true, TextColor: #c8c2e0, HorizontalAlignment: Center, VerticalAlignment: Center, Wrap: false);
+                    }
+                  }
+                  Group #ZoneMainPriceRow3 {
+                    LayoutMode: Middle;
+                    Anchor: (Top: 6);
+                                        Label #ZoneMainPrice3 {
+                      Text: "";
+                      Style: (FontSize: 10, TextColor: #dcd4f0, HorizontalAlignment: Center, VerticalAlignment: Center, Wrap: false);
+                    }
+                  }
+                }
+              }
 
               Button #ZonePvP3 {
                 FlexWeight: 1;
-                Anchor: (Right: 3);
+                Anchor: (Right: 4);
                 Style: ButtonStyle(
-                  Default: (Background: (Color: #6a1818)),
-                  Hovered: (Background: (Color: #7a2828)),
-                  Pressed: (Background: (Color: #550f0f))
+                  Default: (Background: (Color: #521420)),
+                  Hovered: (Background: (Color: #621a28)),
+                  Pressed: (Background: (Color: #3a0c14))
                 );
-                OutlineColor: #3a0808;
+                OutlineColor: #300810;
                 OutlineSize: 1;
                 Group {
-                  LayoutMode: Middle;
+                  LayoutMode: Top;
+                  Padding: (Top: 4, Bottom: 4, Left: 3, Right: 3);
                   Group {
-                    LayoutMode: Top;
+                    LayoutMode: Middle;
                     Label {
-                      Anchor: (Bottom: 1);
-                      Text: "Choix PvP actif";
-                      Style: (FontSize: 10, RenderBold: true, TextColor: #ffaaaa, HorizontalAlignment: Center);
+                      Text: "PvP actif";
+                      Style: (FontSize: 11, RenderBold: true, TextColor: #e09090, HorizontalAlignment: Center, VerticalAlignment: Center, Wrap: false);
                     }
-                    Label #ZonePvPPrice3 {
+                  }
+                  Group #ZonePvPPriceRow3 {
+                    LayoutMode: Middle;
+                    Anchor: (Top: 6);
+                                        Label #ZonePvPPrice3 {
                       Text: "";
-                      Style: (FontSize: 9, TextColor: #7a8a9a, HorizontalAlignment: Center);
+                      Style: (FontSize: 10, TextColor: #e8d0d0, HorizontalAlignment: Center, VerticalAlignment: Center, Wrap: false);
                     }
                   }
                 }
@@ -330,24 +432,28 @@ $C.@PageOverlay {
               Button #ZoneSafe3 {
                 FlexWeight: 1;
                 Style: ButtonStyle(
-                  Default: (Background: (Color: #185a28)),
-                  Hovered: (Background: (Color: #286a38)),
-                  Pressed: (Background: (Color: #0f4018))
+                  Default: (Background: (Color: #1e5c2e)),
+                  Hovered: (Background: (Color: #2a7038)),
+                  Pressed: (Background: (Color: #144522))
                 );
-                OutlineColor: #083818;
+                OutlineColor: #0c3818;
                 OutlineSize: 1;
                 Group {
-                  LayoutMode: Middle;
+                  LayoutMode: Top;
+                  Padding: (Top: 4, Bottom: 4, Left: 3, Right: 3);
                   Group {
-                    LayoutMode: Top;
+                    LayoutMode: Middle;
                     Label {
-                      Anchor: (Bottom: 1);
-                      Text: "Choix PvP inactif";
-                      Style: (FontSize: 10, RenderBold: true, TextColor: #aaffaa, HorizontalAlignment: Center);
+                      Text: "PvP inactif";
+                      Style: (FontSize: 11, RenderBold: true, TextColor: #a8e8a8, HorizontalAlignment: Center, VerticalAlignment: Center, Wrap: false);
                     }
-                    Label #ZoneSafePrice3 {
+                  }
+                  Group #ZoneSafePriceRow3 {
+                    LayoutMode: Middle;
+                    Anchor: (Top: 6);
+                                        Label #ZoneSafePrice3 {
                       Text: "";
-                      Style: (FontSize: 9, TextColor: #7a8a9a, HorizontalAlignment: Center);
+                      Style: (FontSize: 10, TextColor: #d0ead8, HorizontalAlignment: Center, VerticalAlignment: Center, Wrap: false);
                     }
                   }
                 }
@@ -355,79 +461,111 @@ $C.@PageOverlay {
             }
           }
         }
+
         Group #ZoneCard4 {
           FlexWeight: 1;
-          Background: (Color: #0b1624);
-          OutlineColor: #2a3a4a;
+          Anchor: (Right: 6);
+          Background: (Color: #201a36);
+          OutlineColor: #3d3458;
           OutlineSize: 2;
           LayoutMode: Top;
 
-          Group #ZoneImg4 {
-            Anchor: (Height: 92);
-            Background: "varyon_zones.png";
-            Padding: (Top: 5, Left: 7);
+          Group {
+            Anchor: (Height: 26);
+            Background: (Color: #2a2448);
+            Padding: (Left: 8, Right: 8);
+            LayoutMode: Middle;
             Label {
               Text: "Zone 4";
-              Style: (FontSize: 14, RenderBold: true, TextColor: #ffffff);
+              Style: (FontSize: 13, RenderBold: true, TextColor: #efe8ff, HorizontalAlignment: Center, VerticalAlignment: Center);
+            }
+          }
+
+          Group #ZoneImg4 {
+            Anchor: (Height: 88);
+            Background: "varyon_zones.png";
+          }
+
+          Group #ZoneRadius4 {
+            Anchor: (Height: 40);
+            Background: (Color: #2a2440);
+            Padding: (Left: 6, Right: 6, Top: 4, Bottom: 4);
+            LayoutMode: Top;
+            Label #ZoneRadiusTitle4 {
+              Text: "RAYON";
+              Style: (FontSize: 10, RenderBold: true, TextColor: #c4b8e8, HorizontalAlignment: Center);
+            }
+            Label #ZoneRadiusValue4 {
+              Text: "";
+              Style: (FontSize: 11, TextColor: #f0ecf8, HorizontalAlignment: Center, Wrap: true);
             }
           }
 
           Group {
-            Padding: (Left: 5, Right: 5, Top: 5, Bottom: 5);
+            Padding: (Left: 5, Right: 5, Top: 6, Bottom: 6);
             LayoutMode: Top;
-
-            Button #ZoneMain4 {
-              Anchor: (Height: 46, Bottom: 4);
-              Style: ButtonStyle(
-                Default: (Background: (Color: #1a5a9a)),
-                Hovered: (Background: (Color: #2a6aaa)),
-                Pressed: (Background: (Color: #104878))
-              );
-              OutlineColor: #0a3060;
-              OutlineSize: 1;
-              Group {
-                LayoutMode: Middle;
-                Group {
-                  LayoutMode: Top;
-                  Label #ZoneMainTitle4 {
-                    Anchor: (Bottom: 1);
-                    Text: "TP aleatoirement dans la zone 4";
-                    Style: (FontSize: 11, RenderBold: true, TextColor: #ffffff, HorizontalAlignment: Center);
-                  }
-                  Label #ZoneMainPrice4 {
-                    Text: "";
-                    Style: (FontSize: 10, TextColor: #7a8a9a, HorizontalAlignment: Center);
-                  }
-                }
-              }
-            }
 
             Group {
               LayoutMode: Left;
-              Anchor: (Height: 38);
+              Anchor: (Height: 72);
+
+              Button #ZoneMain4 {
+                FlexWeight: 1;
+                Anchor: (Right: 4);
+                Style: ButtonStyle(
+                  Default: (Background: (Color: #242038)),
+                  Hovered: (Background: (Color: #2e2a48)),
+                  Pressed: (Background: (Color: #18162a))
+                );
+                OutlineColor: #141228;
+                OutlineSize: 1;
+                Group {
+                  LayoutMode: Top;
+                  Padding: (Top: 4, Bottom: 4, Left: 3, Right: 3);
+                  Group {
+                    LayoutMode: Middle;
+                    Label #ZoneMainTitle4 {
+                      Text: "Aléatoire";
+                      Style: (FontSize: 11, RenderBold: true, TextColor: #c8c2e0, HorizontalAlignment: Center, VerticalAlignment: Center, Wrap: false);
+                    }
+                  }
+                  Group #ZoneMainPriceRow4 {
+                    LayoutMode: Middle;
+                    Anchor: (Top: 6);
+                                        Label #ZoneMainPrice4 {
+                      Text: "";
+                      Style: (FontSize: 10, TextColor: #dcd4f0, HorizontalAlignment: Center, VerticalAlignment: Center, Wrap: false);
+                    }
+                  }
+                }
+              }
 
               Button #ZonePvP4 {
                 FlexWeight: 1;
-                Anchor: (Right: 3);
+                Anchor: (Right: 4);
                 Style: ButtonStyle(
-                  Default: (Background: (Color: #6a1818)),
-                  Hovered: (Background: (Color: #7a2828)),
-                  Pressed: (Background: (Color: #550f0f))
+                  Default: (Background: (Color: #521420)),
+                  Hovered: (Background: (Color: #621a28)),
+                  Pressed: (Background: (Color: #3a0c14))
                 );
-                OutlineColor: #3a0808;
+                OutlineColor: #300810;
                 OutlineSize: 1;
                 Group {
-                  LayoutMode: Middle;
+                  LayoutMode: Top;
+                  Padding: (Top: 4, Bottom: 4, Left: 3, Right: 3);
                   Group {
-                    LayoutMode: Top;
+                    LayoutMode: Middle;
                     Label {
-                      Anchor: (Bottom: 1);
-                      Text: "Choix PvP actif";
-                      Style: (FontSize: 10, RenderBold: true, TextColor: #ffaaaa, HorizontalAlignment: Center);
+                      Text: "PvP actif";
+                      Style: (FontSize: 11, RenderBold: true, TextColor: #e09090, HorizontalAlignment: Center, VerticalAlignment: Center, Wrap: false);
                     }
-                    Label #ZonePvPPrice4 {
+                  }
+                  Group #ZonePvPPriceRow4 {
+                    LayoutMode: Middle;
+                    Anchor: (Top: 6);
+                                        Label #ZonePvPPrice4 {
                       Text: "";
-                      Style: (FontSize: 9, TextColor: #7a8a9a, HorizontalAlignment: Center);
+                      Style: (FontSize: 10, TextColor: #e8d0d0, HorizontalAlignment: Center, VerticalAlignment: Center, Wrap: false);
                     }
                   }
                 }
@@ -436,24 +574,28 @@ $C.@PageOverlay {
               Button #ZoneSafe4 {
                 FlexWeight: 1;
                 Style: ButtonStyle(
-                  Default: (Background: (Color: #185a28)),
-                  Hovered: (Background: (Color: #286a38)),
-                  Pressed: (Background: (Color: #0f4018))
+                  Default: (Background: (Color: #1e5c2e)),
+                  Hovered: (Background: (Color: #2a7038)),
+                  Pressed: (Background: (Color: #144522))
                 );
-                OutlineColor: #083818;
+                OutlineColor: #0c3818;
                 OutlineSize: 1;
                 Group {
-                  LayoutMode: Middle;
+                  LayoutMode: Top;
+                  Padding: (Top: 4, Bottom: 4, Left: 3, Right: 3);
                   Group {
-                    LayoutMode: Top;
+                    LayoutMode: Middle;
                     Label {
-                      Anchor: (Bottom: 1);
-                      Text: "Choix PvP inactif";
-                      Style: (FontSize: 10, RenderBold: true, TextColor: #aaffaa, HorizontalAlignment: Center);
+                      Text: "PvP inactif";
+                      Style: (FontSize: 11, RenderBold: true, TextColor: #a8e8a8, HorizontalAlignment: Center, VerticalAlignment: Center, Wrap: false);
                     }
-                    Label #ZoneSafePrice4 {
+                  }
+                  Group #ZoneSafePriceRow4 {
+                    LayoutMode: Middle;
+                    Anchor: (Top: 6);
+                                        Label #ZoneSafePrice4 {
                       Text: "";
-                      Style: (FontSize: 9, TextColor: #7a8a9a, HorizontalAlignment: Center);
+                      Style: (FontSize: 10, TextColor: #d0ead8, HorizontalAlignment: Center, VerticalAlignment: Center, Wrap: false);
                     }
                   }
                 }
@@ -461,86 +603,117 @@ $C.@PageOverlay {
             }
           }
         }
+
       }
 
       Group #Row2 {
         LayoutMode: Left;
-        Anchor: (Height: 195, Bottom: 8);
+        Anchor: (Height: 244, Bottom: 8);
 
         Group #ZoneCard5 {
           FlexWeight: 1;
           Anchor: (Right: 6);
-          Background: (Color: #0b1624);
-          OutlineColor: #2a3a4a;
+          Background: (Color: #201a36);
+          OutlineColor: #3d3458;
           OutlineSize: 2;
           LayoutMode: Top;
 
-          Group #ZoneImg5 {
-            Anchor: (Height: 92);
-            Background: "varyon_zones.png";
-            Padding: (Top: 5, Left: 7);
+          Group {
+            Anchor: (Height: 26);
+            Background: (Color: #2a2448);
+            Padding: (Left: 8, Right: 8);
+            LayoutMode: Middle;
             Label {
               Text: "Zone 5";
-              Style: (FontSize: 14, RenderBold: true, TextColor: #ffffff);
+              Style: (FontSize: 13, RenderBold: true, TextColor: #efe8ff, HorizontalAlignment: Center, VerticalAlignment: Center);
+            }
+          }
+
+          Group #ZoneImg5 {
+            Anchor: (Height: 88);
+            Background: "varyon_zones.png";
+          }
+
+          Group #ZoneRadius5 {
+            Anchor: (Height: 40);
+            Background: (Color: #2a2440);
+            Padding: (Left: 6, Right: 6, Top: 4, Bottom: 4);
+            LayoutMode: Top;
+            Label #ZoneRadiusTitle5 {
+              Text: "RAYON";
+              Style: (FontSize: 10, RenderBold: true, TextColor: #c4b8e8, HorizontalAlignment: Center);
+            }
+            Label #ZoneRadiusValue5 {
+              Text: "";
+              Style: (FontSize: 11, TextColor: #f0ecf8, HorizontalAlignment: Center, Wrap: true);
             }
           }
 
           Group {
-            Padding: (Left: 5, Right: 5, Top: 5, Bottom: 5);
+            Padding: (Left: 5, Right: 5, Top: 6, Bottom: 6);
             LayoutMode: Top;
-
-            Button #ZoneMain5 {
-              Anchor: (Height: 46, Bottom: 4);
-              Style: ButtonStyle(
-                Default: (Background: (Color: #1a5a9a)),
-                Hovered: (Background: (Color: #2a6aaa)),
-                Pressed: (Background: (Color: #104878))
-              );
-              OutlineColor: #0a3060;
-              OutlineSize: 1;
-              Group {
-                LayoutMode: Middle;
-                Group {
-                  LayoutMode: Top;
-                  Label #ZoneMainTitle5 {
-                    Anchor: (Bottom: 1);
-                    Text: "TP aleatoirement dans la zone 5";
-                    Style: (FontSize: 11, RenderBold: true, TextColor: #ffffff, HorizontalAlignment: Center);
-                  }
-                  Label #ZoneMainPrice5 {
-                    Text: "";
-                    Style: (FontSize: 10, TextColor: #7a8a9a, HorizontalAlignment: Center);
-                  }
-                }
-              }
-            }
 
             Group {
               LayoutMode: Left;
-              Anchor: (Height: 38);
+              Anchor: (Height: 72);
+
+              Button #ZoneMain5 {
+                FlexWeight: 1;
+                Anchor: (Right: 4);
+                Style: ButtonStyle(
+                  Default: (Background: (Color: #242038)),
+                  Hovered: (Background: (Color: #2e2a48)),
+                  Pressed: (Background: (Color: #18162a))
+                );
+                OutlineColor: #141228;
+                OutlineSize: 1;
+                Group {
+                  LayoutMode: Top;
+                  Padding: (Top: 4, Bottom: 4, Left: 3, Right: 3);
+                  Group {
+                    LayoutMode: Middle;
+                    Label #ZoneMainTitle5 {
+                      Text: "Aléatoire";
+                      Style: (FontSize: 11, RenderBold: true, TextColor: #c8c2e0, HorizontalAlignment: Center, VerticalAlignment: Center, Wrap: false);
+                    }
+                  }
+                  Group #ZoneMainPriceRow5 {
+                    LayoutMode: Middle;
+                    Anchor: (Top: 6);
+                                        Label #ZoneMainPrice5 {
+                      Text: "";
+                      Style: (FontSize: 10, TextColor: #dcd4f0, HorizontalAlignment: Center, VerticalAlignment: Center, Wrap: false);
+                    }
+                  }
+                }
+              }
 
               Button #ZonePvP5 {
                 FlexWeight: 1;
-                Anchor: (Right: 3);
+                Anchor: (Right: 4);
                 Style: ButtonStyle(
-                  Default: (Background: (Color: #6a1818)),
-                  Hovered: (Background: (Color: #7a2828)),
-                  Pressed: (Background: (Color: #550f0f))
+                  Default: (Background: (Color: #521420)),
+                  Hovered: (Background: (Color: #621a28)),
+                  Pressed: (Background: (Color: #3a0c14))
                 );
-                OutlineColor: #3a0808;
+                OutlineColor: #300810;
                 OutlineSize: 1;
                 Group {
-                  LayoutMode: Middle;
+                  LayoutMode: Top;
+                  Padding: (Top: 4, Bottom: 4, Left: 3, Right: 3);
                   Group {
-                    LayoutMode: Top;
+                    LayoutMode: Middle;
                     Label {
-                      Anchor: (Bottom: 1);
-                      Text: "Choix PvP actif";
-                      Style: (FontSize: 10, RenderBold: true, TextColor: #ffaaaa, HorizontalAlignment: Center);
+                      Text: "PvP actif";
+                      Style: (FontSize: 11, RenderBold: true, TextColor: #e09090, HorizontalAlignment: Center, VerticalAlignment: Center, Wrap: false);
                     }
-                    Label #ZonePvPPrice5 {
+                  }
+                  Group #ZonePvPPriceRow5 {
+                    LayoutMode: Middle;
+                    Anchor: (Top: 6);
+                                        Label #ZonePvPPrice5 {
                       Text: "";
-                      Style: (FontSize: 9, TextColor: #7a8a9a, HorizontalAlignment: Center);
+                      Style: (FontSize: 10, TextColor: #e8d0d0, HorizontalAlignment: Center, VerticalAlignment: Center, Wrap: false);
                     }
                   }
                 }
@@ -549,24 +722,28 @@ $C.@PageOverlay {
               Button #ZoneSafe5 {
                 FlexWeight: 1;
                 Style: ButtonStyle(
-                  Default: (Background: (Color: #185a28)),
-                  Hovered: (Background: (Color: #286a38)),
-                  Pressed: (Background: (Color: #0f4018))
+                  Default: (Background: (Color: #1e5c2e)),
+                  Hovered: (Background: (Color: #2a7038)),
+                  Pressed: (Background: (Color: #144522))
                 );
-                OutlineColor: #083818;
+                OutlineColor: #0c3818;
                 OutlineSize: 1;
                 Group {
-                  LayoutMode: Middle;
+                  LayoutMode: Top;
+                  Padding: (Top: 4, Bottom: 4, Left: 3, Right: 3);
                   Group {
-                    LayoutMode: Top;
+                    LayoutMode: Middle;
                     Label {
-                      Anchor: (Bottom: 1);
-                      Text: "Choix PvP inactif";
-                      Style: (FontSize: 10, RenderBold: true, TextColor: #aaffaa, HorizontalAlignment: Center);
+                      Text: "PvP inactif";
+                      Style: (FontSize: 11, RenderBold: true, TextColor: #a8e8a8, HorizontalAlignment: Center, VerticalAlignment: Center, Wrap: false);
                     }
-                    Label #ZoneSafePrice5 {
+                  }
+                  Group #ZoneSafePriceRow5 {
+                    LayoutMode: Middle;
+                    Anchor: (Top: 6);
+                                        Label #ZoneSafePrice5 {
                       Text: "";
-                      Style: (FontSize: 9, TextColor: #7a8a9a, HorizontalAlignment: Center);
+                      Style: (FontSize: 10, TextColor: #d0ead8, HorizontalAlignment: Center, VerticalAlignment: Center, Wrap: false);
                     }
                   }
                 }
@@ -574,80 +751,111 @@ $C.@PageOverlay {
             }
           }
         }
+
         Group #ZoneCard6 {
           FlexWeight: 1;
           Anchor: (Right: 6);
-          Background: (Color: #0b1624);
-          OutlineColor: #2a3a4a;
+          Background: (Color: #201a36);
+          OutlineColor: #3d3458;
           OutlineSize: 2;
           LayoutMode: Top;
 
-          Group #ZoneImg6 {
-            Anchor: (Height: 92);
-            Background: "varyon_zones.png";
-            Padding: (Top: 5, Left: 7);
+          Group {
+            Anchor: (Height: 26);
+            Background: (Color: #2a2448);
+            Padding: (Left: 8, Right: 8);
+            LayoutMode: Middle;
             Label {
               Text: "Zone 6";
-              Style: (FontSize: 14, RenderBold: true, TextColor: #ffffff);
+              Style: (FontSize: 13, RenderBold: true, TextColor: #efe8ff, HorizontalAlignment: Center, VerticalAlignment: Center);
+            }
+          }
+
+          Group #ZoneImg6 {
+            Anchor: (Height: 88);
+            Background: "varyon_zones.png";
+          }
+
+          Group #ZoneRadius6 {
+            Anchor: (Height: 40);
+            Background: (Color: #2a2440);
+            Padding: (Left: 6, Right: 6, Top: 4, Bottom: 4);
+            LayoutMode: Top;
+            Label #ZoneRadiusTitle6 {
+              Text: "RAYON";
+              Style: (FontSize: 10, RenderBold: true, TextColor: #c4b8e8, HorizontalAlignment: Center);
+            }
+            Label #ZoneRadiusValue6 {
+              Text: "";
+              Style: (FontSize: 11, TextColor: #f0ecf8, HorizontalAlignment: Center, Wrap: true);
             }
           }
 
           Group {
-            Padding: (Left: 5, Right: 5, Top: 5, Bottom: 5);
+            Padding: (Left: 5, Right: 5, Top: 6, Bottom: 6);
             LayoutMode: Top;
-
-            Button #ZoneMain6 {
-              Anchor: (Height: 46, Bottom: 4);
-              Style: ButtonStyle(
-                Default: (Background: (Color: #1a5a9a)),
-                Hovered: (Background: (Color: #2a6aaa)),
-                Pressed: (Background: (Color: #104878))
-              );
-              OutlineColor: #0a3060;
-              OutlineSize: 1;
-              Group {
-                LayoutMode: Middle;
-                Group {
-                  LayoutMode: Top;
-                  Label #ZoneMainTitle6 {
-                    Anchor: (Bottom: 1);
-                    Text: "TP aleatoirement dans la zone 6";
-                    Style: (FontSize: 11, RenderBold: true, TextColor: #ffffff, HorizontalAlignment: Center);
-                  }
-                  Label #ZoneMainPrice6 {
-                    Text: "";
-                    Style: (FontSize: 10, TextColor: #7a8a9a, HorizontalAlignment: Center);
-                  }
-                }
-              }
-            }
 
             Group {
               LayoutMode: Left;
-              Anchor: (Height: 38);
+              Anchor: (Height: 72);
+
+              Button #ZoneMain6 {
+                FlexWeight: 1;
+                Anchor: (Right: 4);
+                Style: ButtonStyle(
+                  Default: (Background: (Color: #242038)),
+                  Hovered: (Background: (Color: #2e2a48)),
+                  Pressed: (Background: (Color: #18162a))
+                );
+                OutlineColor: #141228;
+                OutlineSize: 1;
+                Group {
+                  LayoutMode: Top;
+                  Padding: (Top: 4, Bottom: 4, Left: 3, Right: 3);
+                  Group {
+                    LayoutMode: Middle;
+                    Label #ZoneMainTitle6 {
+                      Text: "Aléatoire";
+                      Style: (FontSize: 11, RenderBold: true, TextColor: #c8c2e0, HorizontalAlignment: Center, VerticalAlignment: Center, Wrap: false);
+                    }
+                  }
+                  Group #ZoneMainPriceRow6 {
+                    LayoutMode: Middle;
+                    Anchor: (Top: 6);
+                                        Label #ZoneMainPrice6 {
+                      Text: "";
+                      Style: (FontSize: 10, TextColor: #dcd4f0, HorizontalAlignment: Center, VerticalAlignment: Center, Wrap: false);
+                    }
+                  }
+                }
+              }
 
               Button #ZonePvP6 {
                 FlexWeight: 1;
-                Anchor: (Right: 3);
+                Anchor: (Right: 4);
                 Style: ButtonStyle(
-                  Default: (Background: (Color: #6a1818)),
-                  Hovered: (Background: (Color: #7a2828)),
-                  Pressed: (Background: (Color: #550f0f))
+                  Default: (Background: (Color: #521420)),
+                  Hovered: (Background: (Color: #621a28)),
+                  Pressed: (Background: (Color: #3a0c14))
                 );
-                OutlineColor: #3a0808;
+                OutlineColor: #300810;
                 OutlineSize: 1;
                 Group {
-                  LayoutMode: Middle;
+                  LayoutMode: Top;
+                  Padding: (Top: 4, Bottom: 4, Left: 3, Right: 3);
                   Group {
-                    LayoutMode: Top;
+                    LayoutMode: Middle;
                     Label {
-                      Anchor: (Bottom: 1);
-                      Text: "Choix PvP actif";
-                      Style: (FontSize: 10, RenderBold: true, TextColor: #ffaaaa, HorizontalAlignment: Center);
+                      Text: "PvP actif";
+                      Style: (FontSize: 11, RenderBold: true, TextColor: #e09090, HorizontalAlignment: Center, VerticalAlignment: Center, Wrap: false);
                     }
-                    Label #ZonePvPPrice6 {
+                  }
+                  Group #ZonePvPPriceRow6 {
+                    LayoutMode: Middle;
+                    Anchor: (Top: 6);
+                                        Label #ZonePvPPrice6 {
                       Text: "";
-                      Style: (FontSize: 9, TextColor: #7a8a9a, HorizontalAlignment: Center);
+                      Style: (FontSize: 10, TextColor: #e8d0d0, HorizontalAlignment: Center, VerticalAlignment: Center, Wrap: false);
                     }
                   }
                 }
@@ -656,24 +864,28 @@ $C.@PageOverlay {
               Button #ZoneSafe6 {
                 FlexWeight: 1;
                 Style: ButtonStyle(
-                  Default: (Background: (Color: #185a28)),
-                  Hovered: (Background: (Color: #286a38)),
-                  Pressed: (Background: (Color: #0f4018))
+                  Default: (Background: (Color: #1e5c2e)),
+                  Hovered: (Background: (Color: #2a7038)),
+                  Pressed: (Background: (Color: #144522))
                 );
-                OutlineColor: #083818;
+                OutlineColor: #0c3818;
                 OutlineSize: 1;
                 Group {
-                  LayoutMode: Middle;
+                  LayoutMode: Top;
+                  Padding: (Top: 4, Bottom: 4, Left: 3, Right: 3);
                   Group {
-                    LayoutMode: Top;
+                    LayoutMode: Middle;
                     Label {
-                      Anchor: (Bottom: 1);
-                      Text: "Choix PvP inactif";
-                      Style: (FontSize: 10, RenderBold: true, TextColor: #aaffaa, HorizontalAlignment: Center);
+                      Text: "PvP inactif";
+                      Style: (FontSize: 11, RenderBold: true, TextColor: #a8e8a8, HorizontalAlignment: Center, VerticalAlignment: Center, Wrap: false);
                     }
-                    Label #ZoneSafePrice6 {
+                  }
+                  Group #ZoneSafePriceRow6 {
+                    LayoutMode: Middle;
+                    Anchor: (Top: 6);
+                                        Label #ZoneSafePrice6 {
                       Text: "";
-                      Style: (FontSize: 9, TextColor: #7a8a9a, HorizontalAlignment: Center);
+                      Style: (FontSize: 10, TextColor: #d0ead8, HorizontalAlignment: Center, VerticalAlignment: Center, Wrap: false);
                     }
                   }
                 }
@@ -681,80 +893,111 @@ $C.@PageOverlay {
             }
           }
         }
+
         Group #ZoneCard7 {
           FlexWeight: 1;
           Anchor: (Right: 6);
-          Background: (Color: #0b1624);
-          OutlineColor: #2a3a4a;
+          Background: (Color: #201a36);
+          OutlineColor: #3d3458;
           OutlineSize: 2;
           LayoutMode: Top;
 
-          Group #ZoneImg7 {
-            Anchor: (Height: 92);
-            Background: "varyon_zones.png";
-            Padding: (Top: 5, Left: 7);
+          Group {
+            Anchor: (Height: 26);
+            Background: (Color: #2a2448);
+            Padding: (Left: 8, Right: 8);
+            LayoutMode: Middle;
             Label {
               Text: "Zone 7";
-              Style: (FontSize: 14, RenderBold: true, TextColor: #ffffff);
+              Style: (FontSize: 13, RenderBold: true, TextColor: #efe8ff, HorizontalAlignment: Center, VerticalAlignment: Center);
+            }
+          }
+
+          Group #ZoneImg7 {
+            Anchor: (Height: 88);
+            Background: "varyon_zones.png";
+          }
+
+          Group #ZoneRadius7 {
+            Anchor: (Height: 40);
+            Background: (Color: #2a2440);
+            Padding: (Left: 6, Right: 6, Top: 4, Bottom: 4);
+            LayoutMode: Top;
+            Label #ZoneRadiusTitle7 {
+              Text: "RAYON";
+              Style: (FontSize: 10, RenderBold: true, TextColor: #c4b8e8, HorizontalAlignment: Center);
+            }
+            Label #ZoneRadiusValue7 {
+              Text: "";
+              Style: (FontSize: 11, TextColor: #f0ecf8, HorizontalAlignment: Center, Wrap: true);
             }
           }
 
           Group {
-            Padding: (Left: 5, Right: 5, Top: 5, Bottom: 5);
+            Padding: (Left: 5, Right: 5, Top: 6, Bottom: 6);
             LayoutMode: Top;
-
-            Button #ZoneMain7 {
-              Anchor: (Height: 46, Bottom: 4);
-              Style: ButtonStyle(
-                Default: (Background: (Color: #1a5a9a)),
-                Hovered: (Background: (Color: #2a6aaa)),
-                Pressed: (Background: (Color: #104878))
-              );
-              OutlineColor: #0a3060;
-              OutlineSize: 1;
-              Group {
-                LayoutMode: Middle;
-                Group {
-                  LayoutMode: Top;
-                  Label #ZoneMainTitle7 {
-                    Anchor: (Bottom: 1);
-                    Text: "TP aleatoirement dans la zone 7";
-                    Style: (FontSize: 11, RenderBold: true, TextColor: #ffffff, HorizontalAlignment: Center);
-                  }
-                  Label #ZoneMainPrice7 {
-                    Text: "";
-                    Style: (FontSize: 10, TextColor: #7a8a9a, HorizontalAlignment: Center);
-                  }
-                }
-              }
-            }
 
             Group {
               LayoutMode: Left;
-              Anchor: (Height: 38);
+              Anchor: (Height: 72);
+
+              Button #ZoneMain7 {
+                FlexWeight: 1;
+                Anchor: (Right: 4);
+                Style: ButtonStyle(
+                  Default: (Background: (Color: #242038)),
+                  Hovered: (Background: (Color: #2e2a48)),
+                  Pressed: (Background: (Color: #18162a))
+                );
+                OutlineColor: #141228;
+                OutlineSize: 1;
+                Group {
+                  LayoutMode: Top;
+                  Padding: (Top: 4, Bottom: 4, Left: 3, Right: 3);
+                  Group {
+                    LayoutMode: Middle;
+                    Label #ZoneMainTitle7 {
+                      Text: "Aléatoire";
+                      Style: (FontSize: 11, RenderBold: true, TextColor: #c8c2e0, HorizontalAlignment: Center, VerticalAlignment: Center, Wrap: false);
+                    }
+                  }
+                  Group #ZoneMainPriceRow7 {
+                    LayoutMode: Middle;
+                    Anchor: (Top: 6);
+                                        Label #ZoneMainPrice7 {
+                      Text: "";
+                      Style: (FontSize: 10, TextColor: #dcd4f0, HorizontalAlignment: Center, VerticalAlignment: Center, Wrap: false);
+                    }
+                  }
+                }
+              }
 
               Button #ZonePvP7 {
                 FlexWeight: 1;
-                Anchor: (Right: 3);
+                Anchor: (Right: 4);
                 Style: ButtonStyle(
-                  Default: (Background: (Color: #6a1818)),
-                  Hovered: (Background: (Color: #7a2828)),
-                  Pressed: (Background: (Color: #550f0f))
+                  Default: (Background: (Color: #521420)),
+                  Hovered: (Background: (Color: #621a28)),
+                  Pressed: (Background: (Color: #3a0c14))
                 );
-                OutlineColor: #3a0808;
+                OutlineColor: #300810;
                 OutlineSize: 1;
                 Group {
-                  LayoutMode: Middle;
+                  LayoutMode: Top;
+                  Padding: (Top: 4, Bottom: 4, Left: 3, Right: 3);
                   Group {
-                    LayoutMode: Top;
+                    LayoutMode: Middle;
                     Label {
-                      Anchor: (Bottom: 1);
-                      Text: "Choix PvP actif";
-                      Style: (FontSize: 10, RenderBold: true, TextColor: #ffaaaa, HorizontalAlignment: Center);
+                      Text: "PvP actif";
+                      Style: (FontSize: 11, RenderBold: true, TextColor: #e09090, HorizontalAlignment: Center, VerticalAlignment: Center, Wrap: false);
                     }
-                    Label #ZonePvPPrice7 {
+                  }
+                  Group #ZonePvPPriceRow7 {
+                    LayoutMode: Middle;
+                    Anchor: (Top: 6);
+                                        Label #ZonePvPPrice7 {
                       Text: "";
-                      Style: (FontSize: 9, TextColor: #7a8a9a, HorizontalAlignment: Center);
+                      Style: (FontSize: 10, TextColor: #e8d0d0, HorizontalAlignment: Center, VerticalAlignment: Center, Wrap: false);
                     }
                   }
                 }
@@ -763,24 +1006,28 @@ $C.@PageOverlay {
               Button #ZoneSafe7 {
                 FlexWeight: 1;
                 Style: ButtonStyle(
-                  Default: (Background: (Color: #185a28)),
-                  Hovered: (Background: (Color: #286a38)),
-                  Pressed: (Background: (Color: #0f4018))
+                  Default: (Background: (Color: #1e5c2e)),
+                  Hovered: (Background: (Color: #2a7038)),
+                  Pressed: (Background: (Color: #144522))
                 );
-                OutlineColor: #083818;
+                OutlineColor: #0c3818;
                 OutlineSize: 1;
                 Group {
-                  LayoutMode: Middle;
+                  LayoutMode: Top;
+                  Padding: (Top: 4, Bottom: 4, Left: 3, Right: 3);
                   Group {
-                    LayoutMode: Top;
+                    LayoutMode: Middle;
                     Label {
-                      Anchor: (Bottom: 1);
-                      Text: "Choix PvP inactif";
-                      Style: (FontSize: 10, RenderBold: true, TextColor: #aaffaa, HorizontalAlignment: Center);
+                      Text: "PvP inactif";
+                      Style: (FontSize: 11, RenderBold: true, TextColor: #a8e8a8, HorizontalAlignment: Center, VerticalAlignment: Center, Wrap: false);
                     }
-                    Label #ZoneSafePrice7 {
+                  }
+                  Group #ZoneSafePriceRow7 {
+                    LayoutMode: Middle;
+                    Anchor: (Top: 6);
+                                        Label #ZoneSafePrice7 {
                       Text: "";
-                      Style: (FontSize: 9, TextColor: #7a8a9a, HorizontalAlignment: Center);
+                      Style: (FontSize: 10, TextColor: #d0ead8, HorizontalAlignment: Center, VerticalAlignment: Center, Wrap: false);
                     }
                   }
                 }
@@ -788,79 +1035,111 @@ $C.@PageOverlay {
             }
           }
         }
+
         Group #ZoneCard8 {
           FlexWeight: 1;
-          Background: (Color: #0b1624);
-          OutlineColor: #2a3a4a;
+          Anchor: (Right: 6);
+          Background: (Color: #201a36);
+          OutlineColor: #3d3458;
           OutlineSize: 2;
           LayoutMode: Top;
 
-          Group #ZoneImg8 {
-            Anchor: (Height: 92);
-            Background: "varyon_zones.png";
-            Padding: (Top: 5, Left: 7);
+          Group {
+            Anchor: (Height: 26);
+            Background: (Color: #2a2448);
+            Padding: (Left: 8, Right: 8);
+            LayoutMode: Middle;
             Label {
               Text: "Zone 8";
-              Style: (FontSize: 14, RenderBold: true, TextColor: #ffffff);
+              Style: (FontSize: 13, RenderBold: true, TextColor: #efe8ff, HorizontalAlignment: Center, VerticalAlignment: Center);
+            }
+          }
+
+          Group #ZoneImg8 {
+            Anchor: (Height: 88);
+            Background: "varyon_zones.png";
+          }
+
+          Group #ZoneRadius8 {
+            Anchor: (Height: 40);
+            Background: (Color: #2a2440);
+            Padding: (Left: 6, Right: 6, Top: 4, Bottom: 4);
+            LayoutMode: Top;
+            Label #ZoneRadiusTitle8 {
+              Text: "RAYON";
+              Style: (FontSize: 10, RenderBold: true, TextColor: #c4b8e8, HorizontalAlignment: Center);
+            }
+            Label #ZoneRadiusValue8 {
+              Text: "";
+              Style: (FontSize: 11, TextColor: #f0ecf8, HorizontalAlignment: Center, Wrap: true);
             }
           }
 
           Group {
-            Padding: (Left: 5, Right: 5, Top: 5, Bottom: 5);
+            Padding: (Left: 5, Right: 5, Top: 6, Bottom: 6);
             LayoutMode: Top;
-
-            Button #ZoneMain8 {
-              Anchor: (Height: 46, Bottom: 4);
-              Style: ButtonStyle(
-                Default: (Background: (Color: #1a5a9a)),
-                Hovered: (Background: (Color: #2a6aaa)),
-                Pressed: (Background: (Color: #104878))
-              );
-              OutlineColor: #0a3060;
-              OutlineSize: 1;
-              Group {
-                LayoutMode: Middle;
-                Group {
-                  LayoutMode: Top;
-                  Label #ZoneMainTitle8 {
-                    Anchor: (Bottom: 1);
-                    Text: "TP aleatoirement dans la zone 8";
-                    Style: (FontSize: 11, RenderBold: true, TextColor: #ffffff, HorizontalAlignment: Center);
-                  }
-                  Label #ZoneMainPrice8 {
-                    Text: "";
-                    Style: (FontSize: 10, TextColor: #7a8a9a, HorizontalAlignment: Center);
-                  }
-                }
-              }
-            }
 
             Group {
               LayoutMode: Left;
-              Anchor: (Height: 38);
+              Anchor: (Height: 72);
+
+              Button #ZoneMain8 {
+                FlexWeight: 1;
+                Anchor: (Right: 4);
+                Style: ButtonStyle(
+                  Default: (Background: (Color: #242038)),
+                  Hovered: (Background: (Color: #2e2a48)),
+                  Pressed: (Background: (Color: #18162a))
+                );
+                OutlineColor: #141228;
+                OutlineSize: 1;
+                Group {
+                  LayoutMode: Top;
+                  Padding: (Top: 4, Bottom: 4, Left: 3, Right: 3);
+                  Group {
+                    LayoutMode: Middle;
+                    Label #ZoneMainTitle8 {
+                      Text: "Aléatoire";
+                      Style: (FontSize: 11, RenderBold: true, TextColor: #c8c2e0, HorizontalAlignment: Center, VerticalAlignment: Center, Wrap: false);
+                    }
+                  }
+                  Group #ZoneMainPriceRow8 {
+                    LayoutMode: Middle;
+                    Anchor: (Top: 6);
+                                        Label #ZoneMainPrice8 {
+                      Text: "";
+                      Style: (FontSize: 10, TextColor: #dcd4f0, HorizontalAlignment: Center, VerticalAlignment: Center, Wrap: false);
+                    }
+                  }
+                }
+              }
 
               Button #ZonePvP8 {
                 FlexWeight: 1;
-                Anchor: (Right: 3);
+                Anchor: (Right: 4);
                 Style: ButtonStyle(
-                  Default: (Background: (Color: #6a1818)),
-                  Hovered: (Background: (Color: #7a2828)),
-                  Pressed: (Background: (Color: #550f0f))
+                  Default: (Background: (Color: #521420)),
+                  Hovered: (Background: (Color: #621a28)),
+                  Pressed: (Background: (Color: #3a0c14))
                 );
-                OutlineColor: #3a0808;
+                OutlineColor: #300810;
                 OutlineSize: 1;
                 Group {
-                  LayoutMode: Middle;
+                  LayoutMode: Top;
+                  Padding: (Top: 4, Bottom: 4, Left: 3, Right: 3);
                   Group {
-                    LayoutMode: Top;
+                    LayoutMode: Middle;
                     Label {
-                      Anchor: (Bottom: 1);
-                      Text: "Choix PvP actif";
-                      Style: (FontSize: 10, RenderBold: true, TextColor: #ffaaaa, HorizontalAlignment: Center);
+                      Text: "PvP actif";
+                      Style: (FontSize: 11, RenderBold: true, TextColor: #e09090, HorizontalAlignment: Center, VerticalAlignment: Center, Wrap: false);
                     }
-                    Label #ZonePvPPrice8 {
+                  }
+                  Group #ZonePvPPriceRow8 {
+                    LayoutMode: Middle;
+                    Anchor: (Top: 6);
+                                        Label #ZonePvPPrice8 {
                       Text: "";
-                      Style: (FontSize: 9, TextColor: #7a8a9a, HorizontalAlignment: Center);
+                      Style: (FontSize: 10, TextColor: #e8d0d0, HorizontalAlignment: Center, VerticalAlignment: Center, Wrap: false);
                     }
                   }
                 }
@@ -869,24 +1148,28 @@ $C.@PageOverlay {
               Button #ZoneSafe8 {
                 FlexWeight: 1;
                 Style: ButtonStyle(
-                  Default: (Background: (Color: #185a28)),
-                  Hovered: (Background: (Color: #286a38)),
-                  Pressed: (Background: (Color: #0f4018))
+                  Default: (Background: (Color: #1e5c2e)),
+                  Hovered: (Background: (Color: #2a7038)),
+                  Pressed: (Background: (Color: #144522))
                 );
-                OutlineColor: #083818;
+                OutlineColor: #0c3818;
                 OutlineSize: 1;
                 Group {
-                  LayoutMode: Middle;
+                  LayoutMode: Top;
+                  Padding: (Top: 4, Bottom: 4, Left: 3, Right: 3);
                   Group {
-                    LayoutMode: Top;
+                    LayoutMode: Middle;
                     Label {
-                      Anchor: (Bottom: 1);
-                      Text: "Choix PvP inactif";
-                      Style: (FontSize: 10, RenderBold: true, TextColor: #aaffaa, HorizontalAlignment: Center);
+                      Text: "PvP inactif";
+                      Style: (FontSize: 11, RenderBold: true, TextColor: #a8e8a8, HorizontalAlignment: Center, VerticalAlignment: Center, Wrap: false);
                     }
-                    Label #ZoneSafePrice8 {
+                  }
+                  Group #ZoneSafePriceRow8 {
+                    LayoutMode: Middle;
+                    Anchor: (Top: 6);
+                                        Label #ZoneSafePrice8 {
                       Text: "";
-                      Style: (FontSize: 9, TextColor: #7a8a9a, HorizontalAlignment: Center);
+                      Style: (FontSize: 10, TextColor: #d0ead8, HorizontalAlignment: Center, VerticalAlignment: Center, Wrap: false);
                     }
                   }
                 }
@@ -894,88 +1177,119 @@ $C.@PageOverlay {
             }
           }
         }
+
       }
 
       Group #Row3 {
         LayoutMode: Left;
-        Anchor: (Height: 195);
+        Anchor: (Height: 244);
 
         Group { FlexWeight: 1; }
 
         Group #ZoneCard9 {
           FlexWeight: 1;
           Anchor: (Right: 6);
-          Background: (Color: #0b1624);
-          OutlineColor: #2a3a4a;
+          Background: (Color: #201a36);
+          OutlineColor: #3d3458;
           OutlineSize: 2;
           LayoutMode: Top;
 
-          Group #ZoneImg9 {
-            Anchor: (Height: 92);
-            Background: "varyon_zones.png";
-            Padding: (Top: 5, Left: 7);
+          Group {
+            Anchor: (Height: 26);
+            Background: (Color: #2a2448);
+            Padding: (Left: 8, Right: 8);
+            LayoutMode: Middle;
             Label {
               Text: "Zone 9";
-              Style: (FontSize: 14, RenderBold: true, TextColor: #ffffff);
+              Style: (FontSize: 13, RenderBold: true, TextColor: #efe8ff, HorizontalAlignment: Center, VerticalAlignment: Center);
+            }
+          }
+
+          Group #ZoneImg9 {
+            Anchor: (Height: 88);
+            Background: "varyon_zones.png";
+          }
+
+          Group #ZoneRadius9 {
+            Anchor: (Height: 40);
+            Background: (Color: #2a2440);
+            Padding: (Left: 6, Right: 6, Top: 4, Bottom: 4);
+            LayoutMode: Top;
+            Label #ZoneRadiusTitle9 {
+              Text: "RAYON";
+              Style: (FontSize: 10, RenderBold: true, TextColor: #c4b8e8, HorizontalAlignment: Center);
+            }
+            Label #ZoneRadiusValue9 {
+              Text: "";
+              Style: (FontSize: 11, TextColor: #f0ecf8, HorizontalAlignment: Center, Wrap: true);
             }
           }
 
           Group {
-            Padding: (Left: 5, Right: 5, Top: 5, Bottom: 5);
+            Padding: (Left: 5, Right: 5, Top: 6, Bottom: 6);
             LayoutMode: Top;
-
-            Button #ZoneMain9 {
-              Anchor: (Height: 46, Bottom: 4);
-              Style: ButtonStyle(
-                Default: (Background: (Color: #1a5a9a)),
-                Hovered: (Background: (Color: #2a6aaa)),
-                Pressed: (Background: (Color: #104878))
-              );
-              OutlineColor: #0a3060;
-              OutlineSize: 1;
-              Group {
-                LayoutMode: Middle;
-                Group {
-                  LayoutMode: Top;
-                  Label #ZoneMainTitle9 {
-                    Anchor: (Bottom: 1);
-                    Text: "TP aleatoirement dans la zone 9";
-                    Style: (FontSize: 11, RenderBold: true, TextColor: #ffffff, HorizontalAlignment: Center);
-                  }
-                  Label #ZoneMainPrice9 {
-                    Text: "";
-                    Style: (FontSize: 10, TextColor: #7a8a9a, HorizontalAlignment: Center);
-                  }
-                }
-              }
-            }
 
             Group {
               LayoutMode: Left;
-              Anchor: (Height: 38);
+              Anchor: (Height: 72);
+
+              Button #ZoneMain9 {
+                FlexWeight: 1;
+                Anchor: (Right: 4);
+                Style: ButtonStyle(
+                  Default: (Background: (Color: #242038)),
+                  Hovered: (Background: (Color: #2e2a48)),
+                  Pressed: (Background: (Color: #18162a))
+                );
+                OutlineColor: #141228;
+                OutlineSize: 1;
+                Group {
+                  LayoutMode: Top;
+                  Padding: (Top: 4, Bottom: 4, Left: 3, Right: 3);
+                  Group {
+                    LayoutMode: Middle;
+                    Label #ZoneMainTitle9 {
+                      Text: "Aléatoire";
+                      Style: (FontSize: 11, RenderBold: true, TextColor: #c8c2e0, HorizontalAlignment: Center, VerticalAlignment: Center, Wrap: false);
+                    }
+                  }
+                  Group #ZoneMainPriceRow9 {
+                    LayoutMode: Middle;
+                    Anchor: (Top: 6);
+                                        Label #ZoneMainPrice9 {
+                      Text: "";
+                      Style: (FontSize: 10, TextColor: #dcd4f0, HorizontalAlignment: Center, VerticalAlignment: Center, Wrap: false);
+                    }
+                  }
+                }
+              }
 
               Button #ZonePvP9 {
                 FlexWeight: 1;
-                Anchor: (Right: 3);
+                Anchor: (Right: 4);
                 Style: ButtonStyle(
-                  Default: (Background: (Color: #6a1818)),
-                  Hovered: (Background: (Color: #7a2828)),
-                  Pressed: (Background: (Color: #550f0f))
+                  Default: (Background: (Color: #521420)),
+                  Hovered: (Background: (Color: #621a28)),
+                  Pressed: (Background: (Color: #3a0c14))
                 );
-                OutlineColor: #3a0808;
+                OutlineColor: #300810;
                 OutlineSize: 1;
                 Group {
-                  LayoutMode: Middle;
+                  LayoutMode: Top;
+                  Padding: (Top: 4, Bottom: 4, Left: 3, Right: 3);
                   Group {
-                    LayoutMode: Top;
+                    LayoutMode: Middle;
                     Label {
-                      Anchor: (Bottom: 1);
-                      Text: "Choix PvP actif";
-                      Style: (FontSize: 10, RenderBold: true, TextColor: #ffaaaa, HorizontalAlignment: Center);
+                      Text: "PvP actif";
+                      Style: (FontSize: 11, RenderBold: true, TextColor: #e09090, HorizontalAlignment: Center, VerticalAlignment: Center, Wrap: false);
                     }
-                    Label #ZonePvPPrice9 {
+                  }
+                  Group #ZonePvPPriceRow9 {
+                    LayoutMode: Middle;
+                    Anchor: (Top: 6);
+                                        Label #ZonePvPPrice9 {
                       Text: "";
-                      Style: (FontSize: 9, TextColor: #7a8a9a, HorizontalAlignment: Center);
+                      Style: (FontSize: 10, TextColor: #e8d0d0, HorizontalAlignment: Center, VerticalAlignment: Center, Wrap: false);
                     }
                   }
                 }
@@ -984,24 +1298,28 @@ $C.@PageOverlay {
               Button #ZoneSafe9 {
                 FlexWeight: 1;
                 Style: ButtonStyle(
-                  Default: (Background: (Color: #185a28)),
-                  Hovered: (Background: (Color: #286a38)),
-                  Pressed: (Background: (Color: #0f4018))
+                  Default: (Background: (Color: #1e5c2e)),
+                  Hovered: (Background: (Color: #2a7038)),
+                  Pressed: (Background: (Color: #144522))
                 );
-                OutlineColor: #083818;
+                OutlineColor: #0c3818;
                 OutlineSize: 1;
                 Group {
-                  LayoutMode: Middle;
+                  LayoutMode: Top;
+                  Padding: (Top: 4, Bottom: 4, Left: 3, Right: 3);
                   Group {
-                    LayoutMode: Top;
+                    LayoutMode: Middle;
                     Label {
-                      Anchor: (Bottom: 1);
-                      Text: "Choix PvP inactif";
-                      Style: (FontSize: 10, RenderBold: true, TextColor: #aaffaa, HorizontalAlignment: Center);
+                      Text: "PvP inactif";
+                      Style: (FontSize: 11, RenderBold: true, TextColor: #a8e8a8, HorizontalAlignment: Center, VerticalAlignment: Center, Wrap: false);
                     }
-                    Label #ZoneSafePrice9 {
+                  }
+                  Group #ZoneSafePriceRow9 {
+                    LayoutMode: Middle;
+                    Anchor: (Top: 6);
+                                        Label #ZoneSafePrice9 {
                       Text: "";
-                      Style: (FontSize: 9, TextColor: #7a8a9a, HorizontalAlignment: Center);
+                      Style: (FontSize: 10, TextColor: #d0ead8, HorizontalAlignment: Center, VerticalAlignment: Center, Wrap: false);
                     }
                   }
                 }
@@ -1011,77 +1329,107 @@ $C.@PageOverlay {
         }
         Group #ZoneCard10 {
           FlexWeight: 1;
-          Background: (Color: #0b1624);
-          OutlineColor: #2a3a4a;
+          Background: (Color: #201a36);
+          OutlineColor: #3d3458;
           OutlineSize: 2;
           LayoutMode: Top;
 
-          Group #ZoneImg10 {
-            Anchor: (Height: 92);
-            Background: "varyon_zones.png";
-            Padding: (Top: 5, Left: 7);
+          Group {
+            Anchor: (Height: 26);
+            Background: (Color: #2a2448);
+            Padding: (Left: 8, Right: 8);
+            LayoutMode: Middle;
             Label {
               Text: "Zone 10";
-              Style: (FontSize: 14, RenderBold: true, TextColor: #ffffff);
+              Style: (FontSize: 13, RenderBold: true, TextColor: #efe8ff, HorizontalAlignment: Center, VerticalAlignment: Center);
+            }
+          }
+
+          Group #ZoneImg10 {
+            Anchor: (Height: 88);
+            Background: "varyon_zones.png";
+          }
+
+          Group #ZoneRadius10 {
+            Anchor: (Height: 40);
+            Background: (Color: #2a2440);
+            Padding: (Left: 6, Right: 6, Top: 4, Bottom: 4);
+            LayoutMode: Top;
+            Label #ZoneRadiusTitle10 {
+              Text: "RAYON";
+              Style: (FontSize: 10, RenderBold: true, TextColor: #c4b8e8, HorizontalAlignment: Center);
+            }
+            Label #ZoneRadiusValue10 {
+              Text: "";
+              Style: (FontSize: 11, TextColor: #f0ecf8, HorizontalAlignment: Center, Wrap: true);
             }
           }
 
           Group {
-            Padding: (Left: 5, Right: 5, Top: 5, Bottom: 5);
+            Padding: (Left: 5, Right: 5, Top: 6, Bottom: 6);
             LayoutMode: Top;
-
-            Button #ZoneMain10 {
-              Anchor: (Height: 46, Bottom: 4);
-              Style: ButtonStyle(
-                Default: (Background: (Color: #1a5a9a)),
-                Hovered: (Background: (Color: #2a6aaa)),
-                Pressed: (Background: (Color: #104878))
-              );
-              OutlineColor: #0a3060;
-              OutlineSize: 1;
-              Group {
-                LayoutMode: Middle;
-                Group {
-                  LayoutMode: Top;
-                  Label #ZoneMainTitle10 {
-                    Anchor: (Bottom: 1);
-                    Text: "TP aleatoirement dans la zone 10";
-                    Style: (FontSize: 11, RenderBold: true, TextColor: #ffffff, HorizontalAlignment: Center);
-                  }
-                  Label #ZoneMainPrice10 {
-                    Text: "";
-                    Style: (FontSize: 10, TextColor: #7a8a9a, HorizontalAlignment: Center);
-                  }
-                }
-              }
-            }
 
             Group {
               LayoutMode: Left;
-              Anchor: (Height: 38);
+              Anchor: (Height: 72);
+
+              Button #ZoneMain10 {
+                FlexWeight: 1;
+                Anchor: (Right: 4);
+                Style: ButtonStyle(
+                  Default: (Background: (Color: #242038)),
+                  Hovered: (Background: (Color: #2e2a48)),
+                  Pressed: (Background: (Color: #18162a))
+                );
+                OutlineColor: #141228;
+                OutlineSize: 1;
+                Group {
+                  LayoutMode: Top;
+                  Padding: (Top: 4, Bottom: 4, Left: 3, Right: 3);
+                  Group {
+                    LayoutMode: Middle;
+                    Label #ZoneMainTitle10 {
+                      Text: "Aléatoire";
+                      Style: (FontSize: 11, RenderBold: true, TextColor: #c8c2e0, HorizontalAlignment: Center, VerticalAlignment: Center, Wrap: false);
+                    }
+                  }
+                  Group #ZoneMainPriceRow10 {
+                    LayoutMode: Middle;
+                    Anchor: (Top: 6);
+                                        Label #ZoneMainPrice10 {
+                      Text: "";
+                      Style: (FontSize: 10, TextColor: #dcd4f0, HorizontalAlignment: Center, VerticalAlignment: Center, Wrap: false);
+                    }
+                  }
+                }
+              }
 
               Button #ZonePvP10 {
                 FlexWeight: 1;
-                Anchor: (Right: 3);
+                Anchor: (Right: 4);
                 Style: ButtonStyle(
-                  Default: (Background: (Color: #6a1818)),
-                  Hovered: (Background: (Color: #7a2828)),
-                  Pressed: (Background: (Color: #550f0f))
+                  Default: (Background: (Color: #521420)),
+                  Hovered: (Background: (Color: #621a28)),
+                  Pressed: (Background: (Color: #3a0c14))
                 );
-                OutlineColor: #3a0808;
+                OutlineColor: #300810;
                 OutlineSize: 1;
                 Group {
-                  LayoutMode: Middle;
+                  LayoutMode: Top;
+                  Padding: (Top: 4, Bottom: 4, Left: 3, Right: 3);
                   Group {
-                    LayoutMode: Top;
+                    LayoutMode: Middle;
                     Label {
-                      Anchor: (Bottom: 1);
-                      Text: "Choix PvP actif";
-                      Style: (FontSize: 10, RenderBold: true, TextColor: #ffaaaa, HorizontalAlignment: Center);
+                      Text: "PvP actif";
+                      Style: (FontSize: 11, RenderBold: true, TextColor: #e09090, HorizontalAlignment: Center, VerticalAlignment: Center, Wrap: false);
                     }
-                    Label #ZonePvPPrice10 {
+                  }
+                  Group #ZonePvPPriceRow10 {
+                    LayoutMode: Middle;
+                    Anchor: (Top: 6);
+                                        Label #ZonePvPPrice10 {
                       Text: "";
-                      Style: (FontSize: 9, TextColor: #7a8a9a, HorizontalAlignment: Center);
+                      Style: (FontSize: 10, TextColor: #e8d0d0, HorizontalAlignment: Center, VerticalAlignment: Center, Wrap: false);
                     }
                   }
                 }
@@ -1090,24 +1438,28 @@ $C.@PageOverlay {
               Button #ZoneSafe10 {
                 FlexWeight: 1;
                 Style: ButtonStyle(
-                  Default: (Background: (Color: #185a28)),
-                  Hovered: (Background: (Color: #286a38)),
-                  Pressed: (Background: (Color: #0f4018))
+                  Default: (Background: (Color: #1e5c2e)),
+                  Hovered: (Background: (Color: #2a7038)),
+                  Pressed: (Background: (Color: #144522))
                 );
-                OutlineColor: #083818;
+                OutlineColor: #0c3818;
                 OutlineSize: 1;
                 Group {
-                  LayoutMode: Middle;
+                  LayoutMode: Top;
+                  Padding: (Top: 4, Bottom: 4, Left: 3, Right: 3);
                   Group {
-                    LayoutMode: Top;
+                    LayoutMode: Middle;
                     Label {
-                      Anchor: (Bottom: 1);
-                      Text: "Choix PvP inactif";
-                      Style: (FontSize: 10, RenderBold: true, TextColor: #aaffaa, HorizontalAlignment: Center);
+                      Text: "PvP inactif";
+                      Style: (FontSize: 11, RenderBold: true, TextColor: #a8e8a8, HorizontalAlignment: Center, VerticalAlignment: Center, Wrap: false);
                     }
-                    Label #ZoneSafePrice10 {
+                  }
+                  Group #ZoneSafePriceRow10 {
+                    LayoutMode: Middle;
+                    Anchor: (Top: 6);
+                                        Label #ZoneSafePrice10 {
                       Text: "";
-                      Style: (FontSize: 9, TextColor: #7a8a9a, HorizontalAlignment: Center);
+                      Style: (FontSize: 10, TextColor: #d0ead8, HorizontalAlignment: Center, VerticalAlignment: Center, Wrap: false);
                     }
                   }
                 }
@@ -1115,8 +1467,10 @@ $C.@PageOverlay {
             }
           }
         }
+
         Group { FlexWeight: 1; }
       }
+
     }
   }
 }
