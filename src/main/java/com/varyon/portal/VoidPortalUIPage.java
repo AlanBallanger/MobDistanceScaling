@@ -10,6 +10,8 @@ import com.hypixel.hytale.protocol.packets.interface_.CustomUIEventBindingType;
 import com.hypixel.hytale.protocol.packets.interface_.Page;
 import com.hypixel.hytale.server.core.command.system.CommandManager;
 import com.hypixel.hytale.server.core.entity.entities.player.pages.InteractiveCustomUIPage;
+import com.hypixel.hytale.server.core.ui.Anchor;
+import com.hypixel.hytale.server.core.ui.Value;
 import com.hypixel.hytale.server.core.ui.builder.EventData;
 import com.hypixel.hytale.server.core.ui.builder.UICommandBuilder;
 import com.hypixel.hytale.server.core.ui.builder.UIEventBuilder;
@@ -28,6 +30,9 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 public class VoidPortalUIPage extends InteractiveCustomUIPage<VoidPortalUIPage.EventDataClass> {
+
+    private static final int WINDOW_WIDTH = 852;
+    private static final int WINDOW_HEIGHT = 595;
 
     private static final String ECON_PRICE_PREFIX = "\u00A4 ";
     private static final String RANDOM_LABEL = "Al\u00e9atoire";
@@ -62,6 +67,10 @@ public class VoidPortalUIPage extends InteractiveCustomUIPage<VoidPortalUIPage.E
                       @Nonnull UIEventBuilder eventBuilder,
                       @Nonnull Store<EntityStore> store) {
         commandBuilder.append("VoidPortalMenu.ui");
+        Anchor windowAnchor = new Anchor();
+        windowAnchor.setWidth(Value.of(WINDOW_WIDTH));
+        windowAnchor.setHeight(Value.of(WINDOW_HEIGHT));
+        commandBuilder.setObject("#VoidPortalRoot.Anchor", windowAnchor);
         commandBuilder.set("#MenuTitle.Text", "T\u00e9l\u00e9portation zones Varyon");
 
         RtpvConfig rtpvConfig = null;
