@@ -2,18 +2,18 @@ Group {
   LayoutMode: Center;
 
   Group #ZoneHudRoot {
-    Anchor: (Width: 746, Top: 36);
+    Anchor: (Width: 770, Top: 36);
     LayoutMode: Top;
 
     Group #ZoneBarRow {
       LayoutMode: Center;
-      Anchor: (Width: 746, Height: 26, Left: 0, Top: 0);
+      Anchor: (Width: 770, Height: 26, Left: 0, Top: 0);
 
       Group #ZoneBar {
-        Anchor: (Width: 584, Height: 26);
+        Anchor: (Width: 770, Height: 26);
         Background: (Color: #202C3C);
         LayoutMode: Left;
-        Padding: (Vertical: 0, Horizontal: 10);
+        Padding: (Vertical: 0, Horizontal: 41);
 
         Group #InfoRow {
           Anchor: (Height: 22, Left: 0, Top: 0);
@@ -42,18 +42,18 @@ Group {
             Anchor: (Width: 10, Height: 22);
           }
 
-          Group #EssenceGroup {
+          Group #PointGroup {
             LayoutMode: Center;
-            Anchor: (Width: 125, Height: 22);
+            Anchor: (Width: 249, Height: 22);
             Group {
               LayoutMode: Left;
               Anchor: (Height: 22);
               Group #PointsIcon {
-                Anchor: (Width: 16, Height: 16, Top: 5, Right: 3);
+                Anchor: (Width: 16, Height: 16, Top: 3);
                 Background: "Faction_Point.png";
               }
               Group {
-                Anchor: (Width: 100, Height: 20, Top: 2);
+                Anchor: (Width: 233, Height: 20, Top: 1);
                 Label #Essence {
                   Text: "Points : 0/1000";
                   Style: (
@@ -63,7 +63,7 @@ Group {
                     VerticalAlignment: Center,
                     HorizontalAlignment: Center
                   );
-                  Anchor: (Width: 100, Height: 20, Top: 0);
+                  Anchor: (Width: 233, Height: 20, Top: 0);
                 }
               }
             }
@@ -226,7 +226,7 @@ Group {
     }
 
     Group #EssenceBarHost {
-      Anchor: (Width: 746, Height: 56, Left: 0, Top: 5);
+      Anchor: (Width: 770, Height: 56, Left: 0, Top: 5);
       LayoutMode: Center;
 
       Group #EssenceBarWrapper {

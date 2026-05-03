@@ -163,6 +163,6 @@ public class DifficultyZone {
     @Override
     public String toString() {
         return name + " (HP x" + healthMultiplier + ", DMG x" + damageMultiplier + ", Loot x" + lootMultiplier +
-                ", Points de guilde x" + essenceMultiplier + ", " + radiusStart + "+ blocks, " + color + ")";
+                ", Points de faction x" + essenceMultiplier + ", " + radiusStart + "+ blocks, " + color + ")";
     }
 }

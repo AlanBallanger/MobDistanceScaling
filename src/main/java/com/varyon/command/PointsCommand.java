@@ -25,7 +25,7 @@ public class PointsCommand extends AbstractAsyncCommand {
     private final FactionManager factionManager;
 
     public PointsCommand(@Nonnull EssenceManager essenceManager, @Nonnull FactionManager factionManager) {
-        super("points", "Afficher vos points de guilde et le classement");
+        super("points", "Afficher vos points de faction et le classement");
         this.essenceManager = essenceManager;
         this.factionManager = factionManager;
         this.addSubCommand(new TopSubCommand(essenceManager));
@@ -54,7 +54,7 @@ public class PointsCommand extends AbstractAsyncCommand {
         int displayPoints = essenceManager.getEssenceDisplay(playerRef.getUuid());
         int rank = essenceManager.getPlayerRank(playerRef.getUuid());
 
-        context.sendMessage(Message.raw("Points de guilde : " + displayPoints).color(Color.YELLOW));
+        context.sendMessage(Message.raw("Points de faction : " + displayPoints).color(Color.YELLOW));
         context.sendMessage(Message.raw("Rang : #" + rank).color(Color.YELLOW));
 
         return CompletableFuture.completedFuture(null);
@@ -64,7 +64,7 @@ public class PointsCommand extends AbstractAsyncCommand {
         private final EssenceManager essenceManager;
 
         public TopSubCommand(@Nonnull EssenceManager essenceManager) {
-            super("top", "Classement des points de guilde");
+            super("top", "Classement des points de faction");
             this.essenceManager = essenceManager;
         }
 
@@ -73,7 +73,7 @@ public class PointsCommand extends AbstractAsyncCommand {
         protected CompletableFuture<Void> executeAsync(CommandContext context) {
             List<PlayerEssenceData> topPlayers = essenceManager.getTopPlayers(10);
 
-            context.sendMessage(Message.raw("=== Classement — points de guilde ===").color(Color.ORANGE));
+            context.sendMessage(Message.raw("=== Classement — points de faction ===").color(Color.ORANGE));
 
             for (int i = 0; i < topPlayers.size(); i++) {
                 PlayerEssenceData data = topPlayers.get(i);
@@ -91,7 +91,7 @@ public class PointsCommand extends AbstractAsyncCommand {
         private final RequiredArg<Integer> amountArg;
 
         public GiveSubCommand(@Nonnull EssenceManager essenceManager) {
-            super("give", "Donner des points de guilde à un joueur");
+            super("give", "Donner des points de faction à un joueur");
             this.essenceManager = essenceManager;
             this.requirePermission("varyon.admin");
             this.playerArg = this.withRequiredArg("player", "Nom du joueur", ArgTypes.PLAYER_REF);
@@ -109,7 +109,7 @@ public class PointsCommand extends AbstractAsyncCommand {
             }
 
             essenceManager.addEssence(target.getUuid(), target.getUsername(), amount);
-            context.sendMessage(Message.raw("+" + amount + " points de guilde à " + target.getUsername()).color(Color.GREEN));
+            context.sendMessage(Message.raw("+" + amount + " points de faction à " + target.getUsername()).color(Color.GREEN));
             return CompletableFuture.completedFuture(null);
         }
     }
@@ -120,7 +120,7 @@ public class PointsCommand extends AbstractAsyncCommand {
         private final RequiredArg<Integer> amountArg;
 
         public TakeSubCommand(@Nonnull EssenceManager essenceManager) {
-            super("take", "Retirer des points de guilde à un joueur");
+            super("take", "Retirer des points de faction à un joueur");
             this.essenceManager = essenceManager;
             this.requirePermission("varyon.admin");
             this.playerArg = this.withRequiredArg("player", "Nom du joueur", ArgTypes.PLAYER_REF);
@@ -138,7 +138,7 @@ public class PointsCommand extends AbstractAsyncCommand {
             }
 
             essenceManager.addEssence(target.getUuid(), target.getUsername(), -amount);
-            context.sendMessage(Message.raw("-" + amount + " points de guilde de " + target.getUsername()).color(Color.GREEN));
+            context.sendMessage(Message.raw("-" + amount + " points de faction de " + target.getUsername()).color(Color.GREEN));
             return CompletableFuture.completedFuture(null);
         }
     }
@@ -149,7 +149,7 @@ public class PointsCommand extends AbstractAsyncCommand {
         private final RequiredArg<Integer> amountArg;
 
         public SetMaxSubCommand(@Nonnull EssenceManager essenceManager) {
-            super("setmax", "Définir le stock de points de guilde d'un joueur (hors plafond 1000 par défaut)");
+            super("setmax", "Définir le stock de points de faction d'un joueur (hors plafond 1000 par défaut)");
             this.essenceManager = essenceManager;
             this.requirePermission("varyon.admin");
             this.playerArg = this.withRequiredArg("player", "Nom du joueur", ArgTypes.PLAYER_REF);
@@ -168,7 +168,7 @@ public class PointsCommand extends AbstractAsyncCommand {
             }
 
             essenceManager.setEssenceUncapped(target.getUuid(), target.getUsername(), amount);
-            context.sendMessage(Message.raw("Points de guilde de " + target.getUsername() + " définis à " + amount).color(Color.GREEN));
+            context.sendMessage(Message.raw("Points de faction de " + target.getUsername() + " définis à " + amount).color(Color.GREEN));
             return CompletableFuture.completedFuture(null);
         }
     }
@@ -179,7 +179,7 @@ public class PointsCommand extends AbstractAsyncCommand {
         private final RequiredArg<Integer> amountArg;
 
         public DepositSubCommand(@Nonnull EssenceManager essenceManager, @Nonnull FactionManager factionManager) {
-            super("deposit", "Déposer des points de guilde pour votre faction");
+            super("deposit", "Déposer des points de faction pour votre faction");
             this.essenceManager = essenceManager;
             this.factionManager = factionManager;
             this.requirePermission("varyon.deposit");
@@ -215,7 +215,7 @@ public class PointsCommand extends AbstractAsyncCommand {
 
             int currentPoints = essenceManager.getEssenceDisplay(playerRef.getUuid());
             if (currentPoints < amount) {
-                context.sendMessage(Message.raw("Vous n'avez que " + currentPoints + " points de guilde.").color(Color.RED));
+                context.sendMessage(Message.raw("Vous n'avez que " + currentPoints + " points de faction.").color(Color.RED));
                 return CompletableFuture.completedFuture(null);
             }
 
@@ -235,8 +235,8 @@ public class PointsCommand extends AbstractAsyncCommand {
 
             int newBalance = essenceManager.getGlobalBalance();
             int gaugeMax = essenceManager.getGuildGaugeAbsMax();
-            context.sendMessage(Message.raw("Déposé " + amount + " points de guilde dans " + faction.getDisplayName()).color(Color.GREEN));
-            context.sendMessage(Message.raw("Balance globale : " + newBalance + "/" + gaugeMax).color(Color.YELLOW));
+            context.sendMessage(Message.raw("Déposé " + amount + " points de faction dans " + faction.getDisplayName()).color(Color.GREEN));
+            context.sendMessage(Message.raw(FactionManager.factionPointsAfterDepositLine(newBalance, gaugeMax, faction)).color(Color.YELLOW));
 
             VaryonPlugin plugin = VaryonPlugin.getInstance();
             if (plugin != null && plugin.getHudManager() != null) {

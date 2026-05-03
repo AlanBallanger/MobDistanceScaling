@@ -108,7 +108,7 @@ public class EssenceMiningSystem extends EntityEventSystem<EntityStore, BreakBlo
                 essenceManager.addEssence(playerUuid, playerUuid.toString(), essenceGained);
             }
 
-            LOGGER.at(Level.INFO).log("Mine: block=" + blockId + " +" + String.format("%.2f", essenceGained) + " guild points (base=" + baseReward + " zone=" + zoneMultiplier + " loot=" + String.format("%.2f", lootMultiplier) + " pvp=" + pvpMultiplier + ")");
+            LOGGER.at(Level.INFO).log("Mine: block=" + blockId + " +" + String.format("%.2f", essenceGained) + " faction points (base=" + baseReward + " zone=" + zoneMultiplier + " loot=" + String.format("%.2f", lootMultiplier) + " pvp=" + pvpMultiplier + ")");
         } catch (Exception e) {
             LOGGER.at(Level.WARNING).log("Error in EssenceMiningSystem: " + e.getMessage());
         }

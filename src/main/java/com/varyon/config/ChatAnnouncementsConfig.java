@@ -57,7 +57,7 @@ public class ChatAnnouncementsConfig {
     public static ChatAnnouncementsConfig createDefault() {
         List<String> lines = new ArrayList<>();
         lines.add("Bienvenue sur Varyon — restez prudents hors de la zone sûre.");
-        lines.add("Déposez vos points de guilde dans les coffres de faction pour contribuer à la balance globale.");
+        lines.add("Déposez vos points de faction dans les coffres de faction pour contribuer à la balance globale.");
         return new ChatAnnouncementsConfig(true, 5, lines);
     }
 

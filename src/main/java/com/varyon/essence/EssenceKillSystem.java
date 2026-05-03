@@ -114,7 +114,7 @@ public class EssenceKillSystem extends EntityEventSystem<EntityStore, KillFeedEv
                 essenceManager.addEssence(playerUuid, playerUuid.toString(), essenceGained);
             }
 
-            LOGGER.at(Level.INFO).log("Kill: mob=" + mobId + " +" + String.format("%.2f", essenceGained) + " guild points (base=" + baseReward + " loot=" + String.format("%.2f", lootMultiplier) + " zone=" + String.format("%.2f", zoneMultiplier) + " pvp=" + pvpMultiplier + ")");
+            LOGGER.at(Level.INFO).log("Kill: mob=" + mobId + " +" + String.format("%.2f", essenceGained) + " faction points (base=" + baseReward + " loot=" + String.format("%.2f", lootMultiplier) + " zone=" + String.format("%.2f", zoneMultiplier) + " pvp=" + pvpMultiplier + ")");
         } catch (Exception e) {
             LOGGER.at(Level.WARNING).log("Error in EssenceKillSystem: " + e.getMessage());
         }

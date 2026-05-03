@@ -24,8 +24,10 @@ import java.util.logging.Level;
  * Tick system that pushes the Varyon monster tier (1–10) to NameplateBuilder.
  *
  * Resolution order:
- *   1. Look up the NPC role name in key_fragment_rates.toml → tier 1–10
- *   2. If not found (unknown mob), fall back to the zone ID where the NPC stands
+ *   1. Prefer MobScalingComponent mob level when present.
+ *   2. Otherwise derive a tier from the NPC zone (see {@link ZoneCalculator}).
+ *
+ * Key fragments = tier/mineral weights from reference TOMLs (same folder as {@code config.toml}). Faction points use reference × 1.5 (see {@link com.varyon.config.EssenceRewardsConfig}).
  *
  * Segment : "monster_level"
  *   Variant 0 (default) : "Nv.5"

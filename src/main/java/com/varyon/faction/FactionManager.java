@@ -10,6 +10,7 @@ import net.luckperms.api.model.user.User;
 import net.luckperms.api.node.NodeType;
 import net.luckperms.api.query.QueryOptions;
 
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.UUID;
 import java.util.logging.Level;
@@ -35,6 +36,13 @@ public class FactionManager {
         public int getBalanceMultiplier() { return balanceMultiplier; }
         public String getPermission()     { return permission; }
 
+        /**
+         * Solde brut de la jauge ({@code rawBalance}, positif = Fracture) ramené au point de vue de cette faction.
+         */
+        public int perspectiveGlobalBalance(int rawBalance) {
+            return rawBalance * balanceMultiplier;
+        }
+
         @Nullable
         public static Faction fromString(String name) {
             for (Faction f : values()) {
@@ -42,6 +50,12 @@ public class FactionManager {
             }
             return null;
         }
+    }
+
+    @Nonnull
+    public static String factionPointsAfterDepositLine(int rawGlobalBalance, int gaugeAbsMax, @Nonnull Faction faction) {
+        int shown = faction.perspectiveGlobalBalance(rawGlobalBalance);
+        return "Le nombre de points de ta faction est monté à " + shown + "/" + gaugeAbsMax;
     }
 
     /**

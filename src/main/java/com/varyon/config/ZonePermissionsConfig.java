@@ -150,7 +150,7 @@ public class ZonePermissionsConfig {
             sb.append(z).append(" = \"").append(permissionByZone.getOrDefault(z, "varyon.zone." + z)).append("\"\n");
         }
 
-        sb.append("\n# Plafonds de points de guilde (max_essence)\n");
+        sb.append("\n# Plafonds de points de faction (max_essence)\n");
         sb.append("# admin_base : plafond par défaut pour varyon.admin (souple — suit les points ajoutés par commandes admin)\n");
         sb.append("# zoneId = max_essence : plafond pour les joueurs selon la permission de zone la plus haute\n\n");
         sb.append("[").append(SECTION_MAX).append("]\n");

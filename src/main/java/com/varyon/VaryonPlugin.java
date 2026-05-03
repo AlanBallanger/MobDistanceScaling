@@ -1,6 +1,7 @@
 package com.varyon;
 
 import com.hypixel.hytale.component.ComponentType;
+import com.hypixel.hytale.event.EventPriority;
 import com.hypixel.hytale.logger.HytaleLogger;
 import com.hypixel.hytale.server.core.entity.entities.Player;
 import com.hypixel.hytale.server.core.event.events.ecs.BreakBlockEvent;
@@ -39,6 +40,7 @@ import com.varyon.deposit.DepositBlockInteractionSystem;
 import com.varyon.portal.VoidPortalInteractionSystem;
 import com.varyon.rtpv.RtpvConfirmManager;
 import com.varyon.rtpv.RtpvCooldownStore;
+import com.varyon.util.VaryonPlayerWorldPresence;
 import com.varyon.util.VaryonWorldAccess;
 import com.varyon.rtpv.RtpvJoinManager;
 import com.varyon.deposit.DepositBlockManager;
@@ -147,7 +149,7 @@ public class VaryonPlugin extends JavaPlugin {
             staticEssenceManager = essenceManager;
 
             essenceRewardsConfig = new EssenceRewardsConfig();
-            essenceRewardsConfig.load(this.getDataDirectory());
+            essenceRewardsConfig.attach(configManager.getMobFragmentsConfig(), configManager.getEssenceEconomyConfig());
             LOGGER.at(Level.INFO).log("Essence system initialized");
 
             // Initialiser le systÃ¨me de factions
@@ -295,6 +297,46 @@ public class VaryonPlugin extends JavaPlugin {
             }
 
             hudManager = new ZoneHUDManager(configManager.getZoneConfig(), configManager.getMessagesConfig(), configManager.getZonePermissionsConfig());
+
+            this.getEventRegistry().registerGlobal(EventPriority.LAST, DrainPlayerFromWorldEvent.class, event -> {
+                try {
+                    PlayerRef playerRef = event.getHolder().getComponent(PlayerRef.getComponentType());
+                    if (playerRef == null) {
+                        return;
+                    }
+                    hudManager.removePlayer(playerRef.getUuid());
+                } catch (Exception e) {
+                    LOGGER.at(Level.WARNING).log("DrainPlayerFromWorld faction/HUD: " + e.getMessage());
+                }
+            });
+
+            this.getEventRegistry().registerGlobal(EventPriority.FIRST, AddPlayerToWorldEvent.class, event -> {
+                try {
+                    PlayerRef playerRef = event.getHolder().getComponent(PlayerRef.getComponentType());
+                    Player player = event.getHolder().getComponent(Player.getComponentType());
+                    if (playerRef != null && player != null && player.getPlayerConfigData() != null) {
+                        World destWorld = event.getWorld();
+                        String previousWorldName = player.getPlayerConfigData().getWorld();
+                        boolean wasVaryonWorld = previousWorldName != null && !previousWorldName.isBlank()
+                            && VaryonWorldAccess.isVaryonEnabledWorld(previousWorldName);
+                        boolean nowVaryonWorld = VaryonWorldAccess.isVaryonEnabledWorld(destWorld);
+                        if (wasVaryonWorld && !nowVaryonWorld) {
+                            GuildPointsVaryonExitHelper.applyOnLeavingVaryonWorld(playerRef, essenceManager);
+                        }
+                        VaryonPlayerWorldPresence.update(playerRef.getUuid(), destWorld);
+                    }
+                } catch (Exception e) {
+                    LOGGER.at(Level.WARNING).log("AddPlayerToWorld faction/presence: " + e.getMessage());
+                }
+            });
+
+            this.getEventRegistry().registerGlobal(PlayerDisconnectEvent.class, event -> {
+                PlayerRef playerRef = event.getPlayerRef();
+                if (playerRef != null) {
+                    VaryonPlayerWorldPresence.clear(playerRef.getUuid());
+                }
+            });
+
             if (hudManager.isAvailable()) {
                 LOGGER.at(Level.INFO).log("Zone HUD initialized with Objective system");
                 
@@ -304,7 +346,7 @@ public class VaryonPlugin extends JavaPlugin {
                         // Charger l'essence du joueur depuis la base de donnÃ©es
                         essenceManager.loadPlayer(playerRef.getUuid());
                     } catch (Exception e) {
-                        LOGGER.at(Level.WARNING).log("Failed to load player guild points: " + e.getMessage());
+                        LOGGER.at(Level.WARNING).log("Failed to load player faction points: " + e.getMessage());
                     }
                 });
                 
@@ -327,20 +369,6 @@ public class VaryonPlugin extends JavaPlugin {
                             LOGGER.at(Level.WARNING).log("Failed to register HUD for player: " + e.getMessage());
                         }
                     });
-                });
-
-                this.getEventRegistry().registerGlobal(DrainPlayerFromWorldEvent.class, event -> {
-                    try {
-                        PlayerRef playerRef = event.getHolder().getComponent(PlayerRef.getComponentType());
-                        if (playerRef != null && VaryonWorldAccess.isVaryonEnabledWorld(event.getWorld())) {
-                            GuildPointsVaryonExitHelper.applyOnLeavingVaryonWorld(playerRef, essenceManager);
-                        }
-                        if (playerRef != null) {
-                            hudManager.removePlayer(playerRef.getUuid());
-                        }
-                    } catch (Exception e) {
-                        LOGGER.at(Level.WARNING).log("Failed to drain HUD on world change: " + e.getMessage());
-                    }
                 });
 
                 this.getEventRegistry().registerGlobal(AddPlayerToWorldEvent.class, event -> {
@@ -369,7 +397,7 @@ public class VaryonPlugin extends JavaPlugin {
                             }
                         }
                     } catch (Exception e) {
-                        LOGGER.at(Level.WARNING).log("Guild points strip on disconnect: " + e.getMessage());
+                        LOGGER.at(Level.WARNING).log("Faction points strip on disconnect: " + e.getMessage());
                     }
                     hudManager.removePlayer(playerRef.getUuid());
                     RtpvJoinManager joinMgr = RtpvJoinManager.getInstance();
@@ -472,7 +500,7 @@ public class VaryonPlugin extends JavaPlugin {
     }
 
     public void onConfigurationReloaded() {
-        essenceRewardsConfig.load(this.getDataDirectory());
+        essenceRewardsConfig.attach(configManager.getMobFragmentsConfig(), configManager.getEssenceEconomyConfig());
         if (extractionPortalManager != null) {
             extractionPortalManager.setConfig(configManager.getExtractionConfig());
         }

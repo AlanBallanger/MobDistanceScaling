@@ -148,6 +148,13 @@ public class RtpvCommand extends AbstractPlayerCommand {
             }
         }
 
+        if (!RtpvCooldownStore.isConsecutiveRtpvAllowed(playerRef.getUuid(), cooldownSec)) {
+            context.sendMessage(Message.raw(
+                "Limite atteinte : 5 téléportations aléatoires d’affilée maximum."
+            ).color(Color.RED));
+            return;
+        }
+
         int baseCost = targetZone.getTeleportCost();
         double multipliedCost = (pvpFilter != null && !pvpFilter)
             ? baseCost * rtpvConfig.getSafeCostMultiplier()
@@ -213,6 +220,7 @@ public class RtpvCommand extends AbstractPlayerCommand {
 
                     scheduleConfirmMenu(playerRef, world, zoneNumber, pvpFilter, finalCost);
                     RtpvCooldownStore.recordSuccessfulRtpv(playerRef.getUuid());
+                    RtpvCooldownStore.incrementConsecutiveRtpv(playerRef.getUuid());
                 } else {
                     context.sendMessage(Message.raw("Impossible de trouver un emplacement sûr dans " + targetZone.getName()).color(Color.RED));
                 }
@@ -312,7 +320,7 @@ public class RtpvCommand extends AbstractPlayerCommand {
                     liveRef, liveStore,
                     new RtpvConfirmUIPage(playerRef, zoneNumber, pvpFilter, paidCost, firstRetryOrdinal));
             }),
-            2_000L,
+            5_000L,
             TimeUnit.MILLISECONDS);
         mgr.schedulePendingMenu(playerRef.getUuid(), future);
     }

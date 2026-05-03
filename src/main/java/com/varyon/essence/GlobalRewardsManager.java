@@ -104,6 +104,9 @@ public class GlobalRewardsManager {
         int referenceMax = tierGaugeReferenceMax();
         long cooldownMs = config.getCooldownMinutes() * 60_000L;
 
+        boolean fractureRewardedThisWave = false;
+        boolean noyauRewardedThisWave = false;
+
         for (int i = 0; i < config.getTiers().size(); i++) {
             FactionRewardsConfig.RewardTier tier = config.getTiers().get(i);
             TierState state = tierStates.computeIfAbsent(i, k -> new TierState());
@@ -113,13 +116,24 @@ public class GlobalRewardsManager {
                 LOGGER.at(Level.INFO).log("Tier " + (i + 1) + " reached (+" + scaledThreshold + " scaled, raw " + tier.getThreshold() + "/" + referenceMax + " ref, gauge max " + gaugeAbsMax + ") — rewarding Fracture");
                 distributeFactionReward(FactionManager.Faction.FRACTURE, tier, i + 1);
                 state.markPositiveRewarded();
+                fractureRewardedThisWave = true;
             }
 
             if (globalBalance <= -scaledThreshold && state.canRewardNegative(cooldownMs)) {
                 LOGGER.at(Level.INFO).log("Tier " + (i + 1) + " reached (-" + scaledThreshold + " scaled, raw " + tier.getThreshold() + "/" + referenceMax + " ref, gauge max " + gaugeAbsMax + ") — rewarding Noyau");
                 distributeFactionReward(FactionManager.Faction.NOYAU, tier, i + 1);
                 state.markNegativeRewarded();
+                noyauRewardedThisWave = true;
             }
+        }
+
+        if (fractureRewardedThisWave) {
+            fractureParticipation.clear();
+            LOGGER.at(Level.INFO).log("Participation reset for Fracture after reward wave");
+        }
+        if (noyauRewardedThisWave) {
+            noyauParticipation.clear();
+            LOGGER.at(Level.INFO).log("Participation reset for Noyau after reward wave");
         }
     }
 
@@ -137,6 +151,11 @@ public class GlobalRewardsManager {
         if (s < 1) s = 1;
         if (s > gaugeAbsMax) s = gaugeAbsMax;
         return s;
+    }
+
+    private static String fragmentGainChatLine(int quantity, int keyTier, @Nonnull String pctLabel) {
+        String noun = quantity == 1 ? "Fragment" : "Fragments";
+        return "Tu reçois : " + quantity + " " + noun + " de clé de palier " + keyTier + " (" + pctLabel + ")";
     }
 
     private void distributeFactionReward(@Nonnull FactionManager.Faction faction,
@@ -188,9 +207,6 @@ public class GlobalRewardsManager {
             LOGGER.at(Level.INFO).log("Stored " + fullAmt + " pending fragments for offline player " + uuid + " (tier " + tierNumber + ")");
         }
 
-        // Reset participation for this faction
-        participation.clear();
-        LOGGER.at(Level.INFO).log("Participation reset for " + faction.getDisplayName() + " after tier " + tierNumber);
     }
 
     private void giveFragmentsOnline(@Nonnull PlayerRef playerRef, @Nonnull Ref ref,
@@ -209,11 +225,11 @@ public class GlobalRewardsManager {
             ItemStackTransaction tx = playerComponent.getInventory().getCombinedHotbarFirst().addItemStack(stack);
 
             String factionColor = faction == FactionManager.Faction.NOYAU ? "#5555FF" : "#FF8800";
-            playerRef.sendMessage(Message.raw("[Palier " + tierNumber + "] " + faction.getDisplayName() + " a atteint un seuil!").color(Color.decode(factionColor)));
+            playerRef.sendMessage(Message.raw("[Palier " + tierNumber + "] " + faction.getDisplayName() + " a atteint un seuil !").color(Color.decode(factionColor)));
 
             if (ItemStack.isEmpty(tx.getRemainder())) {
                 String pct = participated ? "100%" : ((int)(config.getPassiveRewardRate() * 100)) + "%";
-                playerRef.sendMessage(Message.raw("Vous recevez: " + fragments + "x " + itemId + " (" + pct + ")").color(Color.GREEN));
+                playerRef.sendMessage(Message.raw(fragmentGainChatLine(fragments, maxZone, pct)).color(Color.GREEN));
                 LOGGER.at(Level.INFO).log("Gave " + fragments + "x " + itemId + " to " + playerRef.getUsername() + " (" + pct + ", tier " + tierNumber + ")");
             } else {
                 LOGGER.at(Level.WARNING).log("Inventory full for " + playerRef.getUsername() + " — could not give all fragments");
@@ -249,7 +265,7 @@ public class GlobalRewardsManager {
             ItemStackTransaction tx = playerComponent.getInventory().getCombinedHotbarFirst().addItemStack(stack);
 
             if (ItemStack.isEmpty(tx.getRemainder())) {
-                playerRef.sendMessage(Message.raw("[Récompense en attente] Vous recevez: " + fragments + "x " + itemId).color(Color.GREEN));
+                playerRef.sendMessage(Message.raw("[Récompense en attente] " + fragmentGainChatLine(fragments, maxZone, "100%")).color(Color.GREEN));
                 LOGGER.at(Level.INFO).log("Delivered " + fragments + "x " + itemId + " (pending) to " + playerRef.getUsername());
             } else {
                 // Inventory full — restore pending

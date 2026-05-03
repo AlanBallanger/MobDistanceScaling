@@ -13,16 +13,19 @@ public final class GuildPointsVaryonExitHelper {
     private GuildPointsVaryonExitHelper() {}
 
     public static void applyOnLeavingVaryonWorld(@Nonnull PlayerRef playerRef, @Nonnull EssenceManager essenceManager) {
-        int amount = essenceManager.getEssenceDisplay(playerRef.getUuid());
-        if (amount <= 0) {
+        double current = essenceManager.getEssence(playerRef.getUuid());
+        if (current <= 0) {
             return;
         }
-        essenceManager.addEssence(playerRef.getUuid(), playerRef.getUsername(), -amount);
+        int amount = essenceManager.getEssenceDisplay(playerRef.getUuid());
+        essenceManager.setEssence(playerRef.getUuid(), playerRef.getUsername(), 0);
         try {
-            String unit = amount == 1 ? "essence" : "essences";
-            String text = "Tu as quitté Varyon avec " + amount + " " + unit
-                + " dans les poches. Au revoir, et merci pour le cadeau à l'univers !";
-            playerRef.sendMessage(Message.raw(text).color(Color.ORANGE));
+            if (amount > 0) {
+                String unit = amount == 1 ? "essence" : "essences";
+                String text = "Tu as quitté Varyon avec " + amount + " " + unit
+                    + " dans les poches. Au revoir, et merci pour le cadeau à l'univers !";
+                playerRef.sendMessage(Message.raw(text).color(Color.ORANGE));
+            }
         } catch (Exception ignored) {
         }
         VaryonPlugin plugin = VaryonPlugin.getInstance();

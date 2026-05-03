@@ -30,6 +30,7 @@ import com.varyon.config.RtpvConfig;
 import com.varyon.config.ZoneConfig;
 import com.varyon.rtpv.RtpvConfirmManager;
 import com.varyon.rtpv.RtpvJoinManager;
+import com.varyon.rtpv.RtpvCooldownStore;
 import com.varyon.rtpv.RtpvRetryPricing;
 import com.varyon.safezone.SafeZoneManager;
 import com.varyon.safezone.SafeZoneQuadrant;
@@ -133,6 +134,7 @@ public class RtpvConfirmUIPage extends InteractiveCustomUIPage<RtpvConfirmUIPage
                 if (mgr != null) {
                     mgr.cancelPendingMenu(playerRefComp.getUuid());
                 }
+                RtpvCooldownStore.resetConsecutiveRtpv(playerRefComp.getUuid());
             }
             return;
         }
@@ -158,6 +160,13 @@ public class RtpvConfirmUIPage extends InteractiveCustomUIPage<RtpvConfirmUIPage
         @Nonnull Ref<EntityStore> ref, @Nonnull Store<EntityStore> store, @Nonnull PlayerRef playerRefComp) {
         RtpvConfig rtpvConfig = VaryonPlugin.getStaticConfigManager() != null
             ? VaryonPlugin.getStaticConfigManager().getRtpvConfig() : null;
+        int cooldownSec = rtpvConfig != null ? rtpvConfig.getCooldownSeconds() : 0;
+        if (!RtpvCooldownStore.isConsecutiveRtpvAllowed(playerRefComp.getUuid(), cooldownSec)) {
+            playerRefComp.sendMessage(Message.raw(
+                "Limite atteinte : 5 téléportations aléatoires d’affilée maximum."
+            ).color(Color.RED));
+            return;
+        }
         boolean economyEnabled = rtpvConfig != null && rtpvConfig.isEconomyEnabled();
 
         if (economyEnabled) {
@@ -231,6 +240,8 @@ public class RtpvConfirmUIPage extends InteractiveCustomUIPage<RtpvConfirmUIPage
                 playerRefComp.sendMessage(Message.raw(
                     "Re-téléporté vers " + targetZone.getName() + pvpLabel + costLabel
                 ).color(Color.GREEN));
+
+                RtpvCooldownStore.incrementConsecutiveRtpv(playerRefComp.getUuid());
 
                 scheduleNextConfirm(playerRefComp, world);
 

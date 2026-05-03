@@ -82,7 +82,7 @@
     },
     {
       "Permission": "varyon.deposit",
-      "Description": "Allow depositing guild points (points de guilde)",
+      "Description": "Allow depositing faction points (points de faction)",
       "Default": false
     },
     {

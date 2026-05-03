@@ -75,9 +75,9 @@ public class VaryonCommand extends AbstractAsyncCommand {
             context.sendMessage(Message.raw("  /varyon shop : Boutique (clés contre fragments)").color(Color.WHITE));
             context.sendMessage(Message.raw("  /varyon whois : Voir votre faction détectée").color(Color.WHITE));
             context.sendMessage(Message.raw("  /return : Menu de confirmation (retour près de votre point de mort)").color(Color.WHITE));
-            context.sendMessage(Message.raw("  /points : Voir vos points de guilde").color(Color.WHITE));
-            context.sendMessage(Message.raw("  /points top : Classement des points de guilde").color(Color.WHITE));
-            context.sendMessage(Message.raw("  /points deposit <montant> : Déposer des points de guilde pour votre faction").color(Color.WHITE));
+            context.sendMessage(Message.raw("  /points : Voir vos points de faction").color(Color.WHITE));
+            context.sendMessage(Message.raw("  /points top : Classement des points de faction").color(Color.WHITE));
+            context.sendMessage(Message.raw("  /points deposit <montant> : Déposer des points de faction pour votre faction").color(Color.WHITE));
 
             if (isAdmin) {
                 context.sendMessage(Message.raw("  /varyon reload : Recharger la configuration").color(Color.WHITE));
@@ -86,9 +86,9 @@ public class VaryonCommand extends AbstractAsyncCommand {
                 context.sendMessage(Message.raw("  /varyon resetdeposit : Supprimer tous les blocs de dépôt").color(Color.WHITE));
                 context.sendMessage(Message.raw("  /varyon resetrewards : Reset les cooldowns des récompenses de faction").color(Color.WHITE));
                 context.sendMessage(Message.raw("  /varyon resetbalance : Remettre la jauge globale (points) à 0").color(Color.WHITE));
-                context.sendMessage(Message.raw("  /points give <joueur> <montant> : Donner des points de guilde à un joueur").color(Color.WHITE));
-                context.sendMessage(Message.raw("  /points take <joueur> <montant> : Retirer des points de guilde à un joueur").color(Color.WHITE));
-                context.sendMessage(Message.raw("  /points setmax <joueur> <montant> : Fixer le stock de points de guilde d'un joueur").color(Color.WHITE));
+                context.sendMessage(Message.raw("  /points give <joueur> <montant> : Donner des points de faction à un joueur").color(Color.WHITE));
+                context.sendMessage(Message.raw("  /points take <joueur> <montant> : Retirer des points de faction à un joueur").color(Color.WHITE));
+                context.sendMessage(Message.raw("  /points setmax <joueur> <montant> : Fixer le stock de points de faction d'un joueur").color(Color.WHITE));
             }
 
             if (hasRtp) {
@@ -217,7 +217,7 @@ public class VaryonCommand extends AbstractAsyncCommand {
 
     public static class ResetBalanceSubCommand extends AbstractAsyncCommand {
         public ResetBalanceSubCommand() {
-            super("resetbalance", "Remettre la jauge globale de points de guilde à 0");
+            super("resetbalance", "Remettre la jauge globale de points de faction à 0");
             this.requirePermission("varyon.admin");
         }
 
@@ -227,7 +227,7 @@ public class VaryonCommand extends AbstractAsyncCommand {
             com.varyon.essence.EssenceManager essenceManager = VaryonPlugin.getStaticEssenceManager();
             
             if (essenceManager == null) {
-                context.sendMessage(Message.raw("Système de points de guilde non initialisé.").color(Color.RED));
+                context.sendMessage(Message.raw("Système de points de faction non initialisé.").color(Color.RED));
                 return CompletableFuture.completedFuture(null);
             }
             

@@ -31,6 +31,7 @@ public class ConfigManager {
     private MessagesConfig messagesConfig;
     private ZoneLootConfig zoneLootConfig;
     private MobFragmentsConfig mobFragmentsConfig;
+    private EssenceEconomyConfig essenceEconomyConfig;
     private ZonePermissionsConfig zonePermissionsConfig;
     private RtphConfig rtphConfig;
     private RtpvConfig rtpvConfig;
@@ -60,8 +61,8 @@ public class ConfigManager {
             messagesConfig.save(pluginDataFolder);
             zoneLootConfig = ZoneLootConfig.createDefault();
             zoneLootConfig.save(pluginDataFolder);
-            mobFragmentsConfig = MobFragmentsConfig.createDefault();
-            mobFragmentsConfig.save(pluginDataFolder);
+            mobFragmentsConfig = MobFragmentsConfig.load(pluginDataFolder);
+            essenceEconomyConfig = EssenceEconomyConfig.createDefault();
             zonePermissionsConfig = ZonePermissionsConfig.createDefault();
             zonePermissionsConfig.save(pluginDataFolder);
             rtphConfig = RtphConfig.createDefault();
@@ -87,6 +88,7 @@ public class ConfigManager {
             messagesConfig = MessagesConfig.load(pluginDataFolder);
             zoneLootConfig = ZoneLootConfig.load(pluginDataFolder);
             mobFragmentsConfig = MobFragmentsConfig.load(pluginDataFolder);
+            essenceEconomyConfig = EssenceEconomyConfig.parse(toml);
             zonePermissionsConfig = ZonePermissionsConfig.load(pluginDataFolder);
             rtphConfig = parseRtphConfig(toml);
             rtpvConfig = parseRtpvConfig(toml);
@@ -106,7 +108,8 @@ public class ConfigManager {
             returnConfig = ReturnConfig.createDefault();
             messagesConfig = MessagesConfig.createDefault();
             zoneLootConfig = ZoneLootConfig.createDefault();
-            mobFragmentsConfig = MobFragmentsConfig.createDefault();
+            mobFragmentsConfig = MobFragmentsConfig.load(pluginDataFolder);
+            essenceEconomyConfig = EssenceEconomyConfig.createDefault();
             zonePermissionsConfig = ZonePermissionsConfig.createDefault();
             rtphConfig = RtphConfig.createDefault();
             rtpvConfig = RtpvConfig.createDefault();
@@ -224,6 +227,12 @@ public class ConfigManager {
         sb.append("[death]\n");
         sb.append("essenceLossPercent = ").append(death.getEssenceLossPercent()).append("\n");
         sb.append("\n");
+
+        EssenceEconomyConfig ee = essenceEconomyConfig != null ? essenceEconomyConfig : EssenceEconomyConfig.createDefault();
+        sb.append("[essence_economy]\n");
+        sb.append("pvpEssenceMultiplier = ").append(ee.getPvpEssenceMultiplier()).append("\n");
+        sb.append("defaultMobReward = ").append(ee.getDefaultMobReward()).append("\n");
+        sb.append("defaultOreReward = ").append(ee.getDefaultOreReward()).append("\n\n");
 
         for (DifficultyZone zone : zoneConfig.getZones()) {
             sb.append("[[zones]]\n");
@@ -436,7 +445,8 @@ public class ConfigManager {
     @Nonnull public ReturnConfig getReturnConfig()                { return returnConfig != null ? returnConfig : ReturnConfig.createDefault(); }
     @Nonnull public MessagesConfig getMessagesConfig()            { return messagesConfig != null ? messagesConfig : MessagesConfig.createDefault(); }
     @Nonnull public ZoneLootConfig getZoneLootConfig()            { return zoneLootConfig != null ? zoneLootConfig : ZoneLootConfig.createDefault(); }
-    @Nonnull public MobFragmentsConfig getMobFragmentsConfig()       { return mobFragmentsConfig != null ? mobFragmentsConfig : MobFragmentsConfig.createDefault(); }
+    @Nonnull public MobFragmentsConfig getMobFragmentsConfig()       { return mobFragmentsConfig != null ? mobFragmentsConfig : MobFragmentsConfig.load(pluginDataFolder); }
+    @Nonnull public EssenceEconomyConfig getEssenceEconomyConfig()    { return essenceEconomyConfig != null ? essenceEconomyConfig : EssenceEconomyConfig.createDefault(); }
     @Nonnull public ZonePermissionsConfig getZonePermissionsConfig() { return zonePermissionsConfig != null ? zonePermissionsConfig : ZonePermissionsConfig.createDefault(); }
     @Nonnull public RtphConfig getRtphConfig()                       { return rtphConfig != null ? rtphConfig : RtphConfig.createDefault(); }
     @Nonnull public RtpvConfig getRtpvConfig()                       { return rtpvConfig != null ? rtpvConfig : RtpvConfig.createDefault(); }
