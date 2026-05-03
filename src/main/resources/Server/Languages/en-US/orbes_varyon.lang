@@ -1,5 +1,0 @@
-﻿# Varyon orbes d'ambassade
-server.items.Varyon_Orbe_Ambassade_Fraktale.name = Orbe d'ambassade Fraktale
-server.items.Varyon_Orbe_Ambassade_Fraktale.description = Téléporte vers l'ambassade Fraktale (équivalent /warp ambassade_fraktale).
-server.items.Varyon_Orbe_Ambassade_Novale.name = Orbe d'ambassade Novale
-server.items.Varyon_Orbe_Ambassade_Novale.description = Téléporte vers l'ambassade Novale (équivalent /warp ambassade_novale).
