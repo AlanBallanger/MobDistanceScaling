@@ -2,7 +2,6 @@ package com.varyon.system;
 
 import com.hypixel.hytale.component.AddReason;
 import com.hypixel.hytale.component.CommandBuffer;
-import com.hypixel.hytale.component.query.Query;
 import com.hypixel.hytale.component.ComponentType;
 import com.hypixel.hytale.component.query.Query;
 import com.hypixel.hytale.component.Ref;
@@ -146,7 +145,7 @@ public class MobScalingRefSystem extends RefSystem<EntityStore> {
             ComponentType<EntityStore, com.hypixel.hytale.server.core.entity.nameplate.Nameplate> nameplateType = 
                 com.hypixel.hytale.server.core.entity.nameplate.Nameplate.getComponentType();
             String nameplate = "Lvl " + mobLevel;
-            commandBuffer.addComponent(ref, nameplateType, new com.hypixel.hytale.server.core.entity.nameplate.Nameplate(nameplate));
+            commandBuffer.putComponent(ref, nameplateType, new com.hypixel.hytale.server.core.entity.nameplate.Nameplate(nameplate));
         }
 
         if (healthMultiplier != 1.0f) {
