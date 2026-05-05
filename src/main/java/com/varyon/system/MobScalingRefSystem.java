@@ -54,6 +54,10 @@ public class MobScalingRefSystem extends RefSystem<EntityStore> {
         }
 
         if (reason != AddReason.SPAWN) {
+            MobScalingComponent existing = store.getComponent(ref, MobScalingComponent.getComponentType());
+            if (existing != null) {
+                reapplyHealthModifier(ref, store, existing.getHealthMultiplier());
+            }
             return;
         }
 
@@ -149,27 +153,35 @@ public class MobScalingRefSystem extends RefSystem<EntityStore> {
         }
 
         if (healthMultiplier != 1.0f) {
-            EntityStatMap statMap = store.getComponent(ref, EntityStatMap.getComponentType());
-            if (statMap != null) {
-                int healthIndex = DefaultEntityStatTypes.getHealth();
-                EntityStatValue healthStat = statMap.get(healthIndex);
-                if (healthStat != null) {
-                    float originalMaxHealth = healthStat.getMax();
-
-                    StaticModifier healthModifier = new StaticModifier(
-                            StaticModifier.ModifierTarget.MAX,
-                            StaticModifier.CalculationType.MULTIPLICATIVE,
-                            healthMultiplier
-                    );
-                    statMap.putModifier(healthIndex, HEALTH_MODIFIER_KEY, healthModifier);
-
-                    float newMaxHealth = originalMaxHealth * healthMultiplier;
-                    statMap.setStatValue(healthIndex, newMaxHealth);
-
-                    LOGGER.at(Level.FINE).log("Mob level " + mobLevel + " scaled: HP×" +
-                        String.format("%.2f", healthMultiplier) + " DMG×" + String.format("%.2f", damageMultiplier));
-                }
-            }
+            reapplyHealthModifier(ref, store, healthMultiplier);
+            LOGGER.at(Level.FINE).log("Mob level " + mobLevel + " scaled: HP×" +
+                String.format("%.2f", healthMultiplier) + " DMG×" + String.format("%.2f", damageMultiplier));
         }
+    }
+
+    private void reapplyHealthModifier(@Nonnull Ref<EntityStore> ref, @Nonnull Store<EntityStore> store,
+                                       float healthMultiplier) {
+        if (healthMultiplier == 1.0f) {
+            return;
+        }
+        EntityStatMap statMap = store.getComponent(ref, EntityStatMap.getComponentType());
+        if (statMap == null) {
+            return;
+        }
+        int healthIndex = DefaultEntityStatTypes.getHealth();
+        EntityStatValue healthStat = statMap.get(healthIndex);
+        if (healthStat == null) {
+            return;
+        }
+        if (statMap.getModifier(healthIndex, HEALTH_MODIFIER_KEY) != null) {
+            return;
+        }
+        StaticModifier healthModifier = new StaticModifier(
+                StaticModifier.ModifierTarget.MAX,
+                StaticModifier.CalculationType.MULTIPLICATIVE,
+                healthMultiplier
+        );
+        statMap.putModifier(healthIndex, HEALTH_MODIFIER_KEY, healthModifier);
+        statMap.setStatValue(healthIndex, healthStat.getMax() * healthMultiplier);
     }
 }

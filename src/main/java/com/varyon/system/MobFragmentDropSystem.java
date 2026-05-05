@@ -104,7 +104,7 @@ public class MobFragmentDropSystem {
 
                 int maxUnlocked = configManager.getZonePermissionsConfig().getMaxAccessibleZone(killerPlayer);
                 int lootZone = Math.min(zoneId, maxUnlocked);
-                killFragmentZoneByVictim.put(victimId, lootZone);
+                killFragmentZoneByVictim.merge(victimId, lootZone, Math::max);
 
             } catch (Exception e) {
                 LOGGER.at(Level.WARNING).log("KillerPermissionTracker error: " + e.getMessage());
@@ -226,6 +226,10 @@ public class MobFragmentDropSystem {
 
     @SuppressWarnings("unchecked")
     private int resolveZoneIdFromPosition(@Nonnull Store store, @Nonnull Ref ref, @Nonnull String worldName) {
+        if (worldName != null && !worldName.isBlank()) {
+            Integer instanceZoneId = configManager.getZoneConfig().getZoneIdForInstanceWorld(worldName);
+            if (instanceZoneId != null) return instanceZoneId;
+        }
         TransformComponent transform = (TransformComponent) store.getComponent(ref, TransformComponent.getComponentType());
         if (transform != null) {
             DifficultyZone zone = ZoneCalculator.getZoneAtPosition(
