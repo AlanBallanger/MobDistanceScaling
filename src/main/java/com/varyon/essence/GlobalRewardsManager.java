@@ -1,12 +1,20 @@
 package com.varyon.essence;
 
+import com.hypixel.hytale.component.AddReason;
+import com.hypixel.hytale.component.CommandBuffer;
+import com.hypixel.hytale.component.Holder;
 import com.hypixel.hytale.component.Ref;
 import com.hypixel.hytale.component.Store;
 import com.hypixel.hytale.logger.HytaleLogger;
+import com.hypixel.hytale.math.vector.Vector3d;
+import com.hypixel.hytale.math.vector.Vector3f;
 import com.hypixel.hytale.server.core.Message;
 import com.hypixel.hytale.server.core.entity.entities.Player;
 import com.hypixel.hytale.server.core.inventory.ItemStack;
 import com.hypixel.hytale.server.core.inventory.transaction.ItemStackTransaction;
+import com.hypixel.hytale.server.core.modules.entity.component.HeadRotation;
+import com.hypixel.hytale.server.core.modules.entity.component.TransformComponent;
+import com.hypixel.hytale.server.core.modules.entity.item.ItemComponent;
 import com.hypixel.hytale.server.core.universe.PlayerRef;
 import com.hypixel.hytale.server.core.universe.Universe;
 import com.hypixel.hytale.server.core.universe.world.World;
@@ -14,11 +22,13 @@ import com.hypixel.hytale.server.core.universe.world.storage.EntityStore;
 import com.varyon.config.FactionRewardsConfig;
 import com.varyon.config.ZonePermissionsConfig;
 import com.varyon.faction.FactionManager;
+import com.varyon.util.CommandBufferUtil;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.awt.Color;
 import java.nio.file.Path;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
@@ -158,6 +168,36 @@ public class GlobalRewardsManager {
         return "Tu reçois : " + quantity + " " + noun + " de clé de palier " + keyTier + " (" + pctLabel + ")";
     }
 
+    private static int remainderQuantity(@Nullable ItemStack remainder) {
+        return ItemStack.isEmpty(remainder) ? 0 : remainder.getQuantity();
+    }
+
+    @SuppressWarnings({"unchecked", "rawtypes"})
+    private static boolean dropItemStacksAtPlayerFeet(@Nonnull Store store, @Nonnull Ref ref,
+                                                      @Nonnull List<ItemStack> stacks) {
+        TransformComponent transform = (TransformComponent) store.getComponent(ref, TransformComponent.getComponentType());
+        if (transform == null || stacks.isEmpty()) {
+            return false;
+        }
+        CommandBuffer<EntityStore> cb = CommandBufferUtil.take((Store<EntityStore>) store);
+        if (cb == null) {
+            return false;
+        }
+        try {
+            Vector3d pos = transform.getPosition().clone().add(0.0, 1.0, 0.0);
+            HeadRotation headRotation = (HeadRotation) store.getComponent(ref, HeadRotation.getComponentType());
+            Vector3f rot = headRotation != null ? headRotation.getRotation().clone() : new Vector3f(0f, 0f, 0f);
+            Holder[] drops = ItemComponent.generateItemDrops(store, stacks, pos, rot);
+            cb.addEntities(drops, AddReason.SPAWN);
+            return true;
+        } catch (Exception e) {
+            LOGGER.at(Level.WARNING).log("dropItemStacksAtPlayerFeet failed: " + e.getMessage());
+            return false;
+        } finally {
+            CommandBufferUtil.consume(cb);
+        }
+    }
+
     private void distributeFactionReward(@Nonnull FactionManager.Faction faction,
                                          @Nonnull FactionRewardsConfig.RewardTier tier,
                                          int tierNumber) {
@@ -173,12 +213,10 @@ public class GlobalRewardsManager {
             if (playerRef == null || !playerRef.getReference().isValid()) continue;
             UUID uuid = playerRef.getUuid();
 
+            if (factionManager.getFaction(playerRef) != faction) continue;
+
             Ref ref = playerRef.getReference();
             Store store = ref.getStore();
-            Player onlinePlayer = (Player) store.getComponent(ref, Player.getComponentType());
-            if (onlinePlayer == null) continue;
-            FactionManager.Faction playerFaction = factionManager.getFaction(onlinePlayer);
-            if (playerFaction != faction) continue;
 
             onlineUuids.add(uuid);
 
@@ -223,16 +261,31 @@ public class GlobalRewardsManager {
 
             ItemStack stack = new ItemStack(itemId, fragments);
             ItemStackTransaction tx = playerComponent.getInventory().getCombinedHotbarFirst().addItemStack(stack);
+            ItemStack remainder = tx.getRemainder();
+            int remainderQty = remainderQuantity(remainder);
+            int acceptedQty = fragments - remainderQty;
 
             String factionColor = faction == FactionManager.Faction.NOYAU ? "#5555FF" : "#FF8800";
             playerRef.sendMessage(Message.raw("[Palier " + tierNumber + "] " + faction.getDisplayName() + " a atteint un seuil !").color(Color.decode(factionColor)));
 
-            if (ItemStack.isEmpty(tx.getRemainder())) {
-                String pct = participated ? "100%" : ((int)(config.getPassiveRewardRate() * 100)) + "%";
+            String pct = participated ? "100%" : ((int)(config.getPassiveRewardRate() * 100)) + "%";
+            if (remainderQty == 0) {
                 playerRef.sendMessage(Message.raw(fragmentGainChatLine(fragments, maxZone, pct)).color(Color.GREEN));
                 LOGGER.at(Level.INFO).log("Gave " + fragments + "x " + itemId + " to " + playerRef.getUsername() + " (" + pct + ", tier " + tierNumber + ")");
             } else {
-                LOGGER.at(Level.WARNING).log("Inventory full for " + playerRef.getUsername() + " — could not give all fragments");
+                boolean dropped = dropItemStacksAtPlayerFeet(store, ref, List.of(remainder));
+                if (acceptedQty > 0) {
+                    playerRef.sendMessage(Message.raw(fragmentGainChatLine(acceptedQty, maxZone, pct)).color(Color.GREEN));
+                }
+                String noun = remainderQty == 1 ? "fragment" : "fragments";
+                if (dropped) {
+                    playerRef.sendMessage(Message.raw(
+                        remainderQty + " " + noun + " de clé de palier " + maxZone + " sont au sol (pile ou inventaire plein).").color(Color.YELLOW));
+                    LOGGER.at(Level.INFO).log("Faction tier reward: " + acceptedQty + " inv + " + remainderQty + " dropped as " + itemId + " to "
+                        + playerRef.getUsername() + " (" + pct + ", tier " + tierNumber + ")");
+                } else {
+                    LOGGER.at(Level.WARNING).log("Could not place remainder fragments for " + playerRef.getUsername() + " (" + remainderQty + "x " + itemId + " lost)");
+                }
             }
         } catch (Exception e) {
             LOGGER.at(Level.SEVERE).log("Error giving fragments to " + playerRef.getUsername() + ": " + e.getMessage());
@@ -263,14 +316,27 @@ public class GlobalRewardsManager {
 
             ItemStack stack = new ItemStack(itemId, fragments);
             ItemStackTransaction tx = playerComponent.getInventory().getCombinedHotbarFirst().addItemStack(stack);
+            ItemStack remainder = tx.getRemainder();
+            int remainderQty = remainderQuantity(remainder);
+            int acceptedQty = fragments - remainderQty;
 
-            if (ItemStack.isEmpty(tx.getRemainder())) {
+            if (remainderQty == 0) {
                 playerRef.sendMessage(Message.raw("[Récompense en attente] " + fragmentGainChatLine(fragments, maxZone, "100%")).color(Color.GREEN));
                 LOGGER.at(Level.INFO).log("Delivered " + fragments + "x " + itemId + " (pending) to " + playerRef.getUsername());
             } else {
-                // Inventory full — restore pending
-                pendingStore.add(uuid, fragments);
-                playerRef.sendMessage(Message.raw("[Récompense en attente] Inventaire plein — réessayez plus tard.").color(Color.YELLOW));
+                boolean dropped = dropItemStacksAtPlayerFeet(store, ref, List.of(remainder));
+                if (acceptedQty > 0) {
+                    playerRef.sendMessage(Message.raw("[Récompense en attente] " + fragmentGainChatLine(acceptedQty, maxZone, "100%")).color(Color.GREEN));
+                }
+                String noun = remainderQty == 1 ? "fragment" : "fragments";
+                if (dropped) {
+                    playerRef.sendMessage(Message.raw(
+                        "[Récompense en attente] " + remainderQty + " " + noun + " de clé de palier " + maxZone + " sont au sol (pile ou inventaire plein).").color(Color.YELLOW));
+                    LOGGER.at(Level.INFO).log("Delivered pending " + acceptedQty + " inv + " + remainderQty + " dropped as " + itemId + " to " + playerRef.getUsername());
+                } else {
+                    pendingStore.add(uuid, remainderQty);
+                    playerRef.sendMessage(Message.raw("[Récompense en attente] Inventaire plein — réessayez plus tard.").color(Color.YELLOW));
+                }
             }
         } catch (Exception e) {
             LOGGER.at(Level.SEVERE).log("Error delivering pending rewards to " + playerRef.getUsername() + ": " + e.getMessage());

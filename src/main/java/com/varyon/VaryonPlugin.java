@@ -48,7 +48,6 @@ import com.varyon.deposit.DepositUIManager;
 import com.varyon.essence.EssenceKillSystem;
 import com.varyon.essence.EssenceManager;
 import com.varyon.essence.GlobalRewardsManager;
-import com.varyon.essence.GuildPointsVaryonExitHelper;
 import com.varyon.extraction.ExtractionPortalManager;
 import com.varyon.system.ExtractionPortalTickSystem;
 import com.varyon.essence.EssenceMiningSystem;
@@ -316,13 +315,6 @@ public class VaryonPlugin extends JavaPlugin {
                     Player player = event.getHolder().getComponent(Player.getComponentType());
                     if (playerRef != null && player != null && player.getPlayerConfigData() != null) {
                         World destWorld = event.getWorld();
-                        String previousWorldName = player.getPlayerConfigData().getWorld();
-                        boolean wasVaryonWorld = previousWorldName != null && !previousWorldName.isBlank()
-                            && VaryonWorldAccess.isVaryonEnabledWorld(previousWorldName);
-                        boolean nowVaryonWorld = VaryonWorldAccess.isVaryonEnabledWorld(destWorld);
-                        if (wasVaryonWorld && !nowVaryonWorld) {
-                            GuildPointsVaryonExitHelper.applyOnLeavingVaryonWorld(playerRef, essenceManager);
-                        }
                         VaryonPlayerWorldPresence.update(playerRef.getUuid(), destWorld);
                     }
                 } catch (Exception e) {
@@ -385,19 +377,8 @@ public class VaryonPlugin extends JavaPlugin {
 
                 this.getEventRegistry().registerGlobal(PlayerDisconnectEvent.class, event -> {
                     PlayerRef playerRef = event.getPlayerRef();
-                    try {
-                        Ref<EntityStore> ref = playerRef.getReference();
-                        if (ref != null && ref.isValid()) {
-                            Store<EntityStore> store = ref.getStore();
-                            if (store != null && store.getExternalData() instanceof EntityStore entityStore) {
-                                World w = entityStore.getWorld();
-                                if (VaryonWorldAccess.isVaryonEnabledWorld(w)) {
-                                    GuildPointsVaryonExitHelper.applyOnLeavingVaryonWorld(playerRef, essenceManager);
-                                }
-                            }
-                        }
-                    } catch (Exception e) {
-                        LOGGER.at(Level.WARNING).log("Faction points strip on disconnect: " + e.getMessage());
+                    if (playerRef == null) {
+                        return;
                     }
                     hudManager.removePlayer(playerRef.getUuid());
                     RtpvJoinManager joinMgr = RtpvJoinManager.getInstance();

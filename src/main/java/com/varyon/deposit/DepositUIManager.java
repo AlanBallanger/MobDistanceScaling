@@ -6,6 +6,7 @@ import com.hypixel.hytale.server.core.entity.entities.Player;
 import com.hypixel.hytale.server.core.universe.PlayerRef;
 import com.hypixel.hytale.server.core.util.EventTitleUtil;
 import com.varyon.VaryonPlugin;
+import com.varyon.integration.FactionDepositEcoSync;
 import com.varyon.essence.EssenceManager;
 import com.varyon.essence.GlobalRewardsManager;
 import com.varyon.faction.FactionManager;
@@ -51,12 +52,15 @@ public class DepositUIManager {
             }
 
             essenceManager.addEssence(playerRef.getUuid(), playerRef.getUsername(), -amount);
-            essenceManager.addToGlobalBalance(contribution);
 
             GlobalRewardsManager rewardsManager = VaryonPlugin.getStaticGlobalRewardsManager();
             if (rewardsManager != null) {
                 rewardsManager.recordDeposit(playerRef.getUuid(), faction, amount);
             }
+
+            essenceManager.addToGlobalBalance(contribution);
+
+            FactionDepositEcoSync.applyEcoFactionTokenForDeposit(playerRef, amount);
 
             int newBalance = essenceManager.getGlobalBalance();
             int gaugeMax = essenceManager.getGuildGaugeAbsMax();
