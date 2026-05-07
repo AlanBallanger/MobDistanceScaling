@@ -37,13 +37,16 @@ public final class AmbassadeOrbInteraction extends SimpleInstantInteraction {
 
     public static final String ITEM_FRAKTALE = "Varyon_Orbe_Ambassade_Fraktale";
     public static final String ITEM_NOVALE = "Varyon_Orbe_Ambassade_Novale";
+    public static final String ITEM_VARYON = "Varyon_Orbe_Ambassade_Varyon";
 
     private static final String WARP_FRAKTALE = "ambassade_fraktale";
     private static final String WARP_NOVALE = "ambassade_novale";
+    private static final String WARP_VARYON = "varyon";
 
     private static final Map<String, String> ITEM_TO_WARP = Map.ofEntries(
         entry(ITEM_FRAKTALE, WARP_FRAKTALE),
-        entry(ITEM_NOVALE, WARP_NOVALE)
+        entry(ITEM_NOVALE, WARP_NOVALE),
+        entry(ITEM_VARYON, WARP_VARYON)
     );
 
     @Override

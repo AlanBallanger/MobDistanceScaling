@@ -3,13 +3,11 @@ package com.varyon.system;
 import com.hypixel.hytale.component.AddReason;
 import com.hypixel.hytale.component.ArchetypeChunk;
 import com.hypixel.hytale.component.CommandBuffer;
-import com.hypixel.hytale.component.ComponentType;
 import com.hypixel.hytale.component.Holder;
 import com.hypixel.hytale.component.Ref;
 import com.hypixel.hytale.component.Store;
 import com.hypixel.hytale.component.query.Query;
 import com.hypixel.hytale.component.SystemGroup;
-import com.hypixel.hytale.component.system.EntityEventSystem;
 import com.hypixel.hytale.logger.HytaleLogger;
 import com.hypixel.hytale.math.vector.Vector3d;
 import com.hypixel.hytale.math.vector.Vector3f;
@@ -22,9 +20,7 @@ import com.hypixel.hytale.server.core.modules.entity.component.HeadRotation;
 import com.hypixel.hytale.server.core.modules.entity.component.TransformComponent;
 import com.hypixel.hytale.server.core.modules.entity.damage.DeathComponent;
 import com.hypixel.hytale.server.core.modules.entity.damage.DeathSystems;
-import com.hypixel.hytale.server.core.modules.entity.damage.event.KillFeedEvent;
 import com.hypixel.hytale.server.core.modules.entity.item.ItemComponent;
-import com.hypixel.hytale.server.core.universe.PlayerRef;
 import com.hypixel.hytale.server.core.universe.world.storage.EntityStore;
 import com.hypixel.hytale.server.npc.entities.NPCEntity;
 import com.varyon.component.MobScalingComponent;
@@ -33,6 +29,7 @@ import com.varyon.config.DifficultyZone;
 import com.varyon.util.ZoneCalculator;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Locale;
 import java.util.concurrent.ConcurrentHashMap;
@@ -42,11 +39,9 @@ public class MobFragmentDropSystem {
     private static final HytaleLogger LOGGER = HytaleLogger.forEnclosingClass();
 
     /**
-     * Cache : System.identityHashCode(victimRef) → fragment tier zone for this kill
-     * ({@code min(victim position zone, killer's highest unlocked zone)}).
-     * Populated by KillerPermissionTracker; consumed by DropOnDeath.
+     * Last player entity ref that damaged this victim (same idea as Ecotale {@code MobLastAttackerSystem}).
      */
-    private final ConcurrentHashMap<Integer, Integer> killFragmentZoneByVictim = new ConcurrentHashMap<>();
+    private final ConcurrentHashMap<Integer, Ref<EntityStore>> lastPlayerAttackerByVictim = new ConcurrentHashMap<>();
 
     /**
      * Set when a player deals damage to an NPC; DropOnDeath requires this so mob-on-mob
@@ -58,58 +53,6 @@ public class MobFragmentDropSystem {
 
     public MobFragmentDropSystem(@Nonnull ConfigManager configManager) {
         this.configManager = configManager;
-    }
-
-    // -------------------------------------------------------------------------
-    // Step 1 — fires on KillFeedEvent (player context, no store writes allowed)
-    // Records capped fragment tier zone for the killer. No entity spawning.
-    // -------------------------------------------------------------------------
-    public final class KillerPermissionTracker extends EntityEventSystem<EntityStore, KillFeedEvent.KillerMessage> {
-
-        @Nonnull
-        private final ComponentType<EntityStore, PlayerRef> playerRefType = PlayerRef.getComponentType();
-
-        public KillerPermissionTracker() {
-            super(KillFeedEvent.KillerMessage.class);
-        }
-
-        @Override
-        @Nonnull
-        public Query<EntityStore> getQuery() {
-            return playerRefType;
-        }
-
-        @Override
-        @SuppressWarnings({"rawtypes", "unchecked"})
-        public void handle(int index,
-                           @Nonnull ArchetypeChunk<EntityStore> archetypeChunk,
-                           @Nonnull Store<EntityStore> store,
-                           @Nonnull CommandBuffer<EntityStore> commandBuffer,
-                           @Nonnull KillFeedEvent.KillerMessage event) {
-            try {
-                Ref<EntityStore> victimRef = event.getTargetRef();
-                if (victimRef == null || !victimRef.isValid()) return;
-
-                int victimId = System.identityHashCode(victimRef);
-
-                NPCEntity npc = (NPCEntity) store.getComponent(victimRef, NPCEntity.getComponentType());
-                if (npc == null) return;
-
-                String worldName = ((EntityStore) store.getExternalData()).getWorld().getName();
-                int zoneId = resolveZoneIdFromPosition(store, victimRef, worldName);
-
-                Ref<EntityStore> killerRef = archetypeChunk.getReferenceTo(index);
-                Player killerPlayer = (Player) store.getComponent(killerRef, Player.getComponentType());
-                if (killerPlayer == null) return;
-
-                int maxUnlocked = configManager.getZonePermissionsConfig().getMaxAccessibleZone(killerPlayer);
-                int lootZone = Math.min(zoneId, maxUnlocked);
-                killFragmentZoneByVictim.merge(victimId, lootZone, Math::max);
-
-            } catch (Exception e) {
-                LOGGER.at(Level.WARNING).log("KillerPermissionTracker error: " + e.getMessage());
-            }
-        }
     }
 
     public final class PlayerDamageTagger extends DamageEventSystem {
@@ -151,7 +94,9 @@ public class MobFragmentDropSystem {
                     return;
                 }
                 Ref<EntityStore> victimRef = archetypeChunk.getReferenceTo(index);
-                victimDamagedByPlayer.put(System.identityHashCode(victimRef), Boolean.TRUE);
+                int victimId = System.identityHashCode(victimRef);
+                victimDamagedByPlayer.put(victimId, Boolean.TRUE);
+                lastPlayerAttackerByVictim.put(victimId, attackerRef);
             } catch (Exception e) {
                 LOGGER.at(Level.WARNING).log("PlayerDamageTagger error: " + e.getMessage());
             }
@@ -159,8 +104,7 @@ public class MobFragmentDropSystem {
     }
 
     // -------------------------------------------------------------------------
-    // Step 2 — fires on mob death (OnDeathSystem, commandBuffer writes are safe)
-    // Reads kill fragment zone + damage tag; spawns items if both present.
+    // Death — resolve contributing player like Ecotale mob coins (killer else last attacker).
     // -------------------------------------------------------------------------
     public final class DropOnDeath extends DeathSystems.OnDeathSystem {
 
@@ -181,16 +125,25 @@ public class MobFragmentDropSystem {
 
                 String worldName = ((EntityStore) store.getExternalData()).getWorld().getName();
                 if (!configManager.getZoneConfig().isWorldEnabled(worldName)) {
-                    killFragmentZoneByVictim.remove(victimId);
+                    lastPlayerAttackerByVictim.remove(victimId);
                     victimDamagedByPlayer.remove(victimId);
                     return;
                 }
 
-                Integer lootZone = killFragmentZoneByVictim.remove(victimId);
+                Ref<EntityStore> lastAttackerRef = lastPlayerAttackerByVictim.remove(victimId);
                 Boolean playerDamaged = victimDamagedByPlayer.remove(victimId);
-                if (lootZone == null || !Boolean.TRUE.equals(playerDamaged)) {
+                if (!Boolean.TRUE.equals(playerDamaged)) {
                     return;
                 }
+
+                Player creditPlayer = resolveContributingPlayer(store, death, lastAttackerRef, commandBuffer);
+                if (creditPlayer == null) {
+                    return;
+                }
+
+                int zoneId = resolveZoneIdFromPosition(store, ref, worldName);
+                int maxUnlocked = configManager.getZonePermissionsConfig().getMaxAccessibleZone(creditPlayer);
+                int lootZone = Math.min(zoneId, maxUnlocked);
 
                 if (lootZone < 1) {
                     return;
@@ -224,6 +177,39 @@ public class MobFragmentDropSystem {
         }
     }
 
+    @SuppressWarnings({"unchecked", "rawtypes"})
+    @Nullable
+    private Player resolveContributingPlayer(@Nonnull Store store, @Nonnull DeathComponent death,
+                                             @Nullable Ref<EntityStore> lastAttackerRef,
+                                             @Nonnull CommandBuffer commandBuffer) {
+        Damage deathInfo = death.getDeathInfo();
+        if (deathInfo != null) {
+            Damage.Source source = deathInfo.getSource();
+            if (source instanceof Damage.EntitySource entitySource) {
+                Ref<EntityStore> killerRef = entitySource.getRef();
+                if (killerRef != null && killerRef.isValid()) {
+                    Player p = (Player) store.getComponent(killerRef, Player.getComponentType());
+                    if (p == null) {
+                        p = (Player) commandBuffer.getComponent(killerRef, Player.getComponentType());
+                    }
+                    if (p != null) {
+                        return p;
+                    }
+                }
+            }
+        }
+        if (lastAttackerRef != null && lastAttackerRef.isValid()) {
+            Player p = (Player) store.getComponent(lastAttackerRef, Player.getComponentType());
+            if (p == null) {
+                p = (Player) commandBuffer.getComponent(lastAttackerRef, Player.getComponentType());
+            }
+            if (p != null) {
+                return p;
+            }
+        }
+        return null;
+    }
+
     @SuppressWarnings("unchecked")
     private int resolveZoneIdFromPosition(@Nonnull Store store, @Nonnull Ref ref, @Nonnull String worldName) {
         if (worldName != null && !worldName.isBlank()) {
@@ -241,10 +227,6 @@ public class MobFragmentDropSystem {
         }
         MobScalingComponent scaling = (MobScalingComponent) store.getComponent(ref, MobScalingComponent.getComponentType());
         return scaling != null ? Math.max(1, (int) Math.ceil(scaling.getMobLevel() / 10.0)) : 1;
-    }
-
-    public KillerPermissionTracker createTracker() {
-        return new KillerPermissionTracker();
     }
 
     public DropOnDeath createDropSystem() {

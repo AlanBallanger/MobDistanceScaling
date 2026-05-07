@@ -192,7 +192,6 @@ public class VaryonPlugin extends JavaPlugin {
             this.getEntityStoreRegistry().registerSystem(mobLootScalingSystem);
 
             MobFragmentDropSystem mobFragmentDropSystem = new MobFragmentDropSystem(configManager);
-            this.getEntityStoreRegistry().registerSystem(mobFragmentDropSystem.createTracker());
             this.getEntityStoreRegistry().registerSystem(mobFragmentDropSystem.createPlayerDamageTagger());
             this.getEntityStoreRegistry().registerSystem(mobFragmentDropSystem.createDropSystem());
 
