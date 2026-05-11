@@ -2,7 +2,13 @@ package com.varyon.config;
 
 import com.hypixel.hytale.logger.HytaleLogger;
 import com.hypixel.hytale.server.core.entity.entities.Player;
+import com.hypixel.hytale.server.core.universe.PlayerRef;
+import com.hypixel.hytale.server.core.universe.Universe;
 import com.moandjiezana.toml.Toml;
+import net.luckperms.api.LuckPerms;
+import net.luckperms.api.LuckPermsProvider;
+import net.luckperms.api.model.user.User;
+import net.luckperms.api.query.QueryOptions;
 
 import javax.annotation.Nonnull;
 import java.io.File;
@@ -43,6 +49,25 @@ public class ZonePermissionsConfig {
      * Having varyon.zone.5 grants access to zones 1–5.
      */
     public int getMaxAccessibleZone(@Nonnull Player player) {
+        try {
+            PlayerRef playerRef = Universe.get().getPlayer(player.getUuid());
+            if (playerRef != null) {
+                LuckPerms lp = LuckPermsProvider.get();
+                User user = lp.getPlayerAdapter(PlayerRef.class).getUser(playerRef);
+                if (user != null) {
+                    QueryOptions opts = QueryOptions.nonContextual();
+                    var permData = user.getCachedData().getPermissionData(opts);
+                    for (int z = maxZone; z >= 1; z--) {
+                        if (permData.checkPermission(getPermissionForZone(z)).asBoolean()) {
+                            return z;
+                        }
+                    }
+                    return 1;
+                }
+            }
+        } catch (Throwable t) {
+            LOGGER.at(Level.FINE).log("getMaxAccessibleZone: LuckPerms path failed ({0})", t.toString());
+        }
         for (int z = maxZone; z >= 1; z--) {
             if (player.hasPermission(getPermissionForZone(z))) return z;
         }
