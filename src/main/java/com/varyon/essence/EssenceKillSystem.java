@@ -67,6 +67,16 @@ public class EssenceKillSystem extends EntityEventSystem<EntityStore, KillFeedEv
             }
 
             UUID playerUuid = playerRef.getUuid();
+            String worldName = "";
+            try {
+                if (store.getExternalData() instanceof EntityStore es && es.getWorld() != null) {
+                    worldName = es.getWorld().getName();
+                }
+            } catch (Exception ignored) {}
+            if (!configManager.getZoneConfig().isWorldEnabled(worldName)) {
+                return;
+            }
+
             Ref<EntityStore> victimRef = event.getTargetRef();
 
             String mobId = "unknown";

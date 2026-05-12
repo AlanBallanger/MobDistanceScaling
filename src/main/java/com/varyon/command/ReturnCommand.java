@@ -113,6 +113,13 @@ public class ReturnCommand extends AbstractPlayerCommand {
             }
         }
 
+        String deathPointMsg = msg.deathPointInfo
+            .replace("{world}", deathPoint.getWorld())
+            .replace("{x}", String.valueOf((int) deathPoint.getX()))
+            .replace("{y}", String.valueOf((int) deathPoint.getY()))
+            .replace("{z}", String.valueOf((int) deathPoint.getZ()));
+        context.sendMessage(Message.raw(deathPointMsg).color(Color.GREEN));
+
         Player player = store.getComponent(ref, Player.getComponentType());
         if (player == null) {
             return;

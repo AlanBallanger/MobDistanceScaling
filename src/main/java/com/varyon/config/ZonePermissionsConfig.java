@@ -8,6 +8,7 @@ import com.moandjiezana.toml.Toml;
 import net.luckperms.api.LuckPerms;
 import net.luckperms.api.LuckPermsProvider;
 import net.luckperms.api.model.user.User;
+import net.luckperms.api.cacheddata.CachedPermissionData;
 import net.luckperms.api.query.QueryOptions;
 
 import javax.annotation.Nonnull;
@@ -44,34 +45,42 @@ public class ZonePermissionsConfig {
         return permissionByZone.getOrDefault(zoneId, "varyon.zone." + zoneId);
     }
 
+    private int highestZoneGranted(@Nonnull CachedPermissionData permData) {
+        for (int z = maxZone; z >= 1; z--) {
+            if (permData.checkPermission(getPermissionForZone(z)).asBoolean()) {
+                return z;
+            }
+        }
+        return 1;
+    }
+
     /**
      * Returns the highest zone ID the player can access.
      * Having varyon.zone.5 grants access to zones 1–5.
      */
     public int getMaxAccessibleZone(@Nonnull Player player) {
+        int best = 1;
         try {
             PlayerRef playerRef = Universe.get().getPlayer(player.getUuid());
             if (playerRef != null) {
                 LuckPerms lp = LuckPermsProvider.get();
                 User user = lp.getPlayerAdapter(PlayerRef.class).getUser(playerRef);
                 if (user != null) {
-                    QueryOptions opts = QueryOptions.nonContextual();
-                    var permData = user.getCachedData().getPermissionData(opts);
-                    for (int z = maxZone; z >= 1; z--) {
-                        if (permData.checkPermission(getPermissionForZone(z)).asBoolean()) {
-                            return z;
-                        }
-                    }
-                    return 1;
+                    CachedPermissionData nonCtx = user.getCachedData().getPermissionData(QueryOptions.nonContextual());
+                    best = Math.max(best, highestZoneGranted(nonCtx));
+                    CachedPermissionData active = user.getCachedData().getPermissionData();
+                    best = Math.max(best, highestZoneGranted(active));
                 }
             }
         } catch (Throwable t) {
             LOGGER.at(Level.FINE).log("getMaxAccessibleZone: LuckPerms path failed ({0})", t.toString());
         }
         for (int z = maxZone; z >= 1; z--) {
-            if (player.hasPermission(getPermissionForZone(z))) return z;
+            if (player.hasPermission(getPermissionForZone(z))) {
+                return Math.max(best, z);
+            }
         }
-        return 1;
+        return best;
     }
 
     /**

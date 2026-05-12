@@ -7,6 +7,7 @@ import com.hypixel.hytale.server.core.entity.entities.Player;
 import com.hypixel.hytale.server.core.event.events.ecs.BreakBlockEvent;
 import com.hypixel.hytale.component.Ref;
 import com.hypixel.hytale.component.Store;
+import com.hypixel.hytale.server.core.Message;
 import com.hypixel.hytale.server.core.event.events.player.AddPlayerToWorldEvent;
 import com.hypixel.hytale.server.core.event.events.player.DrainPlayerFromWorldEvent;
 import com.hypixel.hytale.server.core.event.events.player.PlayerConnectEvent;
@@ -73,6 +74,8 @@ import com.varyon.item.AmbassadeOrbInteraction;
 import com.hypixel.hytale.server.core.modules.interaction.interaction.config.Interaction;
 
 import javax.annotation.Nullable;
+import java.awt.Color;
+import java.util.UUID;
 import java.util.logging.Level;
 
 public class VaryonPlugin extends JavaPlugin {
@@ -314,7 +317,18 @@ public class VaryonPlugin extends JavaPlugin {
                     Player player = event.getHolder().getComponent(Player.getComponentType());
                     if (playerRef != null && player != null && player.getPlayerConfigData() != null) {
                         World destWorld = event.getWorld();
-                        VaryonPlayerWorldPresence.update(playerRef.getUuid(), destWorld);
+                        UUID uuid = playerRef.getUuid();
+                        boolean wasInVaryon = VaryonPlayerWorldPresence.isInVaryonEnabledWorld(uuid);
+                        boolean destInVaryon = VaryonWorldAccess.isVaryonEnabledWorld(destWorld);
+                        if (wasInVaryon && !destInVaryon) {
+                            int lost = essenceManager.clearCarriedFactionPoints(uuid, playerRef.getUsername());
+                            if (lost > 0) {
+                                playerRef.sendMessage(Message.raw(
+                                    "Tu quittes un monde Varyon : " + lost + " points de faction sur toi ont été perdus.")
+                                    .color(Color.YELLOW));
+                            }
+                        }
+                        VaryonPlayerWorldPresence.update(uuid, destWorld);
                     }
                 } catch (Exception e) {
                     LOGGER.at(Level.WARNING).log("AddPlayerToWorld faction/presence: " + e.getMessage());

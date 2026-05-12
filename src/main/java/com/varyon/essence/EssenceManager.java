@@ -80,6 +80,17 @@ public class EssenceManager {
         essenceCache.put(playerUuid, amount);
         database.setEssence(playerUuid, playerName, amount);
     }
+
+    public int clearCarriedFactionPoints(@Nonnull UUID playerUuid, @Nonnull String playerName) {
+        double current = getEssence(playerUuid);
+        if (current <= 0.0) {
+            return 0;
+        }
+        int lostDisplay = (int) Math.floor(current);
+        setEssence(playerUuid, playerName, 0);
+        LOGGER.at(Level.INFO).log("Forfeited carried faction points for " + playerName + ": " + lostDisplay + " (left Varyon world)");
+        return lostDisplay;
+    }
     
     public void setEssenceUncapped(UUID playerUuid, String playerName, double amount) {
         essenceCache.put(playerUuid, amount);

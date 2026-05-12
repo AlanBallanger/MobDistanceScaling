@@ -65,12 +65,13 @@ public class MessagesConfig {
         public String teleporting;
         public String noSafeLocation;
         public String error;
+        public String deathPointInfo;
         public String firstUseWarning;
         public String cooldownWarning;
 
         public ReturnMessages(String success, String cooldown, String noDeathPoint, String expired,
                               String alreadyUsed, String teleporting, String noSafeLocation,
-                              String error, String firstUseWarning, String cooldownWarning) {
+                              String error, String deathPointInfo, String firstUseWarning, String cooldownWarning) {
             this.success = success;
             this.cooldown = cooldown;
             this.noDeathPoint = noDeathPoint;
@@ -79,6 +80,7 @@ public class MessagesConfig {
             this.teleporting = teleporting;
             this.noSafeLocation = noSafeLocation;
             this.error = error;
+            this.deathPointInfo = deathPointInfo;
             this.firstUseWarning = firstUseWarning;
             this.cooldownWarning = cooldownWarning;
         }
@@ -204,16 +206,17 @@ public class MessagesConfig {
 
             Toml returnToml = toml.getTable("return");
             ReturnMessages returnMsg = new ReturnMessages(
-                returnToml.getString("success", "Téléporté près de votre point de mort à {distance}m ({x}, {y}, {z})"),
-                returnToml.getString("cooldown", "Cooldown actif. Temps restant: {remaining} secondes"),
-                returnToml.getString("noDeathPoint", "Aucun point de mort enregistré"),
-                returnToml.getString("expired", "Votre point de mort a expiré"),
-                returnToml.getString("alreadyUsed", "Vous avez déjà utilisé votre téléportation pour cette mort"),
-                returnToml.getString("teleporting", "Recherche d'un emplacement sûr près de votre point de mort..."),
-                returnToml.getString("noSafeLocation", "Impossible de trouver un emplacement sûr après {attempts} tentatives"),
-                returnToml.getString("error", "Erreur lors de la téléportation"),
-                returnToml.getString("firstUseWarning", "⚠ ATTENTION: Vous ne pourrez utiliser /return qu'UNE SEULE FOIS pour cette mort!"),
-                returnToml.getString("cooldownWarning", "⏳ Cooldown encore actif ({remaining}s) : prochain retour {cost} coins (×{multiplier}). Ouvrez /return pour valider le montant et confirmer.")
+                returnToml != null ? returnToml.getString("success", "Téléporté près de votre point de mort à {distance}m ({x}, {y}, {z})") : "Téléporté près de votre point de mort à {distance}m ({x}, {y}, {z})",
+                returnToml != null ? returnToml.getString("cooldown", "Cooldown actif. Temps restant: {remaining} secondes") : "Cooldown actif. Temps restant: {remaining} secondes",
+                returnToml != null ? returnToml.getString("noDeathPoint", "Aucun point de mort enregistré") : "Aucun point de mort enregistré",
+                returnToml != null ? returnToml.getString("expired", "Votre point de mort a expiré") : "Votre point de mort a expiré",
+                returnToml != null ? returnToml.getString("alreadyUsed", "Vous avez déjà utilisé votre téléportation pour cette mort") : "Vous avez déjà utilisé votre téléportation pour cette mort",
+                returnToml != null ? returnToml.getString("teleporting", "Recherche d'un emplacement sûr près de votre point de mort...") : "Recherche d'un emplacement sûr près de votre point de mort...",
+                returnToml != null ? returnToml.getString("noSafeLocation", "Impossible de trouver un emplacement sûr après {attempts} tentatives") : "Impossible de trouver un emplacement sûr après {attempts} tentatives",
+                returnToml != null ? returnToml.getString("error", "Erreur lors de la téléportation") : "Erreur lors de la téléportation",
+                returnToml != null ? returnToml.getString("deathPointInfo", "Point de mort enregistré : ({x}, {y}, {z}) — {world}") : "Point de mort enregistré : ({x}, {y}, {z}) — {world}",
+                returnToml != null ? returnToml.getString("firstUseWarning", "⚠ ATTENTION: Vous ne pourrez utiliser /return qu'UNE SEULE FOIS pour cette mort!") : "⚠ ATTENTION: Vous ne pourrez utiliser /return qu'UNE SEULE FOIS pour cette mort!",
+                returnToml != null ? returnToml.getString("cooldownWarning", "⏳ Cooldown encore actif ({remaining}s) : prochain retour {cost} coins (×{multiplier}). Ouvrez /return pour valider le montant et confirmer.") : "⏳ Cooldown encore actif ({remaining}s) : prochain retour {cost} coins (×{multiplier}). Ouvrez /return pour valider le montant et confirmer."
             );
 
             Toml safeToml = toml.getTable("safezone");
@@ -294,6 +297,7 @@ public class MessagesConfig {
             sb.append("teleporting = \"").append(returnMessages.teleporting).append("\"\n");
             sb.append("noSafeLocation = \"").append(returnMessages.noSafeLocation).append("\"\n");
             sb.append("error = \"").append(returnMessages.error).append("\"\n");
+            sb.append("deathPointInfo = \"").append(returnMessages.deathPointInfo).append("\"\n");
             sb.append("firstUseWarning = \"").append(returnMessages.firstUseWarning).append("\"\n");
             sb.append("cooldownWarning = \"").append(returnMessages.cooldownWarning).append("\"\n\n");
 
@@ -363,6 +367,7 @@ public class MessagesConfig {
             "Recherche d'un emplacement sûr près de votre point de mort...",
             "Impossible de trouver un emplacement sûr après {attempts} tentatives",
             "Erreur lors de la téléportation",
+            "Point de mort enregistré : ({x}, {y}, {z}) — {world}",
             "⚠ ATTENTION: Vous ne pourrez utiliser /return qu'UNE SEULE FOIS pour cette mort!",
             "⏳ Cooldown encore actif ({remaining}s) : prochain retour {cost} coins (×{multiplier}). Ouvrez /return pour valider le montant et confirmer."
         );
