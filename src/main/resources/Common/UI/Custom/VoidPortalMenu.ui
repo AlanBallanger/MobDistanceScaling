@@ -96,9 +96,24 @@ $C.@PageOverlay {
               OutlineSize: 1;
               Group {
                 LayoutMode: Middle;
-                Label #ZoneMainLine1 {
-                  Text: "";
-                  Style: (FontSize: 12, RenderBold: true, TextColor: #c8c2e0, HorizontalAlignment: Center, VerticalAlignment: Center);
+                Group {
+                  LayoutMode: Left;
+                  Label #ZoneMainLead1 {
+                    Text: "";
+                    Style: (FontSize: 12, RenderBold: true, TextColor: #c8c2e0, HorizontalAlignment: Center, VerticalAlignment: Center);
+                  }
+                  Group #ZoneMainCoinSlot1 {
+                    Anchor: (Width: 22, Height: 22);
+                    Padding: (Left: 3, Right: 3);
+                    LayoutMode: Middle;
+                    ItemIcon #ZoneMainCoin1 {
+                      Anchor: (Full: 0);
+                    }
+                  }
+                  Label #ZoneMainAmount1 {
+                    Text: "";
+                    Style: (FontSize: 12, RenderBold: true, TextColor: #c8c2e0, HorizontalAlignment: Center, VerticalAlignment: Center);
+                  }
                 }
               }
             }
@@ -230,9 +245,24 @@ $C.@PageOverlay {
               OutlineSize: 1;
               Group {
                 LayoutMode: Middle;
-                Label #ZoneMainLine2 {
-                  Text: "";
-                  Style: (FontSize: 12, RenderBold: true, TextColor: #c8c2e0, HorizontalAlignment: Center, VerticalAlignment: Center);
+                Group {
+                  LayoutMode: Left;
+                  Label #ZoneMainLead2 {
+                    Text: "";
+                    Style: (FontSize: 12, RenderBold: true, TextColor: #c8c2e0, HorizontalAlignment: Center, VerticalAlignment: Center);
+                  }
+                  Group #ZoneMainCoinSlot2 {
+                    Anchor: (Width: 22, Height: 22);
+                    Padding: (Left: 3, Right: 3);
+                    LayoutMode: Middle;
+                    ItemIcon #ZoneMainCoin2 {
+                      Anchor: (Full: 0);
+                    }
+                  }
+                  Label #ZoneMainAmount2 {
+                    Text: "";
+                    Style: (FontSize: 12, RenderBold: true, TextColor: #c8c2e0, HorizontalAlignment: Center, VerticalAlignment: Center);
+                  }
                 }
               }
             }
@@ -364,9 +394,24 @@ $C.@PageOverlay {
               OutlineSize: 1;
               Group {
                 LayoutMode: Middle;
-                Label #ZoneMainLine3 {
-                  Text: "";
-                  Style: (FontSize: 12, RenderBold: true, TextColor: #c8c2e0, HorizontalAlignment: Center, VerticalAlignment: Center);
+                Group {
+                  LayoutMode: Left;
+                  Label #ZoneMainLead3 {
+                    Text: "";
+                    Style: (FontSize: 12, RenderBold: true, TextColor: #c8c2e0, HorizontalAlignment: Center, VerticalAlignment: Center);
+                  }
+                  Group #ZoneMainCoinSlot3 {
+                    Anchor: (Width: 22, Height: 22);
+                    Padding: (Left: 3, Right: 3);
+                    LayoutMode: Middle;
+                    ItemIcon #ZoneMainCoin3 {
+                      Anchor: (Full: 0);
+                    }
+                  }
+                  Label #ZoneMainAmount3 {
+                    Text: "";
+                    Style: (FontSize: 12, RenderBold: true, TextColor: #c8c2e0, HorizontalAlignment: Center, VerticalAlignment: Center);
+                  }
                 }
               }
             }
@@ -498,9 +543,24 @@ $C.@PageOverlay {
               OutlineSize: 1;
               Group {
                 LayoutMode: Middle;
-                Label #ZoneMainLine4 {
-                  Text: "";
-                  Style: (FontSize: 12, RenderBold: true, TextColor: #c8c2e0, HorizontalAlignment: Center, VerticalAlignment: Center);
+                Group {
+                  LayoutMode: Left;
+                  Label #ZoneMainLead4 {
+                    Text: "";
+                    Style: (FontSize: 12, RenderBold: true, TextColor: #c8c2e0, HorizontalAlignment: Center, VerticalAlignment: Center);
+                  }
+                  Group #ZoneMainCoinSlot4 {
+                    Anchor: (Width: 22, Height: 22);
+                    Padding: (Left: 3, Right: 3);
+                    LayoutMode: Middle;
+                    ItemIcon #ZoneMainCoin4 {
+                      Anchor: (Full: 0);
+                    }
+                  }
+                  Label #ZoneMainAmount4 {
+                    Text: "";
+                    Style: (FontSize: 12, RenderBold: true, TextColor: #c8c2e0, HorizontalAlignment: Center, VerticalAlignment: Center);
+                  }
                 }
               }
             }
@@ -632,9 +692,24 @@ $C.@PageOverlay {
               OutlineSize: 1;
               Group {
                 LayoutMode: Middle;
-                Label #ZoneMainLine5 {
-                  Text: "";
-                  Style: (FontSize: 12, RenderBold: true, TextColor: #c8c2e0, HorizontalAlignment: Center, VerticalAlignment: Center);
+                Group {
+                  LayoutMode: Left;
+                  Label #ZoneMainLead5 {
+                    Text: "";
+                    Style: (FontSize: 12, RenderBold: true, TextColor: #c8c2e0, HorizontalAlignment: Center, VerticalAlignment: Center);
+                  }
+                  Group #ZoneMainCoinSlot5 {
+                    Anchor: (Width: 22, Height: 22);
+                    Padding: (Left: 3, Right: 3);
+                    LayoutMode: Middle;
+                    ItemIcon #ZoneMainCoin5 {
+                      Anchor: (Full: 0);
+                    }
+                  }
+                  Label #ZoneMainAmount5 {
+                    Text: "";
+                    Style: (FontSize: 12, RenderBold: true, TextColor: #c8c2e0, HorizontalAlignment: Center, VerticalAlignment: Center);
+                  }
                 }
               }
             }
@@ -773,9 +848,24 @@ $C.@PageOverlay {
               OutlineSize: 1;
               Group {
                 LayoutMode: Middle;
-                Label #ZoneMainLine6 {
-                  Text: "";
-                  Style: (FontSize: 12, RenderBold: true, TextColor: #c8c2e0, HorizontalAlignment: Center, VerticalAlignment: Center);
+                Group {
+                  LayoutMode: Left;
+                  Label #ZoneMainLead6 {
+                    Text: "";
+                    Style: (FontSize: 12, RenderBold: true, TextColor: #c8c2e0, HorizontalAlignment: Center, VerticalAlignment: Center);
+                  }
+                  Group #ZoneMainCoinSlot6 {
+                    Anchor: (Width: 22, Height: 22);
+                    Padding: (Left: 3, Right: 3);
+                    LayoutMode: Middle;
+                    ItemIcon #ZoneMainCoin6 {
+                      Anchor: (Full: 0);
+                    }
+                  }
+                  Label #ZoneMainAmount6 {
+                    Text: "";
+                    Style: (FontSize: 12, RenderBold: true, TextColor: #c8c2e0, HorizontalAlignment: Center, VerticalAlignment: Center);
+                  }
                 }
               }
             }
@@ -907,9 +997,24 @@ $C.@PageOverlay {
               OutlineSize: 1;
               Group {
                 LayoutMode: Middle;
-                Label #ZoneMainLine7 {
-                  Text: "";
-                  Style: (FontSize: 12, RenderBold: true, TextColor: #c8c2e0, HorizontalAlignment: Center, VerticalAlignment: Center);
+                Group {
+                  LayoutMode: Left;
+                  Label #ZoneMainLead7 {
+                    Text: "";
+                    Style: (FontSize: 12, RenderBold: true, TextColor: #c8c2e0, HorizontalAlignment: Center, VerticalAlignment: Center);
+                  }
+                  Group #ZoneMainCoinSlot7 {
+                    Anchor: (Width: 22, Height: 22);
+                    Padding: (Left: 3, Right: 3);
+                    LayoutMode: Middle;
+                    ItemIcon #ZoneMainCoin7 {
+                      Anchor: (Full: 0);
+                    }
+                  }
+                  Label #ZoneMainAmount7 {
+                    Text: "";
+                    Style: (FontSize: 12, RenderBold: true, TextColor: #c8c2e0, HorizontalAlignment: Center, VerticalAlignment: Center);
+                  }
                 }
               }
             }
@@ -1041,9 +1146,24 @@ $C.@PageOverlay {
               OutlineSize: 1;
               Group {
                 LayoutMode: Middle;
-                Label #ZoneMainLine8 {
-                  Text: "";
-                  Style: (FontSize: 12, RenderBold: true, TextColor: #c8c2e0, HorizontalAlignment: Center, VerticalAlignment: Center);
+                Group {
+                  LayoutMode: Left;
+                  Label #ZoneMainLead8 {
+                    Text: "";
+                    Style: (FontSize: 12, RenderBold: true, TextColor: #c8c2e0, HorizontalAlignment: Center, VerticalAlignment: Center);
+                  }
+                  Group #ZoneMainCoinSlot8 {
+                    Anchor: (Width: 22, Height: 22);
+                    Padding: (Left: 3, Right: 3);
+                    LayoutMode: Middle;
+                    ItemIcon #ZoneMainCoin8 {
+                      Anchor: (Full: 0);
+                    }
+                  }
+                  Label #ZoneMainAmount8 {
+                    Text: "";
+                    Style: (FontSize: 12, RenderBold: true, TextColor: #c8c2e0, HorizontalAlignment: Center, VerticalAlignment: Center);
+                  }
                 }
               }
             }
@@ -1175,9 +1295,24 @@ $C.@PageOverlay {
               OutlineSize: 1;
               Group {
                 LayoutMode: Middle;
-                Label #ZoneMainLine9 {
-                  Text: "";
-                  Style: (FontSize: 12, RenderBold: true, TextColor: #c8c2e0, HorizontalAlignment: Center, VerticalAlignment: Center);
+                Group {
+                  LayoutMode: Left;
+                  Label #ZoneMainLead9 {
+                    Text: "";
+                    Style: (FontSize: 12, RenderBold: true, TextColor: #c8c2e0, HorizontalAlignment: Center, VerticalAlignment: Center);
+                  }
+                  Group #ZoneMainCoinSlot9 {
+                    Anchor: (Width: 22, Height: 22);
+                    Padding: (Left: 3, Right: 3);
+                    LayoutMode: Middle;
+                    ItemIcon #ZoneMainCoin9 {
+                      Anchor: (Full: 0);
+                    }
+                  }
+                  Label #ZoneMainAmount9 {
+                    Text: "";
+                    Style: (FontSize: 12, RenderBold: true, TextColor: #c8c2e0, HorizontalAlignment: Center, VerticalAlignment: Center);
+                  }
                 }
               }
             }
@@ -1308,9 +1443,24 @@ $C.@PageOverlay {
               OutlineSize: 1;
               Group {
                 LayoutMode: Middle;
-                Label #ZoneMainLine10 {
-                  Text: "";
-                  Style: (FontSize: 12, RenderBold: true, TextColor: #c8c2e0, HorizontalAlignment: Center, VerticalAlignment: Center);
+                Group {
+                  LayoutMode: Left;
+                  Label #ZoneMainLead10 {
+                    Text: "";
+                    Style: (FontSize: 12, RenderBold: true, TextColor: #c8c2e0, HorizontalAlignment: Center, VerticalAlignment: Center);
+                  }
+                  Group #ZoneMainCoinSlot10 {
+                    Anchor: (Width: 22, Height: 22);
+                    Padding: (Left: 3, Right: 3);
+                    LayoutMode: Middle;
+                    ItemIcon #ZoneMainCoin10 {
+                      Anchor: (Full: 0);
+                    }
+                  }
+                  Label #ZoneMainAmount10 {
+                    Text: "";
+                    Style: (FontSize: 12, RenderBold: true, TextColor: #c8c2e0, HorizontalAlignment: Center, VerticalAlignment: Center);
+                  }
                 }
               }
             }
